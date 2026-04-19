@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hōsō</string>
+    <string name="app_subtitle">Stream mobile perso → Twitch</string>
+
+    <string name="hint_stream_key">Twitch Stream Key</string>
+    <string name="label_resolution">Resolution</string>
+    <string name="label_bitrate">Bitrate</string>
+
+    <string name="btn_start">START</string>
+    <string name="btn_stop">STOP</string>
+
+    <string name="status_idle">Prêt</string>
+    <string name="status_connecting">Connexion en cours…</string>
+    <string name="status_live">🔴 EN DIRECT</string>
+
+    <string name="error_no_key">Stream key manquante</string>
+    <string name="error_mic_denied">Permission micro refusée</string>
+    <string name="error_capture_denied">Capture écran refusée</string>
+    <string name="error_stream_failed">Erreur de stream</string>
+
+    <string name="notification_channel_name">Hōsō Stream</string>
+    <string name="notification_title">Hōsō — En direct</string>
+    <string name="notification_text">Stream actif. Appuyez pour revenir.</string>
+</resources>
