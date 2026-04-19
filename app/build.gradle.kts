@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.theermite.hoso"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.theermite.hoso"
