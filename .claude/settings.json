@@ -1,0 +1,120 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Agent",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(pnpm:*)",
+      "Bash(pip:*)",
+      "Bash(python:*)",
+      "Bash(pytest:*)",
+      "Bash(docker:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(echo:*)",
+      "Bash(curl:*)",
+      "Bash(gh:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo rm:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/bash-guard.py",
+            "description": "All Bash guards: secrets, destructive, commits, deploy, migrations, deps"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/write-guard.py",
+            "description": "All Write/Edit guards: env, JWT, secrets, SHA pin, naming"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/post-write-guard.py",
+            "description": "All post-write guards: file size, BOM, console.log"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [],
+    "SessionStart": [],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "SESSION END — MANDATORY CHECKLIST.\n\n1. UNCOMMITTED WORK: Are there uncommitted changes? If yes → /commit now.\n2. DOCS: Were Blueprint/CDC/PET updated if code changed? If not → update now.\n3. OBSIDIAN: Update 01-Projets/[project].md in Obsidian for every project touched this session (flat structure post 2026-04-11). Only write to files where this session produced changes — not all project files.\n4. SESSION REPORT: Save to docs/Sessions/Session-YYYY-MM-DD-NNN.md\n5. SCORING V2: Score 3 dimensions — Value (40%): deployable/publishable output? Reliability (30%): rework count, regressions? Process (30%): methodology gates respected? Formula: (Value × 0.4) + (Reliability × 0.3) + (Process × 0.3).\n\nOutput reminders for any incomplete items. Do NOT let the session end with unfinished business.",
+            "description": "Ring 1: Session end full checklist + Obsidian sync + report"
+          }
+        ]
+      }
+    ],
+    "Stop": [],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CONTEXT COMPACTION IMMINENT. Before the conversation is compressed:\n\n1. SAVE STATE: Use TodoWrite to capture your current task list (in-progress and pending items).\n2. NOTE DECISIONS: If any important decisions were made this session that are NOT yet in a commit or file, write them to a brief comment in your next response.\n3. NOTE FILES: List the files you have modified or are actively working on.\n4. WARN JAY: Tell Jay that compaction is happening and what you are preserving.\n\nThis ensures continuity after compression. Do NOT skip this.",
+            "description": "Save session state before context compaction"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CONTEXT WAS JUST COMPACTED. Critical recovery steps:\n\n1. READ TODOS: Check your todo list — it contains your task state from before compaction.\n2. RE-READ CLAUDE.md: Your identity rules are in .claude/CLAUDE.md and .claude/rules/. They survive compaction but refresh your awareness.\n3. CHECK GIT: Run 'git status' and 'git log --oneline -5' to see where you are.\n4. TELL JAY: Briefly tell Jay what you remember working on and ask if anything is missing.\n5. CONTINUE: Resume the in-progress task from your todo list.\n\nDo NOT start new work without confirming continuity with Jay.",
+            "description": "Restore session state after context compaction"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "DEBUG ESCALATION CHECK. A Bash command just failed.\n\n1. LOGS FIRST: Have the error logs been read? If hypothesizing without logs: 'RULE: LOGS FIRST. Read error output before hypothesizing.'\n2. REPEATED FAILURE: Is this the 2nd+ failure on the same issue? If yes: 'WARNING: Multiple failures. Escalate: L1 (logs) → L2 (Eichi + web 7 languages) → L3 (report to Jay).'\n3. CONTEXT RESET: After 2 failed corrections → suggest /clear or new conversation.",
+            "description": "Ring 1: Debug escalation + logs-first enforcement"
+          }
+        ]
+      }
+    ],
+    "ConfigChange": []
+  }
+}
