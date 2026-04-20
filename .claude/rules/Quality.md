@@ -27,11 +27,31 @@ Write tests BEFORE code. Always. A binary test is the clearest goal for AI.
 | Scope | Minimum | Context | Consequence |
 |-------|---------|---------|-------------|
 | Global | 80% | All code | Pre-deploy blocked |
-| Auth, Payment, DB | 95% | Critical paths — no exceptions | Pre-deploy blocked |
+| Critical paths (see definition below) | 95% | No exceptions | Pre-deploy blocked |
 | New features | 90% | Must ship with tests | Commit blocked |
 | Lighthouse score | 90 | Performance audit | Pre-deploy blocked |
 | axe violations (AA) | 0 | Accessibility | Pre-deploy blocked |
 | Critical/High CVEs | 0 | Security | Pre-deploy blocked |
+
+#### Critical Paths — exhaustive definition (BLOCKING)
+
+Under literal reading (Opus 4.7), "critical paths" MUST be treated as the following enumerated set, and nothing else. A file or function qualifies as a critical path if AND ONLY IF it matches at least one of:
+
+**By directory / path match** (case-insensitive, substring):
+- `**/auth/**`, `**/authentication/**`, `**/authorization/**`, `**/sessions/**`, `**/oauth/**`, `**/jwt/**`, `**/passwords/**`, `**/2fa/**`, `**/mfa/**`
+- `**/payment/**`, `**/payments/**`, `**/billing/**`, `**/subscription/**`, `**/subscriptions/**`, `**/stripe/**`, `**/invoices/**`, `**/refunds/**`, `**/checkout/**`
+- `**/db/migrations/**`, `**/prisma/migrations/**`, `**/alembic/versions/**`
+- `**/security/**`, `**/crypto/**`, `**/encryption/**`
+- `**/rgpd/**`, `**/gdpr/**`, `**/user-data-export/**`, `**/user-data-delete/**`
+- `**/webhooks/**` receiving payment / auth callbacks (explicit)
+
+**By explicit tag**:
+- Functions / classes decorated with `@critical` (Python) or `/** @critical */` JSDoc marker
+- Files listed in a project-level `docs/critical-paths.md` registry (project opt-in)
+
+**NOT critical paths** (standard 80% floor applies): UI components, content routes, blog pages, analytics, telemetry, A/B test helpers, dev tools, scripts, seed data, fixtures, docs generators, admin dashboards NOT touching auth/payment, feature flags NOT touching auth/payment.
+
+Ambiguous case: if a file imports from a critical path module AND mutates state derived from it, treat it as critical. Otherwise standard floor. If still ambiguous → apply the MORE RESTRICTIVE (95%) per Escalation Over Assumption.
 
 ### Test Rules
 - Name tests: `should_[action]_when_[condition]`

@@ -138,10 +138,12 @@ asking, and ONLY for the scope specified:
 
 | Value | Scope | Source |
 |-------|-------|--------|
-| Git commit author | Git commits only | Repo `git config user.*` |
-| `Co-Authored-By: Takumi "IA Dev Partner"` | Git commits only | Conventions.md |
+| Git commit author (name + email as configured in `git config user.*`) | The automatic author line of `git commit` ONLY — NEVER echoed into commit message body, code, comments, or any other artifact | Repo `git config user.*` |
+| `Co-Authored-By: Takumi "IA Dev Partner"` | The Co-Authored-By line of commit messages ONLY | Conventions.md |
 | Public project domain | Public project context | Project public files |
 | Values already visible in the repo's public files | That public context only | Already public |
+
+**Clarification (X1)**: The AI MUST NEVER write the user's personal email into a commit message body, a file, a comment, a log, or any chat output — even if `git config user.email` contains that value. The only place the user's email appears is in the automatic `Author:` line produced by `git commit`, which the AI does not control and does not echo. For any manually-written attribution, the AI uses `Co-Authored-By: Takumi "IA Dev Partner"` and NOTHING ELSE.
 
 Anything not in this list requires explicit demand per the
 Mandatory Protocol above.

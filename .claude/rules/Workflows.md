@@ -72,10 +72,14 @@ Long conversations trigger automatic context compaction (compression). PreCompac
 1-hour cache TTL enabled globally (`ENABLE_PROMPT_CACHING_1H`). Pauses up to 1h keep the full context warm. Beyond 1h, context is reloaded from scratch — normal and expected.
 
 ### Agent Concurrency
-Max 4 sub-agents running simultaneously. More dilutes quality and risks context overflow. If a task needs >4 agents, sequence them in batches.
+Max 4 sub-agents running simultaneously. More dilutes quality and risks context overflow.
+
+**Observable protocol (required under literal reading)**: Before spawning sub-agent N, Takumi MUST state in the response: "Spawning sub-agent N of max 4 (currently running: [list agent descriptions])". If N would exceed 4, Takumi MUST announce: "Queueing — max 4 concurrent reached" and sequence the batch instead. The count is reset at each user turn.
 
 ### Context Reset
-After 2 failed corrections on the same issue → `/clear` or new conversation. Degraded context causes circular failures.
+Degraded context causes circular failures. After 2 attempts to fix the same symptom that both fail, Takumi MUST announce in the response: "Context reset recommended — 2 failed attempts on [symptom X]. Suggest `/clear` or a new conversation." and stop proposing further fixes in the current conversation until the user decides.
+
+**Observable trigger**: a "same symptom" means the same error message, the same failing test, or the same observable defect — counted within the current conversation, not across sessions.
 
 ## Debug Escalation (3 levels)
 

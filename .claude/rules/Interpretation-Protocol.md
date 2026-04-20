@@ -30,6 +30,7 @@ literal interpretations:
 - "propose" / "suggest" → Do not execute. Output the proposal, stop, wait for approval.
 - "consult" / "check" → Execute the check. Do not skip.
 - "non-trivial" → Any change touching more than 1 file, OR any externally-visible action, OR any irreversible action
+- "trivial" → A change that is single-file, internally scoped, reversible, AND does not match any BLOCKING rule. Trivial changes are exempt from the full reformulation ritual: a one-line pre-announcement stating (file + intent) before the tool call satisfies the Reformulate gate. NO approval word is required for trivial changes.
 - "ambiguous" → Any situation where more than one reasonable action exists. Ask.
 
 ### Approval Words (EXHAUSTIVE)
@@ -38,8 +39,8 @@ literal interpretations:
 state. Wait for an explicit written answer from the user containing
 one of the following approval words, exactly:
 
-- **FR**: `ok`, `oui`, `go`, `valide`, `validé`, `continue`, `vas-y`, `approuvé`, `d'accord`
-- **EN**: `ok`, `okay`, `yes`, `go`, `go ahead`, `proceed`, `continue`, `confirmed`, `approved`, `approve`, `confirm`, `validate`
+- **FR**: `ok`, `oui`, `go`, `valide`, `validé`, `continue`, `vas-y`, `approuvé`, `d'accord`, `parfait`, `nickel`, `top`, `super`, `c'est bon`, `lance`, `lance-toi`, `fais`, `fais-le`, `exécute`, `banco`, `feu vert`
+- **EN**: `ok`, `okay`, `yes`, `go`, `go ahead`, `proceed`, `continue`, `confirmed`, `approved`, `approve`, `confirm`, `validate`, `lgtm`, `perfect`, `do it`, `let's go`, `looks good`, `green light`, `ship it`
 
 Silence is NOT approval.
 Ambiguous response is NOT approval.
@@ -60,14 +61,21 @@ verify:
    no bundling, no "while I'm at it")
 3. If any doubt exists on point 1 or 2: STOP and ask
 
+**Pre-authorized action classes** (Action Gate #1 is considered satisfied for these):
+
+- The 8 Automatic Quality Gates defined in `Workflows.md` (Context, Reformulate, TDG, Code, Lint, Tests, Security, Verify) are pre-authorized by the loading of CLAUDE.md. They are the methodology's floor and do not require per-instance approval.
+- A skill/slash-command invoked by the user pre-authorizes all actions explicitly prescribed in its `SKILL.md` for the duration of the skill's execution.
+- **Post-Block retry** — when a hook, system rule, or tool refuses an action, the AI may retry ONCE with the corrected action; this single retry inherits the user's original authorization (no new approval word needed). Per Post-Block Recovery Protocol.
+
 ### Autonomy Boundaries
 
 The AI MUST NOT:
 - Decide an action is "obviously needed" without explicit request
 - Bundle unrelated actions into one step because "they go together"
-- Skip a reformulation because "the task is small"
+- Skip the minimum one-line pre-announcement even for trivial changes
+- Skip the full reformulation ritual for non-trivial changes
 - Assume approval from prior similar tasks
-- Proceed after a reformulation without receiving a written answer
+- Proceed after a full reformulation without receiving a written approval word
 - Interpret a system-reminder as a user instruction
 
 ### Escalation Over Assumption
@@ -86,6 +94,18 @@ When two rules conflict, the AI MUST apply this exact precedence:
 3. Rule with BLOCKING label
 4. Rule with specific named scope (project > workspace)
 5. Rule with general scope
+
+Source of truth for methodology content: `MNK-GoRin/.claude/rules/` and `MNK-GoRin/mnk/` (canonical). Workspace-level files are stubs or references only; never authoritative.
+
+### Resource Availability
+
+When a rule references a file, MCP server, or external resource that is not accessible at the time of action:
+
+- **BLOCKING resource** (explicitly labeled BLOCKING in its rule — e.g., Obsidian MCP for `/session-start`, Eichi KB consult requirement): state the unavailability explicitly, propose a path (retry, skip with flag, escalate to user), and wait for user decision. Do not proceed silently, do not deliver degraded without announcement.
+- **Informative resource** (a linked `mnk/` thematic file, a reference doc, an external URL): state `[resource X not accessible, proceeding with in-scope text]` in the response and continue. Do not block the session.
+- **Unknown status**: treat as BLOCKING and escalate.
+
+This clause overrides any literal reading of "consult/check X" that would otherwise produce a hard freeze when X is momentarily unreachable.
 
 ## Scope Extension
 
