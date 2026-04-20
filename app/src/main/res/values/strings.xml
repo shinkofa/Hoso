@@ -22,4 +22,6 @@
     <string name="notification_channel_name">Hōsō Stream</string>
     <string name="notification_title">Hōsō — En direct</string>
     <string name="notification_text">Stream actif. Appuyez pour revenir.</string>
+    <string name="bitrate_hint">Twitch recommande 3000-6000 kbps pour 720p/1080p</string>
+    <string name="overlay_notification_title">Hōsō — Overlay actif</string>
 </resources>

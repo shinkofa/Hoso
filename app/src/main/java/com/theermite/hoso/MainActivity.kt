@@ -1,18 +1,26 @@
 package com.theermite.hoso
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
+import android.content.pm.ActivityInfo
 import android.media.MediaFormat
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Size
 import android.widget.ArrayAdapter
-import android.widget.Toast
+import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.theermite.hoso.config.StreamConfig
 import com.theermite.hoso.databinding.ActivityMainBinding
+import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.interfaces.startStream
@@ -33,6 +41,18 @@ class MainActivity : AppCompatActivity() {
     private var streamer: ISingleStreamer? = null
     private var isStreaming = false
 
+    private val stoppedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(ctx: Context?, intent: Intent?) {
+            runOnUiThread {
+                streamer = null
+                connection = null
+                requestedOrientation =
+                    ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                updateUI(streaming = false)
+            }
+        }
+    }
+
     private val requestAudioPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -48,6 +68,10 @@ class MainActivity : AppCompatActivity() {
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { /* proceed regardless */ }
+
+    private val overlayPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { /* checked when starting stream */ }
 
     private val screenCaptureLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -72,7 +96,7 @@ class MainActivity : AppCompatActivity() {
             },
             onServiceDisconnected = {
                 streamer = null
-                updateUI(streaming = false)
+                runOnUiThread { updateUI(streaming = false) }
             }
         )
     }
@@ -86,63 +110,81 @@ class MainActivity : AppCompatActivity() {
         setupUI()
         loadConfigToUI()
 
-        requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        registerReceiver(
+            stoppedReceiver,
+            IntentFilter(ScreenRecordService.BROADCAST_STOPPED),
+            RECEIVER_NOT_EXPORTED
+        )
+
+        requestNotificationPermission.launch(
+            Manifest.permission.POST_NOTIFICATIONS
+        )
+        requestOverlayPermission()
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(stoppedReceiver)
+        super.onDestroy()
+    }
+
+    private fun requestOverlayPermission() {
+        if (!Settings.canDrawOverlays(this)) {
+            overlayPermissionLauncher.launch(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+            )
+        }
     }
 
     private fun setupUI() {
-        val resolutions = arrayOf("1280x720", "1920x1080", "854x480")
         binding.spinnerResolution.adapter = ArrayAdapter(
-            this, android.R.layout.simple_spinner_dropdown_item, resolutions
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            config.presetLabels
         )
 
-        val bitrates = arrayOf("2500 kbps", "3500 kbps", "4500 kbps", "1500 kbps")
-        binding.spinnerBitrate.adapter = ArrayAdapter(
-            this, android.R.layout.simple_spinner_dropdown_item, bitrates
-        )
-
-        binding.btnStream.setOnClickListener {
-            if (isStreaming) {
-                stopStreaming()
-            } else {
-                startStreaming()
+        val steps = (StreamConfig.BITRATE_MAX - StreamConfig.BITRATE_MIN) /
+            StreamConfig.BITRATE_STEP
+        binding.seekbarBitrate.max = steps
+        binding.seekbarBitrate.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    sb: SeekBar?, progress: Int, fromUser: Boolean
+                ) {
+                    val kbps = StreamConfig.BITRATE_MIN +
+                        progress * StreamConfig.BITRATE_STEP
+                    binding.textBitrateValue.text = "$kbps kbps"
+                }
+                override fun onStartTrackingTouch(sb: SeekBar?) {}
+                override fun onStopTrackingTouch(sb: SeekBar?) {}
             }
-        }
+        )
+
+        binding.btnStart.setOnClickListener { startStreaming() }
+        binding.btnStop.setOnClickListener { stopStreaming() }
     }
 
     private fun loadConfigToUI() {
         binding.editStreamKey.setText(config.streamKey)
+        binding.spinnerResolution.setSelection(config.resolutionIndex)
 
-        val resIdx = when (config.resolution) {
-            Size(1920, 1080) -> 1
-            Size(854, 480) -> 2
-            else -> 0
-        }
-        binding.spinnerResolution.setSelection(resIdx)
-
-        val bitrateIdx = when (config.videoBitrate) {
-            3_500_000 -> 1
-            4_500_000 -> 2
-            1_500_000 -> 3
-            else -> 0
-        }
-        binding.spinnerBitrate.setSelection(bitrateIdx)
+        val progress = (config.videoBitrate - StreamConfig.BITRATE_MIN) /
+            StreamConfig.BITRATE_STEP
+        binding.seekbarBitrate.progress = progress.coerceIn(
+            0, binding.seekbarBitrate.max
+        )
+        binding.textBitrateValue.text = "${config.videoBitrate} kbps"
     }
 
     private fun saveConfigFromUI() {
-        config.streamKey = binding.editStreamKey.text.toString().trim()
-
-        config.resolution = when (binding.spinnerResolution.selectedItemPosition) {
-            1 -> Size(1920, 1080)
-            2 -> Size(854, 480)
-            else -> Size(1280, 720)
-        }
-
-        config.videoBitrate = when (binding.spinnerBitrate.selectedItemPosition) {
-            1 -> 3_500_000
-            2 -> 4_500_000
-            3 -> 1_500_000
-            else -> 2_500_000
-        }
+        config.streamKey =
+            binding.editStreamKey.text.toString().trim()
+        config.resolutionIndex =
+            binding.spinnerResolution.selectedItemPosition
+        config.videoBitrate = StreamConfig.BITRATE_MIN +
+            binding.seekbarBitrate.progress * StreamConfig.BITRATE_STEP
     }
 
     private fun startStreaming() {
@@ -151,16 +193,25 @@ class MainActivity : AppCompatActivity() {
             showStatus(getString(R.string.error_no_key))
             return
         }
+        requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         showStatus(getString(R.string.status_connecting))
         requestAudioPermission.launch(Manifest.permission.RECORD_AUDIO)
     }
 
     private suspend fun configureAndStart(streamer: ISingleStreamer) {
         try {
+            val raw = config.resolution
+            val res = Size(
+                maxOf(raw.width, raw.height),
+                minOf(raw.width, raw.height)
+            )
+            val bitrate = config.videoBitrate * 1000
+
             val videoConfig = VideoConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
-                startBitrate = config.videoBitrate,
-                resolution = config.resolution,
+                startBitrate = bitrate,
+                resolution = res,
                 fps = config.fps
             )
 
@@ -175,57 +226,74 @@ class MainActivity : AppCompatActivity() {
             (streamer as IVideoSingleStreamer).setVideoConfig(videoConfig)
             (streamer as IAudioSingleStreamer).setAudioConfig(audioConfig)
 
-            val descriptor = UriMediaDescriptor(config.fullRtmpUrl.toUri())
+            val descriptor = UriMediaDescriptor(
+                config.fullRtmpUrl.toUri()
+            )
             streamer.startStream(descriptor)
 
-            runOnUiThread { updateUI(streaming = true) }
+            runOnUiThread {
+                updateUI(streaming = true)
+                startOverlay()
+            }
         } catch (e: Exception) {
             runOnUiThread {
-                showStatus("${getString(R.string.error_stream_failed)}: ${e.message}")
+                showStatus(
+                    "${getString(R.string.error_stream_failed)}: " +
+                        "${e.message}"
+                )
                 updateUI(streaming = false)
             }
         }
     }
 
     private fun stopStreaming() {
-        lifecycleScope.launch {
-            try {
-                streamer?.stopStream()
-            } catch (_: Exception) { }
+        stopOverlay()
 
+        val stopIntent = Intent(
+            this, ScreenRecordService::class.java
+        ).apply { action = ScreenRecordService.ACTION_STOP }
+        startService(stopIntent)
+
+        try {
             connection?.let { unbindService(it) }
-            connection = null
-            streamer = null
+        } catch (_: Exception) { }
+        connection = null
+        streamer = null
 
-            runOnUiThread { updateUI(streaming = false) }
+        requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        updateUI(streaming = false)
+    }
+
+    private fun startOverlay() {
+        if (Settings.canDrawOverlays(this)) {
+            startForegroundService(
+                Intent(this, OverlayService::class.java)
+            )
         }
+    }
+
+    private fun stopOverlay() {
+        stopService(Intent(this, OverlayService::class.java))
     }
 
     private fun updateUI(streaming: Boolean) {
         isStreaming = streaming
-        binding.btnStream.text = getString(
-            if (streaming) R.string.btn_stop else R.string.btn_start
-        )
-        binding.btnStream.setBackgroundColor(
-            getColor(if (streaming) R.color.stream_stop else R.color.stream_start)
-        )
+        binding.btnStart.isEnabled = !streaming
+        binding.btnStop.isEnabled = streaming
         binding.editStreamKey.isEnabled = !streaming
         binding.spinnerResolution.isEnabled = !streaming
-        binding.spinnerBitrate.isEnabled = !streaming
+        binding.seekbarBitrate.isEnabled = !streaming
 
         showStatus(
-            getString(if (streaming) R.string.status_live else R.string.status_idle)
+            getString(
+                if (streaming) R.string.status_live
+                else R.string.status_idle
+            )
         )
     }
 
     private fun showStatus(message: String) {
         binding.textStatus.text = message
-    }
-
-    override fun onDestroy() {
-        if (isStreaming) {
-            stopStreaming()
-        }
-        super.onDestroy()
     }
 }
