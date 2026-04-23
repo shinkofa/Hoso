@@ -15,7 +15,7 @@ AI-generated code quality is highest in English. Documentation and interactions 
 
 ## Encoding
 
-UTF-8 without BOM. Always. French accents preserved in content. Hook-enforced.
+UTF-8 without BOM. Always. French accents preserved in content. Hook-enforced. `.editorconfig` required in every project (`charset = utf-8`, `end_of_line = lf`). Git: `core.autocrlf = input` on all machines.
 
 ## Naming
 
@@ -70,13 +70,15 @@ One logical change per commit. Hook-enforced. If you changed auth AND UI in the 
 | Database | PostgreSQL | 18 |
 | Cache | Redis | 8.x |
 | Desktop | PySide6 (NEVER tkinter) | 6.9+ |
-| Desktop (JS) | Electron | 40+ |
+| Desktop (JS) | Electron / Tauri 2.x | 40+ / 2.10+ |
 | Linting | Biome 2.4+ (TS) / Ruff 0.15+ (Python) | |
 | Testing | Vitest 4.0+ (TS) / pytest (Python) / Playwright 1.58+ (E2E) | |
 | Mutation testing | Stryker | 9.5+ |
 | Package managers | pnpm (TS) / uv (Python) | |
 | AI local | Ollama + qwen3:8b-nothink | |
 | AI cloud | Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5 / DeepSeek-V3 | |
+| Backend (validated direction) | Elixir/Phoenix | 1.18+ / 1.8+ | POC pending |
+| Critical modules (validated direction) | Rust (NIFs/WASM) | 1.87+ | POC pending |
 
 **Zero Dogma**: This stack is preferred, not mandatory. If a project needs something else, justify and document.
 
@@ -85,3 +87,18 @@ One logical change per commit. Hook-enforced. If you changed auth AND UI in the 
 - Frontend: Zod schemas → derive TypeScript types
 - Backend: Pydantic models → derive API schemas
 - Never duplicate types manually between frontend and backend. Generate or share via @shinkofa/types.
+
+## Quality Terminology
+
+| Term | Definition | GoRin Equivalent |
+|------|-----------|-----------------|
+| Jidoka (自働化) | Autonomation — stop on defect | Hooks (Ring 0) |
+| Poka-yoke (ポカヨケ) | Error-proofing by design | Validation + compiler |
+| Monozukuri (ものづくり) | Art of making — quality as identity | GoRin philosophy |
+| Ipcha Mistabra (איפכא מסתברא) | Devil's Advocate — "what if the opposite is true?" | Attacker stories |
+
+## Cross-Platform
+
+- Commands: bash (Linux + Git Bash Windows)
+- Hooks: Python only
+- Paths: forward slashes in docs

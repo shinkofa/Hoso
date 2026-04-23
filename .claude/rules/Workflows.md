@@ -10,16 +10,16 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 
 ### The 8 Automatic Gates
 
-| # | Gate | What | When |
-|---|------|------|------|
-| 1 | **Context** | Check Blueprint/CDC if they exist. If neither exists → propose a plan before coding. | Before first line of code |
-| 2 | **Reformulate** | State what you understood, what you'll do, what you won't touch, files impacted. Wait for validation on non-trivial changes. | Before first line of code |
-| 3 | **TDG** | Write tests FIRST. They must fail (red) before implementation. | Before implementation |
-| 4 | **Code** | Implement. Atomic commits. Backup tag every 3-4 commits. | Implementation |
-| 5 | **Lint** | Zero lint errors. Run linter after changes. | After code |
-| 6 | **Tests** | All tests pass — unit + integration + anti-regression. No "it should work." | After code |
-| 7 | **Security** | No secrets, no injection, no weak patterns. Hooks catch most; verify the rest. | After code |
-| 8 | **Verify** | Prove it works. Evidence over assertion. On UI: run dev server and test in browser. | Before reporting done |
+| # | Gate | What | When | Enrichment (QE V2) |
+|---|------|------|------|-------------------|
+| 1 | **Context** | Check Blueprint/CDC if they exist. If neither exists → propose a plan before coding. | Before first line of code | + Simplified FMEA (3 failure modes) |
+| 2 | **Reformulate** | State what you understood, what you'll do, what you won't touch, files impacted. Wait for validation on non-trivial changes. | Before first line of code | + Impact analysis |
+| 3 | **TDG** | Write tests FIRST. They must fail (red) before implementation. Identify impacted tests before writing new ones (dependency-aware targeting). | Before implementation | + Bidirectional traceability + Defensive assertions (>=2/critical fn) + Dependency-aware test targeting |
+| 4 | **Code** | Implement. Atomic commits. Backup tag every 3-4 commits. | Implementation | Unchanged |
+| 5 | **Lint** | Zero lint errors. Run linter after changes. | After code | Unchanged |
+| 6 | **Tests** | All tests pass — unit + integration + anti-regression. No "it should work." | After code | + MC/DC for complex critical conditions |
+| 7 | **Security** | No secrets, no injection, no weak patterns. Hooks catch most; verify the rest. | After code | + Automated PII detection |
+| 8 | **Verify** | Prove it works. Evidence over assertion. On UI: run dev server and test in browser. | Before reporting done | + Post-deploy verification |
 
 **`/dev` adds** (on top of the 8 gates): 3-Layer strategic check, Eichi/veille research, non-tech PREPARE agents, i18n/visibility/SEO, non-tech VALIDATE agents, formal Blueprint/CDC/PET update, Obsidian sync.
 
@@ -47,7 +47,17 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 - **Anti-overengineering** — only make changes directly requested or clearly necessary. No extras, no abstractions for one-time ops, no hypothetical futures. Three similar lines > premature abstraction.
 - **ZERO rm -rf on work directories (BLOCKING)** — NEVER `rm -rf` on dist/, build/, output/, data/, or any directory containing work. `rm -rf` bypasses the recycle bin = IRREVERSIBLE LOSS. Always `mv x x-backup` or ask Jay BEFORE deletion.
 - **Sync Obsidian project notes (BLOCKING)** — **4 files, not 21.** At session start: load `_Cross-Project.md` + `_Index.md` + current project file + `[project]-Notes-Jay.md`. Additional files on demand only. At session end: write only to files touched by the session (current project + Notes-Jay + `_Cross-Project.md` if cross-project decisions + `Contenu.md` if visibility candidates). If MCP unreachable: STOP and escalate.
-- **Notes-Jay processing (BLOCKING)** — Jay’s async feedback channel. Each project has `[project]-Notes-Jay.md` in Obsidian. At session start: count unseen items (no marker). During session: update markers immediately when items are treated (`👀 Lu` = seen, `🔧 En cours` = in progress, `✅ date — résumé` = done). At session end: verify all treated items have updated markers. Full protocol: `mnk/05-Workflows-Session.md`.
+- **Notes-Jay processing (BLOCKING)** — Jay's async feedback channel. Each project has `[project]-Notes-Jay.md` in Obsidian. At session start: count unseen items (no marker). During session: update markers immediately when items are treated (`👀 Lu` = seen, `🔧 En cours` = in progress, `✅ date — résumé` = done). At session end: verify all treated items have updated markers. Full protocol: `mnk/05-Workflows-Session.md`.
+- **Dedicated test/audit sessions** — for critical code, run a separate session with a Test Auditor agent for independent verification. Verification (agent) / Validation (Jay).
+- **Work environment = quality criterion** — MCPs, tools, documentation, session management, proactive capabilities (veille, security audits, maintenance) are part of the quality stack, not optional extras.
+
+## Context Awareness Protocol (BLOCKING)
+
+| Signal | Threshold | Action |
+|--------|-----------|--------|
+| ~40 exchanges or ~15 file reads | ~60% | Announce: "Contexte à ~60%. Priorise les tâches restantes." |
+| ~60 exchanges or compaction triggered | ~80% | STOP + announce + write handoff brief (done/next/decisions) |
+| Quality degradation (circular, forgotten) | Any | IMMEDIATE: "Dégradation détectée. Session fraîche nécessaire." |
 
 ## Non-Tech Agents: BEFORE and AFTER (NOT During)
 

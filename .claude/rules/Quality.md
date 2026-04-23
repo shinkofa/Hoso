@@ -77,6 +77,122 @@ A single coverage % is misleading. Five metrics tell the truth:
 - A test with only identity checks (`is not None`, `isinstance`) = trivial = WARNING
 - A test with > 20 lines for a < 10-line function = probably over-mocked = WARNING
 
+A strict compiler is the first poka-yoke: it catches errors at build time. Subsequent gates become safety nets, not primary defense.
+
+## Quality Pyramid V2
+
+6 levels + Foundation. Full details: `mnk/06-Quality.md`.
+
+| Level | Name | Measures | Automatable? |
+|-------|------|----------|-------------|
+| Foundation | Stack | Stable foundations with AI code gen? | Evaluation |
+| L0 | Process | CI, hooks, gates | Entirely |
+| L1 | Structural | Complexity, maintainability, security | Entirely |
+| L2 | Functional | Tests pass, API contracts | Entirely |
+| L3 | Cognitive | Mental effort (charge cognitive) | Partially |
+| L4 | Emotional | Trust, frustration, energy cost | Mostly human |
+| L5 | Adaptive | Quality for THIS user (morphic) | Partially |
+
+Technical quality (L0-L2) is the floor. Human quality (L3-L5) is the ceiling.
+
+## Anti-Circular Testing Protocol (BLOCKING on critical paths)
+
+Same AI writing code AND tests = circular validation. Three defense layers:
+
+| Layer | Method | Tools | Mandatory? |
+|-------|--------|-------|-----------|
+| 1 — Algorithmic | Formal properties + fault injection | PBT (fast-check/Hypothesis), Mutation (StrykerJS), Fuzzing (Schemathesis) | Yes — always |
+| 2 — Different Context | Separate session reviews + hidden tests | Writer/Reviewer sessions, Agent Test Auditor, Holdout tests (`__holdout__/`) | Yes — critical paths |
+| 3 — Different Model | Another LLM reviews | Koshin/DeepSeek, future fine-tuned local model | Recommended |
+
+Full protocol: `mnk/06-Quality.md`.
+
+## 4-Level Risk Classification
+
+| Level | Scope | Coverage | MC/DC? |
+|-------|-------|----------|--------|
+| Critical | auth, payment, crypto, encryption | 95% | Yes (conditions 4+) |
+| Sensitive | user data, RGPD, config, webhooks | 90% | No |
+| Standard | UI, content, analytics, admin | 80% | No |
+| Tooling | scripts, dev tools, fixtures, seeds | 60% | No |
+
+Takumi proposes classification per module. Jay decides.
+
+## 4 Human Quality Gates (BLOCKING on public platforms)
+
+| Gate | Key Metric | Threshold |
+|------|-----------|-----------|
+| Cognitive Load | Decision points per common task | <= 5 (BLOCKING) |
+| Sensory Comfort | prefers-reduced-motion coverage | 100% (BLOCKING) |
+| Error Resilience | Auto-save on forms > 3 fields | Required (BLOCKING) |
+| Adaptation | Preference persistence between sessions | Required (BLOCKING) |
+
+Full framework (HECQ, design by neurotype): `mnk/15-Human-Quality.md`.
+
+### Test Runtime Hygiene (BLOCKING)
+
+Test runners under jsdom (vitest, jest) leak memory across files when module isolation is weak. Unbounded runs in agentic loops (Claude Code relaunching `npx vitest` without cleanup) caused VPS OOM saturation on 2026-04-23 (3 vitest workers × 4 GiB = swap thrashing, load avg 113, 20+ containers degraded). Prevention is configuration, not discipline.
+
+#### Vitest — mandatory config (TypeScript projects)
+
+Every Shinkofa project using vitest MUST set the following in `vite.config.ts` (or `vitest.config.ts`):
+
+**Vitest 4.x** (top-level pool options — `poolOptions` removed in v4.0):
+```ts
+test: {
+  pool: 'forks',
+  maxWorkers: 2,
+  isolate: true,
+  maxConcurrency: 5,
+  testTimeout: 10_000,
+  hookTimeout: 10_000,
+}
+```
+
+**Vitest 1.x–3.x** (nested poolOptions):
+```ts
+test: {
+  pool: 'forks',
+  poolOptions: { forks: { maxForks: 2, minForks: 1 } },
+  isolate: true,
+  maxConcurrency: 5,
+  testTimeout: 10_000,
+  hookTimeout: 10_000,
+}
+```
+
+Rationale:
+- `pool: 'forks'` — each test file runs in its own OS process. `threads` keeps modules alive across files, memory creeps.
+- `maxWorkers: 2` — caps parallel workers. Default = CPU count; 8 forks × 2 GiB = OOM on a shared VPS.
+- `isolate: true` — fresh module graph per file.
+- Timeouts prevent runaway hooks from holding memory indefinitely.
+
+#### Memory cap — mandatory in test scripts
+
+Every `test` and `test:coverage` script in `package.json` MUST set a memory cap:
+
+```json
+"test": "cross-env NODE_OPTIONS=--max-old-space-size=2048 vitest run",
+"test:coverage": "cross-env NODE_OPTIONS=--max-old-space-size=2048 vitest run --coverage"
+```
+
+`cross-env` is required for Windows compatibility (`VAR=value command` is Unix-only syntax). Install as devDependency: `npm install --save-dev cross-env`.
+
+2048 MiB × 2 forks = 4 GiB worst case. A runner exceeding that fails loudly instead of silently swapping.
+
+#### Agentic loop safety (BLOCKING)
+
+When Claude Code (or any AI agent) runs tests in a session that may relaunch them:
+
+1. Before spawning a new test run, verify no stale runner from the same project is alive:
+   - Linux/Mac: `pgrep -f "vitest.*<project>" | xargs -r kill -TERM`
+   - Windows (PowerShell): `Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match "vitest" } | Stop-Process -Force`
+   - Windows (Git Bash): `tasklist //FI "IMAGENAME eq node.exe" 2>/dev/null | grep -i vitest && taskkill //F //FI "WINDOWTITLE eq vitest*" 2>/dev/null || true`
+2. A test command MUST NOT be spawned while a previous one from the same project is still alive.
+3. On session end: kill any test runner started in the session.
+
+Violation (stale runners piling up on shared infra) = `-10` session score on Reliability.
+
 ## Performance (BLOCKING)
 
 ### Core Web Vitals 2026 (Shinkofa targets — stricter than Google "Good")
@@ -214,6 +330,10 @@ Shared TypeScript types (Ki, Task, Priority, Wellness, etc.) in `Shinkofa-Shared
 Phases 0-9 COMPLETE. Every new platform = assembly of existing bricks + business logic only.
 
 Remaining integration work: replace coupled components in The Ermite and Michi-Shinkofa with library imports.
+
+### Lego Library V2 Vision
+
+Components → functional modules. Not just UI bricks but complete features (e.g., a full calendar with all options, integrable by selecting which options to include). Absolutely modular.
 
 ## Static Analysis Stack (BLOCKING)
 

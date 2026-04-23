@@ -201,7 +201,8 @@ def check_db_migration(raw):
             "WARNING: DB migration detected. "
             "ACTION: Run pg_dump backup BEFORE the migration. "
             "If already done in this session, continue. If not, run: "
-            "pg_dump -Fc <dbname> > backup-$(date +%Y%m%d-%H%M).dump, then retry."
+            "pg_dump -Fc <dbname> > backup-$(date +%Y%m%d-%H%M).dump (Git Bash/Linux), "
+            "or: pg_dump -Fc <dbname> > backup-$(Get-Date -Format 'yyyyMMdd-HHmm').dump (PowerShell), then retry."
         )
     return None
 
