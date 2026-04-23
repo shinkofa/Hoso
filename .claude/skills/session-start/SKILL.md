@@ -13,10 +13,11 @@ Execute these steps IN ORDER. No skipping (unless LITE_MODE applies — see Step
 0. **PROJECT TYPE DETECTION**: Check for the presence of AT LEAST ONE of these files at the repo root: `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `Makefile`, `docker-compose.yml`, `pom.xml`, `build.gradle`. If **NONE** found → activate **LITE_MODE**. Display: `LITE_MODE: ON (non-code project)` or `LITE_MODE: OFF (code project detected: [filename])`. LITE_MODE skips steps 5, 6, 7, 8, 9 (marked below). All other steps run normally.
 
 1. **ENVIRONMENT**: Detect OS, machine (local/VPS), paths, shell. Display result.
-2. **OBSIDIAN SYNC (MANDATORY — BLOCKING)**: Read from Obsidian vault via MCP — load these 3 files in parallel:
+2. **OBSIDIAN SYNC (MANDATORY — BLOCKING)**: Read from Obsidian vault via MCP — load these 4 files in parallel:
    - `01-Projets/_Cross-Project.md` — cross-project decisions, shared infra, blockers, Lego state
    - `01-Projets/_Index.md` — project inventory and tracks
    - `01-Projets/[current-project].md` — the project file matching the current repo (e.g., `Koshin.md` for Koshin repo)
+   - `01-Projets/[current-project]-Notes-Jay.md` — Jay’s async feedback channel (bugs, questions, features, observations). Process new items (no marker = unseen). Display count of unseen items.
    - **DO NOT load all project files.** Only load additional project files if explicitly needed (e.g., Jay mentions a specific project, or the current project's "Connexions" section flags an active dependency that requires checking).
    - **If Obsidian MCP is unreachable: STOP. Do not proceed. Escalate to Jay.**
    - **Flat structure** (post 2026-04-11): one file per project, no nested folders. The old `02-Projets/` structure is **LEGACY**.
@@ -32,7 +33,8 @@ Execute these steps IN ORDER. No skipping (unless LITE_MODE applies — see Step
 ## Rules
 
 - **Obsidian sync is BLOCKING and non-negotiable** (step 2). A session that starts without it is a process violation. If MCP fails, escalate — never skip.
-- **3 files, not 21** — load `_Cross-Project.md` + `_Index.md` + current project file. Additional files on demand only.
+- **4 files, not 21** — load `_Cross-Project.md` + `_Index.md` + current project file + `Notes-Jay.md`. Additional files on demand only.
+- **Notes-Jay processing** — at session start, identify unseen items (no status marker). At session end or when items are treated during the session, update the Notes-Jay file with status markers: `👀 Lu [date]` (seen), `🔧 En cours` (in progress), `✅ [date] — résumé` (done).
 - Pre-existing test failures MUST be addressed (code projects only — N/A in LITE_MODE).
 - If Blueprint or CDC is missing on a code project, suggest running `/concevoir` first.
 - Gate 0 must pass before ANY work begins.
