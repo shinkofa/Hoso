@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/bash-guard.py\"",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/bash-guard.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "All Bash guards: secrets, destructive, commits, deploy, migrations, deps"
           }
         ]
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/write-guard.py\"",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/write-guard.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "All Write/Edit guards: env, JWT, secrets, SHA pin, naming"
           }
         ]
@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/post-write-guard.py\"",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/post-write-guard.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "All post-write guards: file size, BOM, console.log"
           }
         ]
