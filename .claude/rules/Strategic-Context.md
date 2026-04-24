@@ -44,6 +44,8 @@ Jay develops for himself. Products already on sale stay in maintenance. No new p
 3. **Streaming + auto-content pipelines** — Jay becomes a streamer. Gaming = natural magnetic visibility for a Projector. OBS + Streamer.bot + auto-clips → TikTok/Shorts/YouTube. Extend existing pipelines (LinkedIn/Discord/Telegram) + Dev.to/Hashnode/Reddit/Twitter-X.
 4. **3 revenue-critical platforms** — Kakusei, Shizen, Michi-Shinkofa = magnetic visibility. Security + bug fixes + features that serve magnetic visibility.
 5. **Other products in maintenance** — Michi-Niwa, Hibiki: security + bug fixes only. No new features.
+6. **ND adaptive design as Shinkofa entry point (D21)** — neurodivergent-friendly design is the natural differentiator and first magnetic hook for the ecosystem.
+7. **Tri-layer architecture direction (D24)** — TS (current) + Elixir/Phoenix (fault isolation) + Rust (critical perf modules). Validated direction, POC pending.
 
 ## Existing Visibility Assets
 
