@@ -12,7 +12,7 @@ model: opus
 
 1. **DETECT SCOPE**: Determine what to audit:
    - If run in a project repo: scan `docs/`, `README.md`, `CLAUDE.md`, `CHANGELOG.md`, and any `.md` files at root
-   - If run with `--target eichi`: scan Eichi-Shinkofa KB via Obsidian MCP (806+ files, 18 domains)
+   - If run with `--target skb`: scan SKB (Shinkofa Knowledge Base) via Obsidian MCP (806+ files, 18 domains)
    - If run with `--target <path>`: scan the specified directory
 
 2. **RUN 7 CHECKS**:
@@ -108,18 +108,19 @@ model: opus
 | `--quick` | Skip semantic duplicate detection (Check 5 deep mode) |
 | `--deep` | Enable embedding-based semantic duplicate detection |
 | `--target <path>` | Scan a specific directory instead of current project |
-| `--target eichi` | Scan Eichi-Shinkofa KB via Obsidian MCP |
+| `--target skb` | Scan SKB (Shinkofa Knowledge Base) via Obsidian MCP |
 | `--fix-auto` | Auto-fix trivial issues (update dates, remove exact dupes) |
 
 ## Rules
 
 - **Pre-RAG audit is BLOCKING** — any (re)indexation of a knowledge base MUST be preceded by `/pre-rag-audit`. CRITICAL findings must be resolved. WARNINGS must be documented. Violation = RAG poisoning = `-10` session score.
-- Run at minimum every 30 days on Eichi-Shinkofa KB
+- **QE V2 terminology coherence**: Verify Quality Pyramid levels, Human Quality Gates, Risk Classification levels are consistent across KB files and match `mnk/06-Quality.md` and `mnk/15-Human-Quality.md`.
+- Run at minimum every 30 days on SKB
 - Report is committed to git for traceability
-- `.ragignore` is respected by Eichi-Knowledge-Master agent during searches
+- `.ragignore` is respected by SKB Knowledge Master agent during searches
 
 ## Connection to Other Chantiers
 
 - **Chantier 002 (Registry)**: Cross-check doc references vs registry — if docs reference a class absent from registry, flag as stale
-- **Skill `/session-start`**: Should remind if last pre-RAG audit on Eichi > 30 days
-- **Eichi-Knowledge-Master agent**: Must respect `.ragignore` exclusions
+- **Skill `/session-start`**: Should remind if last pre-RAG audit on SKB > 30 days
+- **SKB Knowledge Master agent**: Must respect `.ragignore` exclusions

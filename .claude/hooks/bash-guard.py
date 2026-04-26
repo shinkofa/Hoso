@@ -178,6 +178,28 @@ def check_refactor_file_count(raw):
     return None
 
 
+def check_vitest_oom(command):
+    """Warn if running vitest without verified OOM config."""
+    if not re.search(r"(npx|pnpm|yarn)\s+vitest", command):
+        return None
+    # Check if the current project has vitest config with pool: 'forks'
+    import glob
+    config_files = glob.glob("vitest.config.*") + glob.glob("vite.config.*")
+    for cfg in config_files:
+        try:
+            with open(cfg, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            if "'forks'" in content and "maxForks" in content:
+                return None
+        except OSError:
+            pass
+    return (
+        "WARNING: Running vitest without verified OOM protection. "
+        "ACTION: Ensure vitest config has pool: 'forks' and maxForks: 2 "
+        "to prevent VPS memory saturation. See rules/Quality.md."
+    )
+
+
 def check_deploy(raw):
     deploy_patterns = [
         r"scp .* vps|rsync .* vps",
@@ -201,8 +223,7 @@ def check_db_migration(raw):
             "WARNING: DB migration detected. "
             "ACTION: Run pg_dump backup BEFORE the migration. "
             "If already done in this session, continue. If not, run: "
-            "pg_dump -Fc <dbname> > backup-$(date +%Y%m%d-%H%M).dump (Git Bash/Linux), "
-            "or: pg_dump -Fc <dbname> > backup-$(Get-Date -Format 'yyyyMMdd-HHmm').dump (PowerShell), then retry."
+            "pg_dump -Fc <dbname> > backup-$(date +%Y%m%d-%H%M).dump, then retry."
         )
     return None
 
@@ -226,7 +247,7 @@ def main():
             print(msg, file=sys.stderr)
             sys.exit(2)
 
-    for msg in [check_refactor_file_count(raw), check_deploy(raw), check_db_migration(raw), check_dependency_version(raw), check_conventional_commit(command, raw), check_co_authored_by(command, raw), check_force_push_warn(command)]:
+    for msg in [check_refactor_file_count(raw), check_deploy(raw), check_db_migration(raw), check_dependency_version(raw), check_conventional_commit(command, raw), check_co_authored_by(command, raw), check_force_push_warn(command), check_vitest_oom(command)]:
         if msg:
             print(msg, file=sys.stderr)
 

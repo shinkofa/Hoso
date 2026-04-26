@@ -1,7 +1,7 @@
 # Strategic Context — The 3 Layers
 
 > Auto-loaded in every conversation. EVERY decision passes through these 3 layers.
-> Full details: `mnk/01-Partnership.md`. Deep knowledge: Eichi-Shinkofa KB (MasterPlan Shinkofa V2.1).
+> Full details: `mnk/01-Partnership.md`. Deep knowledge: SKB — Shinkofa Knowledge Base (MasterPlan Shinkofa V2.1).
 
 ## Layer 3 — POUR QUOI (the destination)
 
@@ -29,13 +29,20 @@ The next concrete action that serves Layer 2, taking into account current energy
 - **Ethical constraints**: No dark patterns. No data monetization. No feature-gating that blocks accessibility. Vision (L3) always wins over revenue pressure (L2).
 - **Energy management**: Low energy = reduce scope, quick wins. Never push through.
 - **Modularity**: Each tool must work standalone before becoming part of the ecosystem.
-- **Eichi = our brain**: Consult Eichi-Shinkofa KB systematically — it contains the deep knowledge (coaching, neurodiversity, gaming, marketing, vision). Not just for tech.
+- **SKB = our brain**: Consult SKB (Shinkofa Knowledge Base) systematically — it contains the deep knowledge (coaching, neurodiversity, gaming, marketing, vision). Not just for tech.
 
 ## D12 — Build For Me First (2026-04-09)
 
 Jay develops for himself. Products already on sale stay in maintenance. No new products for others until Jay is satisfied with his own usage. The only products with real users are the ones Jay dogfoods (Hibiki, Niwa). This pivot aligns energy with reality.
 
 **Additional L1 filter**: Does this serve ME first? If not, defer.
+
+## Strategic Decisions (QE V2)
+
+- **Kill fast = REJECTED** — "The mindset should NOT be 'if it doesn't please, we kill it.' If it doesn't please, find the way to MAKE it please." Adapt the HOW (presentation, UX, communication), never kill the WHY (L3 vision). The product's destiny is shaped by how it is presented, not by early metrics.
+- **Rebuild over Fix** — additional L1 filter: when a module has had 3+ correction sessions, evaluate rebuild. Rebuilding on solid foundations (Lego Library + methodology) is faster and more reliable than incremental fixes.
+- **Playtesting principle** — connected to L3: "the human being grows and evolves through play." Platforms must NOT be heavy, unpleasant, corporate. Intelligent gamification, benevolent and constructive.
+- **Documentation as pillar** — documentation is our means of communication, evolution, and development. It changes the quality of code absolutely.
 
 ## Current Priorities (April 2026)
 

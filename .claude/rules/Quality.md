@@ -95,6 +95,8 @@ A strict compiler is the first poka-yoke: it catches errors at build time. Subse
 
 Technical quality (L0-L2) is the floor. Human quality (L3-L5) is the ceiling.
 
+The **Foundation (Stack)** is not a level measured at each deploy — it is an architecture decision that conditions the stability of ALL levels above. The compiler is the primary poka-yoke (Gate 1 of supervision); linters, tests, and reviews are secondary safety nets.
+
 ## Anti-Circular Testing Protocol (BLOCKING on critical paths)
 
 Same AI writing code AND tests = circular validation. Three defense layers:
@@ -137,11 +139,11 @@ Test runners under jsdom (vitest, jest) leak memory across files when module iso
 
 Every Shinkofa project using vitest MUST set the following in `vite.config.ts` (or `vitest.config.ts`):
 
-**Vitest 4.x** (top-level pool options — `poolOptions` removed in v4.0):
+**Vitest 4.x** (top-level pool options — `poolOptions` removed):
 ```ts
 test: {
   pool: 'forks',
-  maxWorkers: 2,
+  forks: { maxForks: 2, minForks: 1 },
   isolate: true,
   maxConcurrency: 5,
   testTimeout: 10_000,
@@ -163,7 +165,7 @@ test: {
 
 Rationale:
 - `pool: 'forks'` — each test file runs in its own OS process. `threads` keeps modules alive across files, memory creeps.
-- `maxWorkers: 2` — caps parallel workers. Default = CPU count; 8 forks × 2 GiB = OOM on a shared VPS.
+- `maxForks: 2` — caps parallel workers. Default = CPU count; 8 forks × 2 GiB = OOM on a shared VPS.
 - `isolate: true` — fresh module graph per file.
 - Timeouts prevent runaway hooks from holding memory indefinitely.
 
@@ -184,14 +186,74 @@ Every `test` and `test:coverage` script in `package.json` MUST set a memory cap:
 
 When Claude Code (or any AI agent) runs tests in a session that may relaunch them:
 
-1. Before spawning a new test run, verify no stale runner from the same project is alive:
-   - Linux/Mac: `pgrep -f "vitest.*<project>" | xargs -r kill -TERM`
-   - Windows (PowerShell): `Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match "vitest" } | Stop-Process -Force`
-   - Windows (Git Bash): `tasklist //FI "IMAGENAME eq node.exe" 2>/dev/null | grep -i vitest && taskkill //F //FI "WINDOWTITLE eq vitest*" 2>/dev/null || true`
+1. Before spawning a new test run, verify no stale runner from the same project is alive: `pgrep -f "vitest.*<project>" | xargs -r kill -TERM`
 2. A test command MUST NOT be spawned while a previous one from the same project is still alive.
 3. On session end: kill any test runner started in the session.
 
 Violation (stale runners piling up on shared infra) = `-10` session score on Reliability.
+
+## Adopted Principles (QE V2 — 2026-04-23)
+
+### Rebuild Over Fix
+
+When foundations are unstable, rebuilding on solid ones is faster than patching. Evaluate rebuild when ANY of:
+- 3+ sessions fixing the same module without lasting resolution
+- Exponential technical debt detected (each fix introduces new fragility)
+- Module architecture contradicts current conventions
+
+The REAL goal: build correctly NOW so rebuild is never needed again. Proofs: Kakusei (4 days), Michi V1→V2 (<1 week, 4x more features), Hibiki (1 week audit, bugs persisted).
+
+### Let It Crash (Erlang/BEAM Philosophy)
+
+Bugs must be isolated, never propagated. Crashes must be rapidly identifiable. Design systems where individual errors CANNOT cascade. This is architecture, not just error handling.
+
+### Rigueur Over Vitesse
+
+AI development time is massively lower than real time. In 2 days of work, one can develop an application that would take weeks. This means there is NO excuse for cutting corners. Rigor always wins over speed.
+
+### Documentation as Quality Pillar
+
+Documentation changes the quality of code absolutely. It is our means of communication, evolution, and development. Write easily, write quickly, from anywhere, anytime.
+
+### Beyonce Rule
+
+"If you liked it, then you shoulda put a test on it." — Google. If you care about a behavior, put a test on it. Responsibility through testing.
+
+### Kill Fast — REJECTED
+
+The Supercell "kill fast" approach was explicitly REJECTED. "The mindset should NOT be 'if it doesn't please, we kill it.' If it doesn't please, find the way to MAKE it please." Adapt the HOW, never kill the WHY (L3 vision). The product's destiny is shaped by HOW it is presented, not by early metrics.
+
+### Security as Fundamental Quality Principle
+
+"I must not be able to read users' confidential data." Code must not allow it, even for the creator. Security protects VPS, architecture, machines, projects, and user data.
+
+### Three Levels of Automation
+
+| Level | Scope | Principle |
+|-------|-------|-----------|
+| Algorithms | Everything deterministic | MUST be algorithmic. No debate. |
+| AI | Human-digital relationship | Facilitates, evolves, reflects, reduces execution time |
+| Human | Instinct, vision, architecture | Irreplaceable (for now) |
+
+### Feedback Widget = Architectural Necessity (Decision #25)
+
+With fault isolation (Elixir/BEAM), a bug doesn't cascade — but it remains invisible if the user doesn't report it. Every public platform MUST include:
+- 2 clicks max to report a bug
+- Automatic context capture (page, action, timestamp, browser)
+- Zero personal data collected
+- Verified active in post-deploy checks
+
+### ND Adaptation Button (Direction C)
+
+Cumulative modifications, not binary on/off. Users check boxes and the platform adapts. Onboarding asks and adapts first — NOT a settings menu buried deep. No competitor does multi-dimensional ND adaptation → strategic advantage.
+
+### Playtesting Principle (Direction F)
+
+Platforms must NOT be heavy, unpleasant, corporate. The human being grows and evolves through play. Intelligent gamification without creating dependency — benevolent and constructive. Micro-rewards YES, punitive streaks NO.
+
+### SQuBOK
+
+Software Quality Body of Knowledge — Japanese framework for systematic software quality management. Integrates process, product, and human dimensions. Reference alongside Jidoka/Poka-yoke/Monozukuri in Quality Terminology.
 
 ## Performance (BLOCKING)
 

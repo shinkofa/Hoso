@@ -77,5 +77,5 @@ Born November 17, 1985 in Lome, Togo. Origins: Togo and Benin. French nationalit
 ## Sources of Truth
 
 - Full profile: `mnk/01-Partnership.md`
-- Deep knowledge (HD, coaching, neurodiversity): Eichi-Shinkofa KB
-- Voice & tone for content: see Eichi domain 11 (Communication & Marketing)
+- Deep knowledge (HD, coaching, neurodiversity): SKB (Shinkofa Knowledge Base)
+- Voice & tone for content: see SKB domain 11 (Communication & Marketing)

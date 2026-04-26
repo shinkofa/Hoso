@@ -20,7 +20,7 @@ Synchronize this project's `.claude/` with the latest MNK-GoRin methodology.
 ## What Syncs
 
 - `.claude/rules/*.md` — always (full update)
-- `.claude/skills/` — always (all 9 skills)
+- `.claude/skills/` — always (all skills in `.claude/skills/`)
 - Ring 0 hooks in `settings.json` — always
 - Ring 1 hooks — adapted to project stack
 - Shared agent updates — if agent was already in this project

@@ -11,15 +11,16 @@ Modes: `--audit` (diagnostic only), default (audit + plan), `--fix` (audit + aut
 ## Steps
 
 1. **BLUEPRINT SCORE**: Check items / applicable items from matching Blueprints. Minimum 95%.
-2. **3-LAYER ALIGNMENT**: Does this project serve L3 (Shinkofa vision — individuality, adaptation, invisible quality)? Is L2 (presentation/visibility) addressed? Is L1 (next action) clear? Consult Eichi MasterPlan for alignment.
+2. **3-LAYER ALIGNMENT**: Does this project serve L3 (Shinkofa vision — individuality, adaptation, invisible quality)? Is L2 (presentation/visibility) addressed? Is L1 (next action) clear? Consult SKB MasterPlan for alignment.
 3. **VEILLE**: State-of-art freshness (< 14 days). Verify dependency versions via npm/pypi/web. **CRITICAL**: Also verify that quality standards (WCAG, OWASP, CWV criteria), best practices, and architecture patterns referenced in this audit are current — training data is months stale.
-4. **QUALITY**: All BLOCKING gates from `rules/Quality.md` verified. Verify current testing framework recommendations via web.
-5. **SECURITY**: OWASP scan, dependencies, secrets, headers. CSP tested against features. Verify current OWASP Top 10 list via web (it changes).
+4. **QUALITY**: All BLOCKING gates from `rules/Quality.md` verified. Verify current testing framework recommendations via web. Audit Quality Pyramid V2 compliance: are L0-L2 (technical) gates met? For public platforms: are L3-L5 (human) gates addressed? Verify Anti-Circular Testing: on critical paths, is PBT used? Is mutation testing configured? Are there `__holdout__/` tests? Check Risk Classification: are modules classified (Critical/Sensitive/Standard/Tooling)? Is coverage aligned with classification? Check 5 Test Reliability Metrics: empty tests (0), trivial tests (<10%), mock:assert ratio (<3:1), type coverage (100% new code). See `mnk/06-Quality.md`.
+5. **SECURITY**: OWASP scan, dependencies, secrets, headers. CSP tested against features. Verify current OWASP Top 10 list via web (it changes). Security IS quality (D6) — verify security is treated as integral to quality, not a separate process.
 6. **PERFORMANCE**: Core Web Vitals targets. Verify current Google thresholds via web (they evolve).
 7. **ACCESSIBILITY**: axe-core, WCAG compliance. Verify current WCAG version and criteria via web.
-8. **VISIBILITY**: SEO meta, structured data, GEO signals (if public-facing).
-9. **DOCS CHECK**: Blueprint, CDC, PET match current reality.
-10. **PLAN**: Generate structured execution plan for fixes with priorities.
+8. **HUMAN QUALITY** (public platforms only): Verify 4 Human Quality Gates: Cognitive Load (≤ 5 decision points per common task), Sensory Comfort (`prefers-reduced-motion` 100%), Error Resilience (auto-save on forms > 3 fields), Adaptation (preference persistence). Reference: `mnk/15-Human-Quality.md`.
+9. **VISIBILITY**: SEO meta, structured data, GEO signals (if public-facing).
+10. **DOCS CHECK**: Blueprint, CDC, PET match current reality.
+11. **PLAN**: Generate structured execution plan for fixes with priorities.
 
 ## Visibility Audit Mode (`--visibility`)
 
@@ -82,7 +83,7 @@ Findings are prioritized by **logical dependency + user impact**, not audit weig
 
 - Gate 7: Every finding verified via external source.
 - Score < 95% → correction plan required. No audit accepted below 95%.
-- Consult Eichi BEFORE web research for patterns and known issues.
+- Consult SKB BEFORE web research for patterns and known issues.
 - Visibility audit: verify current SEO/GEO best practices via web before scoring.
 - Every finding MUST have a Finding ID. No untracked findings.
 - Remediation plan MUST follow the dependency order above. Justify any deviation.

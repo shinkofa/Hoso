@@ -70,17 +70,28 @@ One logical change per commit. Hook-enforced. If you changed auth AND UI in the 
 | Database | PostgreSQL | 18 |
 | Cache | Redis | 8.x |
 | Desktop | PySide6 (NEVER tkinter) | 6.9+ |
-| Desktop (JS) | Electron / Tauri 2.x | 40+ / 2.10+ |
+| Desktop (JS) | Electron | 40+ |
 | Linting | Biome 2.4+ (TS) / Ruff 0.15+ (Python) | |
 | Testing | Vitest 4.0+ (TS) / pytest (Python) / Playwright 1.58+ (E2E) | |
 | Mutation testing | Stryker | 9.5+ |
 | Package managers | pnpm (TS) / uv (Python) | |
 | AI local | Ollama + qwen3:8b-nothink | |
 | AI cloud | Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5 / DeepSeek-V3 | |
-| Backend (validated direction) | Elixir/Phoenix | 1.18+ / 1.8+ | POC pending |
-| Critical modules (validated direction) | Rust (NIFs/WASM) | 1.87+ | POC pending |
+| Backend (validated direction) | Elixir/Phoenix | 1.18+ / 1.7+ | Direction validated, POC to plan |
+| Critical modules (validated direction) | Rust via NIFs in Elixir | 1.87+ | Direction validated, POC to plan |
 
 **Zero Dogma**: This stack is preferred, not mandatory. If a project needs something else, justify and document.
+
+### Tri-Layer Architecture (Decision #24)
+
+Elixir AND Rust are complementary, not alternatives:
+
+| Layer | Role | Technology |
+|-------|------|-----------|
+| Visible | UI, UX, ND adaptation | TypeScript/React + @shinkofa/ui |
+| Backend API | Fault isolation, real-time, orchestration | Elixir/Phoenix (progressive migration via Strangler Fig) |
+| Critical modules | Auth, crypto, validation | Rust via NIFs in Elixir (Discord uses this in prod) |
+| AI/ML | Processing pipelines | Python (ecosystem irreplaceable) |
 
 ## Schema Source of Truth
 
@@ -95,7 +106,19 @@ One logical change per commit. Hook-enforced. If you changed auth AND UI in the 
 | Jidoka (自働化) | Autonomation — stop on defect | Hooks (Ring 0) |
 | Poka-yoke (ポカヨケ) | Error-proofing by design | Validation + compiler |
 | Monozukuri (ものづくり) | Art of making — quality as identity | GoRin philosophy |
-| Ipcha Mistabra (איפכא מסתברא) | Devil's Advocate — "what if the opposite is true?" | Attacker stories |
+| SQuBOK | Software Quality Body of Knowledge — Japanese holistic quality framework | Quality reference framework |
+| Devil's Advocate Protocol (formerly Ipcha Mistabra, איפכא מסתברא) | "What if the opposite is true?" — challenge every assertion | Attacker stories |
+
+## Naming Registry
+
+| Acronym | Full Name | Function |
+|---------|-----------|----------|
+| **SKS** | Shinkofa Shared Knowledge Store | Shared memory cross-projects cross-machines |
+| **SKB** | Shinkofa Knowledge Base | Domain knowledge base (formerly Eichi KB) |
+| **Nagare (technical)** | Associative Idea Engine | Capture, connection, growth, idea generation |
+| **Nagare (user-facing)** | Nagare — The Idea Engine | Product name |
+
+**Naming principle**: Internal technical systems use transparent English names for LLMs (+ Shinkofa prefix + acronym). User-facing products can have custom names. Philosophical concepts keep their original names.
 
 ## Cross-Platform
 

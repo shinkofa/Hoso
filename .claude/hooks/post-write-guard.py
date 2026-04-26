@@ -174,6 +174,112 @@ def check_i18n_locales(file_path):
     return None
 
 
+def check_empty_tests(file_path):
+    """Detect test functions with zero assertions — BLOCKING."""
+    ext = os.path.splitext(file_path)[1].lstrip(".")
+    basename = os.path.basename(file_path)
+
+    is_test_file = False
+    if ext in ("ts", "tsx") and (".test." in basename or ".spec." in basename):
+        is_test_file = True
+    elif ext == "py" and basename.startswith("test_"):
+        is_test_file = True
+
+    if not is_test_file:
+        return None
+
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+    except OSError:
+        return None
+
+    empty_tests = []
+    if ext in ("ts", "tsx"):
+        # Find it/test blocks and check for assertions
+        test_blocks = re.finditer(
+            r"(it|test)\s*\(\s*['\"]([^'\"]+)['\"]",
+            content,
+        )
+        assertion_patterns = (
+            r"expect\(", r"assert", r"toThrow", r"toEqual",
+            r"toBe\(", r"toMatch", r"toContain", r"rejects",
+        )
+        for match in test_blocks:
+            test_name = match.group(2)
+            start = match.start()
+            # Find the test body (rough heuristic: next 500 chars)
+            body = content[start:start + 500]
+            if not any(re.search(p, body) for p in assertion_patterns):
+                empty_tests.append(test_name)
+    elif ext == "py":
+        test_funcs = re.finditer(r"def (test_\w+)\s*\(", content)
+        for match in test_funcs:
+            test_name = match.group(1)
+            start = match.start()
+            # Find next def or end of file
+            next_def = re.search(r"\ndef ", content[start + 1:])
+            end = start + 1 + next_def.start() if next_def else len(content)
+            body = content[start:end]
+            if not re.search(r"assert |pytest\.raises|assertEqual|assertTrue", body):
+                empty_tests.append(test_name)
+
+    if empty_tests:
+        names = ", ".join(empty_tests[:3])
+        return (
+            f"BLOCKED: Empty test(s) detected (zero assertions): {names}. "
+            "RECOVERY: Add meaningful assertions to each test. "
+            "A test without assertions gives false confidence."
+        )
+    return None
+
+
+def check_ts_nocheck_header(file_path):
+    """Detect @ts-nocheck at file header — WARNING."""
+    ext = os.path.splitext(file_path)[1].lstrip(".")
+    if ext not in ("ts", "tsx"):
+        return None
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            first_lines = "".join(f.readline() for _ in range(5))
+        if "@ts-nocheck" in first_lines:
+            return (
+                f"WARNING: @ts-nocheck at top of {file_path}. "
+                "This disables ALL type checking for the entire file. "
+                "ACTION: Remove @ts-nocheck and fix type errors individually."
+            )
+    except OSError:
+        pass
+    return None
+
+
+def check_vitest_config(file_path):
+    """Verify vitest config has pool: 'forks' and maxForks — WARNING if absent."""
+    basename = os.path.basename(file_path)
+    if basename not in ("vitest.config.ts", "vite.config.ts"):
+        return None
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+    except OSError:
+        return None
+
+    warnings = []
+    if "pool:" not in content or "'forks'" not in content:
+        warnings.append("pool: 'forks' missing")
+    if "maxForks" not in content:
+        warnings.append("maxForks missing")
+
+    if warnings:
+        return (
+            f"WARNING: Vitest config ({basename}) missing OOM protections: "
+            f"{', '.join(warnings)}. "
+            "ACTION: Add pool: 'forks' and forks: {{ maxForks: 2 }} to prevent "
+            "VPS memory saturation. See rules/Quality.md — Test Runtime Hygiene."
+        )
+    return None
+
+
 def check_console_log(file_path):
     ext = os.path.splitext(file_path)[1].lstrip(".")
     if ext not in ("ts", "tsx", "js", "jsx"):
@@ -208,6 +314,7 @@ def main():
     blockers = [
         check_utf8_bom(file_path),
         check_utf8_validity(file_path),
+        check_empty_tests(file_path),
     ]
     for msg in blockers:
         if msg:
@@ -219,7 +326,13 @@ def main():
         print(size_msg, file=sys.stderr)
         sys.exit(2)
 
-    warnings = [size_msg, check_console_log(file_path), check_i18n_locales(file_path)]
+    warnings = [
+        size_msg,
+        check_console_log(file_path),
+        check_i18n_locales(file_path),
+        check_ts_nocheck_header(file_path),
+        check_vitest_config(file_path),
+    ]
     for msg in warnings:
         if msg:
             print(msg, file=sys.stderr)

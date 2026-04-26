@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Bug investigation. LOGS FIRST. L1 local, L2 Eichi+web 7 languages, L3 report to Jay.
+description: Bug investigation. LOGS FIRST. L1 local, L2 SKB+web 8 languages, L3 report to Jay.
 model: opus
 ---
 
@@ -18,8 +18,8 @@ LOGS FIRST. Always. No exceptions. No hypothesizing before reading logs.
 
 ## Level 2: Expanded (if L1 fails)
 
-1. Search Eichi-Shinkofa KB for known patterns.
-2. Web research in 7 languages (EN, FR, ZH, JA, KO, DE, RU).
+1. Search SKB (Shinkofa Knowledge Base) for known patterns.
+2. Web research in 8 languages (EN, FR, ZH, JA, KO, DE, RU, ES).
 3. Try fix, verify with tests.
 
 ## Level 3: Escalation to Jay (if L2 fails)

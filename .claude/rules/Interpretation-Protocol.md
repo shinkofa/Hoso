@@ -101,7 +101,7 @@ Source of truth for methodology content: `MNK-GoRin/.claude/rules/` and `MNK-GoR
 
 When a rule references a file, MCP server, or external resource that is not accessible at the time of action:
 
-- **BLOCKING resource** (explicitly labeled BLOCKING in its rule — e.g., Obsidian MCP for `/session-start`, Eichi KB consult requirement): state the unavailability explicitly, propose a path (retry, skip with flag, escalate to user), and wait for user decision. Do not proceed silently, do not deliver degraded without announcement.
+- **BLOCKING resource** (explicitly labeled BLOCKING in its rule — e.g., Obsidian MCP for `/session-start`, SKB consult requirement): state the unavailability explicitly, propose a path (retry, skip with flag, escalate to user), and wait for user decision. Do not proceed silently, do not deliver degraded without announcement.
 - **Informative resource** (a linked `mnk/` thematic file, a reference doc, an external URL): state `[resource X not accessible, proceeding with in-scope text]` in the response and continue. Do not block the session.
 - **Unknown status**: treat as BLOCKING and escalate.
 

@@ -169,14 +169,66 @@ def check_i18n_hardcoded(file_path, ext, content):
     return "\n".join(messages) if messages else None
 
 
-def check_hs256(ext, content):
-    if ext not in ("ts", "js", "py", "tsx", "jsx"):
+def check_hs256(ext, content, file_path=""):
+    check_exts = ("ts", "js", "py", "tsx", "jsx", "env", "yaml", "yml")
+    if ext not in check_exts:
         return None
     if re.search(r"\bHS256\b", content):
         return (
             "BLOCKED: HS256 algorithm detected. Use RS256 or ES256 for JWT. "
             "RECOVERY: Replace HS256 with RS256 or ES256. See rules/Security.md."
         )
+    return None
+
+
+def check_bare_except(ext, content, file_path=""):
+    """Detect swallowed exceptions: except/catch blocks with no logging."""
+    critical_paths = (
+        "/auth/", "/authentication/", "/authorization/", "/payment/",
+        "/payments/", "/billing/", "/crypto/", "/encryption/",
+        "/security/", "/sessions/",
+    )
+    is_critical = any(p in file_path.lower() for p in critical_paths)
+
+    if ext == "py":
+        # except: pass, except Exception: pass, except Exception as e: pass
+        if re.search(r"except(\s+\w+(\s+as\s+\w+)?)?\s*:\s*\n\s*(pass|\.\.\.)\s*$", content, re.MULTILINE):
+            level = "BLOCKED" if is_critical else "WARNING"
+            return (
+                f"{level}: Swallowed exception (except/pass) detected. "
+                "RECOVERY: Log the exception at appropriate level "
+                "(WARNING for critical path errors, DEBUG for expected fallbacks). "
+                "Never silently swallow exceptions — they are debugging data."
+            )
+    elif ext in ("ts", "js", "tsx", "jsx"):
+        # catch {}, catch (e) {}, catch (_) {}
+        if re.search(r"catch\s*\([^)]*\)\s*\{\s*\}", content):
+            level = "BLOCKED" if is_critical else "WARNING"
+            return (
+                f"{level}: Empty catch block detected. "
+                "RECOVERY: Log the error or handle it explicitly. "
+                "Never silently swallow exceptions — they are debugging data."
+            )
+    return None
+
+
+def check_type_suppression(ext, content):
+    """Detect @ts-ignore, @ts-nocheck, # type: ignore — bypasses compiler poka-yoke."""
+    if ext in ("ts", "tsx"):
+        if re.search(r"@ts-ignore|@ts-nocheck", content):
+            return (
+                "WARNING: Type suppression (@ts-ignore/@ts-nocheck) detected. "
+                "This bypasses the compiler poka-yoke. "
+                "ACTION: Fix the type error instead of suppressing it. "
+                "If genuinely unavoidable, add a comment explaining why."
+            )
+    elif ext == "py":
+        if re.search(r"#\s*type:\s*ignore", content):
+            return (
+                "WARNING: Type suppression (# type: ignore) detected. "
+                "This bypasses the compiler poka-yoke. "
+                "ACTION: Fix the type error instead of suppressing it."
+            )
     return None
 
 
@@ -292,9 +344,10 @@ def main():
         check_secrets_in_files(raw),
         check_github_actions_sha(file_path, raw),
         check_lego_library(file_path, ext, content),
-        check_hs256(ext, content),
+        check_hs256(ext, content, file_path),
         check_weak_hash(ext, content),
         check_tkinter(ext, content),
+        check_bare_except(ext, content, file_path),
     ]
     for msg in blockers:
         if msg:
@@ -307,6 +360,7 @@ def main():
         check_naming(file_path, filename, name, ext),
         check_hook_protection(file_path),
         check_uuidv7(file_path, content),
+        check_type_suppression(ext, content),
     ]
     for msg in warnings:
         if msg:

@@ -14,14 +14,14 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 |---|------|------|------|-------------------|
 | 1 | **Context** | Check Blueprint/CDC if they exist. If neither exists → propose a plan before coding. | Before first line of code | + Simplified FMEA (3 failure modes) |
 | 2 | **Reformulate** | State what you understood, what you'll do, what you won't touch, files impacted. Wait for validation on non-trivial changes. | Before first line of code | + Impact analysis |
-| 3 | **TDG** | Write tests FIRST. They must fail (red) before implementation. Identify impacted tests before writing new ones (dependency-aware targeting). | Before implementation | + Bidirectional traceability + Defensive assertions (>=2/critical fn) + Dependency-aware test targeting |
+| 3 | **TDG** | Write tests FIRST. They must fail (red) before implementation. Identify impacted tests before writing new ones (dependency-aware targeting). | Before implementation | + Bidirectional traceability + Defensive assertions (>=2/critical fn) |
 | 4 | **Code** | Implement. Atomic commits. Backup tag every 3-4 commits. | Implementation | Unchanged |
 | 5 | **Lint** | Zero lint errors. Run linter after changes. | After code | Unchanged |
 | 6 | **Tests** | All tests pass — unit + integration + anti-regression. No "it should work." | After code | + MC/DC for complex critical conditions |
 | 7 | **Security** | No secrets, no injection, no weak patterns. Hooks catch most; verify the rest. | After code | + Automated PII detection |
 | 8 | **Verify** | Prove it works. Evidence over assertion. On UI: run dev server and test in browser. | Before reporting done | + Post-deploy verification |
 
-**`/dev` adds** (on top of the 8 gates): 3-Layer strategic check, Eichi/veille research, non-tech PREPARE agents, i18n/visibility/SEO, non-tech VALIDATE agents, formal Blueprint/CDC/PET update, Obsidian sync.
+**`/dev` adds** (on top of the 8 gates): 3-Layer strategic check, SKB/veille research, non-tech PREPARE agents, i18n/visibility/SEO, non-tech VALIDATE agents, formal Blueprint/CDC/PET update, Obsidian sync.
 
 **The 8 gates are non-negotiable and automatic. Jay never needs to invoke them.**
 
@@ -34,8 +34,8 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 - **Writer/Reviewer** — for critical code, use two separate sessions (write + review).
 - **Flag uncertainty explicitly** — say "I'm not certain" when unsure. Uncertainty acknowledged is trusted; uncertainty hidden erodes trust.
 - **Scope** — state what you will/won't touch. Inform Jay if scope changes.
-- **Consult Eichi first** — Eichi-Shinkofa KB is our collective brain. Search it for ALL domains (vision, coaching, tech, marketing, gaming, neurodiversity) before web research, before any decision.
-- **Verify before claiming** — training data is months stale. Check Eichi + web for versions, features, best practices, architecture patterns before any recommendation that influences a decision.
+- **Consult SKB first** — SKB (Shinkofa Knowledge Base) is our collective brain. Search it for ALL domains (vision, coaching, tech, marketing, gaming, neurodiversity) before web research, before any decision.
+- **Verify before claiming** — training data is months stale. Check SKB + web for versions, features, best practices, architecture patterns before any recommendation that influences a decision.
 - **3 Layers filter** — every decision passes: L3 (Shinkofa vision respected?) → L2 (serves visibility/revenue?) → L1 (doable now?). See `rules/Strategic-Context.md`.
 - **Research in 7 languages** — EN, FR, ZH, JA, KO, DE, RU for thorough coverage.
 - **Visibility-first** — everything is potentially sellable. SEO, GEO, copywriting from day one.
@@ -50,6 +50,10 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 - **Notes-Jay processing (BLOCKING)** — Jay's async feedback channel. Each project has `[project]-Notes-Jay.md` in Obsidian. At session start: count unseen items (no marker). During session: update markers immediately when items are treated (`👀 Lu` = seen, `🔧 En cours` = in progress, `✅ date — résumé` = done). At session end: verify all treated items have updated markers. Full protocol: `mnk/05-Workflows-Session.md`.
 - **Dedicated test/audit sessions** — for critical code, run a separate session with a Test Auditor agent for independent verification. Verification (agent) / Validation (Jay).
 - **Work environment = quality criterion** — MCPs, tools, documentation, session management, proactive capabilities (veille, security audits, maintenance) are part of the quality stack, not optional extras.
+- **Rigueur over Vitesse** — AI development time is massively lower than real time. There is NO excuse for cutting corners. Rigor always wins over speed.
+- **Rebuild over Fix** — when a module has had 3+ sessions of corrections without lasting resolution, evaluate rebuild vs continued patching. Rebuilding on solid foundations (Lego Library + methodology) is often faster and more reliable than incremental fixes on unstable code. See `rules/Quality.md` for criteria.
+- **Kill fast = REJECTED** — never kill the WHY (L3 vision). If something doesn't resonate, adapt the HOW (presentation, UX, communication). The product's destiny is shaped by how it is presented. See `rules/Strategic-Context.md`.
+- **Feedback Widget = architectural necessity** — every public platform MUST include a Feedback Widget (2 clicks max, automatic context capture, zero PII). Promoted from checklist item (WF-035) to architectural requirement. With fault isolation, bugs don't cascade but remain invisible without user reporting.
 
 ## Context Awareness Protocol (BLOCKING)
 
@@ -97,7 +101,7 @@ Degraded context causes circular failures. After 2 attempts to fix the same symp
 | Level | Trigger | Action |
 |-------|---------|--------|
 | L1 | First attempt | LOGS FIRST. Recent commits → error → most likely location. |
-| L2 | L1 failed | Eichi consult + web research (7 languages). |
+| L2 | L1 failed | SKB consult + web research (8 languages). |
 | L3 | L2 failed | **STOP.** Generate detailed report. Return to Jay for brainstorming. |
 
 ## Post-Block Recovery Protocol (BLOCKING)
@@ -130,7 +134,7 @@ Violation of this gate is BLOCKING.
 
 ## Pre-RAG Audit (BLOCKING)
 
-Any (re)indexation of a knowledge base toward a RAG must be preceded by `/pre-rag-audit`. CRITICAL findings must be resolved. WARNINGS must be documented. Violation = RAG poisoning = `-10` session score. Run at minimum every 30 days on Eichi-Shinkofa KB.
+Any (re)indexation of a knowledge base toward a RAG must be preceded by `/pre-rag-audit`. CRITICAL findings must be resolved. WARNINGS must be documented. Violation = RAG poisoning = `-10` session score. Run at minimum every 30 days on SKB.
 
 ## Code Registry
 

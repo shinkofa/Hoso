@@ -109,7 +109,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "DEBUG ESCALATION CHECK. A Bash command just failed.\n\n1. LOGS FIRST: Have the error logs been read? If hypothesizing without logs: 'RULE: LOGS FIRST. Read error output before hypothesizing.'\n2. REPEATED FAILURE: Is this the 2nd+ failure on the same issue? If yes: 'WARNING: Multiple failures. Escalate: L1 (logs) → L2 (Eichi + web 7 languages) → L3 (report to Jay).'\n3. CONTEXT RESET: After 2 failed corrections → suggest /clear or new conversation.",
+            "prompt": "DEBUG ESCALATION CHECK. A Bash command just failed.\n\n1. LOGS FIRST: Have the error logs been read? If hypothesizing without logs: 'RULE: LOGS FIRST. Read error output before hypothesizing.'\n2. REPEATED FAILURE: Is this the 2nd+ failure on the same issue? If yes: 'WARNING: Multiple failures. Escalate: L1 (logs) → L2 (SKB + web 8 languages) → L3 (report to Jay).'\n3. CONTEXT RESET: After 2 failed corrections → suggest /clear or new conversation.",
             "description": "Ring 1: Debug escalation + logs-first enforcement"
           }
         ]

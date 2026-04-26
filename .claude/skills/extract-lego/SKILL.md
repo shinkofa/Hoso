@@ -69,6 +69,7 @@ Extract a component from the current project into `@shinkofa/ui` in Shinkofa-Sha
 
 ## Rules
 
+- **Lego Library V2 Vision**: Components evolve toward functional modules (not just UI bricks) — complete features (e.g., a full calendar with all options, integrable by selecting which options to include). Absolutely modular. See `mnk/14-Eichi-Lego-Memory.md`.
 - **Framework-agnostic**: No Next.js imports in @shinkofa/ui. Components receive callbacks and labels as props.
 - **i18n via props**: Never hardcode text. The consumer project connects i18n to component props.
 - **One component per extraction**: Don't batch. Extract, verify, commit, then next.
