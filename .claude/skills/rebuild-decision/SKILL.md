@@ -11,10 +11,11 @@ Formalized decision framework for when a module has accumulated too many correct
 ## Step 1: Collect Metrics
 
 1. Current audit score (run `/audit` if not recent)
-2. Number of correction sessions on this module (check `docs/Sessions/`)
-3. Age of codebase and last major refactor
-4. Current test coverage (overall + critical paths)
-5. Technical debt estimate (circular deps, lint warnings, complexity)
+2. **Risk Classification** of the module (Critical/Sensitive/Standard/Tooling per `rules/Quality.md`) — this determines coverage thresholds and fix rigor
+3. Number of correction sessions on this module (check `docs/Sessions/`)
+4. Age of codebase and last major refactor
+5. Current test coverage (overall + critical paths, against Risk Classification thresholds)
+6. Technical debt estimate (circular deps, lint warnings, complexity)
 
 ## Step 2: Apply Trigger Criteria
 
@@ -38,8 +39,9 @@ A rebuild evaluation is triggered when ANY of:
 
 1. Number of remaining blockers
 2. Estimated sessions for incremental fixes
-3. Regression risk per fix
-4. Probability of lasting resolution
+3. Cost of bringing module to QE V2 conformity (enriched gates, test reliability metrics, risk-appropriate coverage)
+4. Regression risk per fix
+5. Probability of lasting resolution
 
 ## Step 5: Compare and Recommend
 
