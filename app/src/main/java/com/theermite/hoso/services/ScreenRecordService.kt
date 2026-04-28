@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.theermite.hoso.MainActivity
 import com.theermite.hoso.R
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
+import android.media.MediaRecorder
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.services.MediaProjectionService
@@ -31,7 +32,10 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         mediaProjection: MediaProjection,
         extras: Bundle
     ): IAudioSourceInternal.Factory {
-        return MicrophoneSourceFactory()
+        return MicrophoneSourceFactory(
+            audioSource = MediaRecorder.AudioSource.MIC,
+            effects = emptySet()
+        )
     }
 
     override fun onStartCommand(
