@@ -16,3 +16,4 @@ local.properties
 *.keystore
 !gradle/wrapper/gradle-wrapper.jar
 .kotlin/
+.research/
