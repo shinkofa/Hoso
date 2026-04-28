@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.ActivityInfo
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.net.Uri
 import android.os.Bundle
@@ -212,7 +213,14 @@ class MainActivity : AppCompatActivity() {
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
                 startBitrate = bitrate,
                 resolution = res,
-                fps = config.fps
+                fps = config.fps,
+                gopDurationInS = 2f,
+                customize = {
+                    setInteger(
+                        MediaFormat.KEY_BITRATE_MODE,
+                        MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR
+                    )
+                }
             )
 
             val audioConfig = AudioConfig(
