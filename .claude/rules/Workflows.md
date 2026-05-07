@@ -14,10 +14,10 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 |---|------|------|------|-------------------|
 | 1 | **Context** | Check Blueprint/CDC if they exist. If neither exists → propose a plan before coding. | Before first line of code | + Simplified FMEA (3 failure modes) |
 | 2 | **Reformulate** | State what you understood, what you'll do, what you won't touch, files impacted. Wait for validation on non-trivial changes. | Before first line of code | + Impact analysis |
-| 3 | **TDG** | Write tests FIRST. They must fail (red) before implementation. Identify impacted tests before writing new ones (dependency-aware targeting). | Before implementation | + Bidirectional traceability + Defensive assertions (>=2/critical fn) |
+| 3 | **TDG** | Write tests FIRST — for ALL stacks in the project (TS: Vitest, Python: pytest, Elixir: ExUnit, Rust: cargo test). They must fail (red) before implementation. Identify impacted tests before writing new ones (dependency-aware targeting). | Before implementation | + Bidirectional traceability + Defensive assertions (>=2/critical fn) |
 | 4 | **Code** | Implement. Atomic commits. Backup tag every 3-4 commits. | Implementation | Unchanged |
 | 5 | **Lint** | Zero lint errors. Run linter after changes. | After code | Unchanged |
-| 6 | **Tests** | All tests pass — unit + integration + anti-regression. No "it should work." | After code | + MC/DC for complex critical conditions |
+| 6 | **Tests** | All tests pass — unit + integration + anti-regression. Run the actual test command (`npm run test`, `pytest`, `mix test`, `cargo test`). No "it should work." | After code | + MC/DC for complex critical conditions |
 | 7 | **Security** | No secrets, no injection, no weak patterns. Hooks catch most; verify the rest. | After code | + Automated PII detection |
 | 8 | **Verify** | Prove it works. Evidence over assertion. On UI: run dev server and test in browser. | Before reporting done | + Post-deploy verification |
 
@@ -37,7 +37,7 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 - **Consult SKB first** — SKB (Shinkofa Knowledge Base) is our collective brain. Search it for ALL domains (vision, coaching, tech, marketing, gaming, neurodiversity) before web research, before any decision.
 - **Verify before claiming** — training data is months stale. Check SKB + web for versions, features, best practices, architecture patterns before any recommendation that influences a decision.
 - **3 Layers filter** — every decision passes: L3 (Shinkofa vision respected?) → L2 (serves visibility/revenue?) → L1 (doable now?). See `rules/Strategic-Context.md`.
-- **Research in 7 languages** — EN, FR, ZH, JA, KO, DE, RU for thorough coverage.
+- **Research in 7 languages** — EN, FR, ZH, JA, KO, DE, RU for thorough coverage. Queries MUST be written in native script (汉字, 漢字/仮名, 한글, кириллица, etc.) — never in romanization, pinyin, romaji, or transliteration. Full protocol: `Eichi-Shinkofa/docs/Research-Protocol.md`.
 - **Visibility-first** — everything is potentially sellable. SEO, GEO, copywriting from day one.
 - **Fix pre-existing errors** — if tests fail at session start, fix them. They are your responsibility.
 - **Write session reports** — mandatory after every session. Stored in `docs/Sessions/`.
@@ -54,6 +54,7 @@ Every time code is written or modified — whether via `/dev`, a simple request,
 - **Rebuild over Fix** — when a module has had 3+ sessions of corrections without lasting resolution, evaluate rebuild vs continued patching. Rebuilding on solid foundations (Lego Library + methodology) is often faster and more reliable than incremental fixes on unstable code. See `rules/Quality.md` for criteria.
 - **Kill fast = REJECTED** — never kill the WHY (L3 vision). If something doesn't resonate, adapt the HOW (presentation, UX, communication). The product's destiny is shaped by how it is presented. See `rules/Strategic-Context.md`.
 - **Feedback Widget = architectural necessity** — every public platform MUST include a Feedback Widget (2 clicks max, automatic context capture, zero PII). Promoted from checklist item (WF-035) to architectural requirement. With fault isolation, bugs don't cascade but remain invisible without user reporting.
+- **Dignity-first (BLOCKING)** — chaque écran de collecte, chaque copy, chaque CTA, chaque message d'erreur, chaque notification, chaque flow de vente et de départ passe le test : "Est-ce qu'on respecte l'intelligence de cette personne ?" Voir `rules/Dignity.md`.
 
 ## Context Awareness Protocol (BLOCKING)
 

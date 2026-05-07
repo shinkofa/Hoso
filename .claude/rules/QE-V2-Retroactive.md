@@ -17,7 +17,7 @@ When opening a session on a project with existing Blueprint/CDC/PET, verify:
 | Check | What | Action if missing |
 |-------|------|-------------------|
 | Risk Classification | Blueprint contains module → level table | Signal to Jay, propose update |
-| Human Quality Gates | CDC contains 4 gates checklist (public projects) | Signal to Jay, propose update |
+| Human Quality Gates | CDC contains 5 gates checklist (public projects) | Signal to Jay, propose update |
 | PET QE V2 sections | PET contains 16 mandatory sections | Signal to Jay, propose update |
 | Anti-Circular | PET references 3-layer protocol on critical paths | Signal to Jay, propose update |
 | Feedback Widget | CDC/Blueprint mentions feedback widget (public projects) | Signal to Jay, propose update |

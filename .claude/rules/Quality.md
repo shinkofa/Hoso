@@ -18,9 +18,20 @@ Write tests BEFORE code. Always. A binary test is the clearest goal for AI.
 
 | Level | Tool | What | When |
 |-------|------|------|------|
-| Unit | Vitest (TS) / pytest (Python) | Functions, logic, edge cases | Every commit |
-| Integration | Playwright / pytest | API routes, DB queries, auth flows | Every PR |
+| Unit | Vitest (TS) / pytest (Python) / ExUnit (Elixir) / cargo test (Rust) | Functions, logic, edge cases | Every commit |
+| Integration | Playwright (TS) / pytest (Python) / ExUnit + Ecto.Sandbox (Elixir) / cargo test (Rust) | API routes, DB queries, auth flows | Every PR |
 | E2E + Anti-regression | Playwright | Critical user paths | Pre-deploy |
+
+### Test Execution Commands (by stack — BLOCKING)
+
+The agent MUST know and use the correct test command for the project stack. "All tests pass" means running the actual command and verifying exit code 0.
+
+| Stack | Unit Tests | Coverage | Notes |
+|-------|-----------|----------|-------|
+| TypeScript | `pnpm run test` or `npx vitest run` | `npx vitest run --coverage` | Mandatory pool config in vite.config.ts (see Test Runtime Hygiene) |
+| Python | `pytest` | `pytest --cov=src --cov-report=term` | pytest-cov for coverage |
+| Elixir | `mix test` | `mix test --cover` | ExCoveralls for CI. Ecto.Sandbox for DB isolation. |
+| Rust | `cargo test` | `cargo tarpaulin --out Html --timeout 300` | cargo-tarpaulin recommended. `#[ignore]` without reason = BLOCKING. |
 
 ### Coverage Floors (BLOCKING)
 
@@ -40,13 +51,13 @@ Under literal reading (Opus 4.7), "critical paths" MUST be treated as the follow
 **By directory / path match** (case-insensitive, substring):
 - `**/auth/**`, `**/authentication/**`, `**/authorization/**`, `**/sessions/**`, `**/oauth/**`, `**/jwt/**`, `**/passwords/**`, `**/2fa/**`, `**/mfa/**`
 - `**/payment/**`, `**/payments/**`, `**/billing/**`, `**/subscription/**`, `**/subscriptions/**`, `**/stripe/**`, `**/invoices/**`, `**/refunds/**`, `**/checkout/**`
-- `**/db/migrations/**`, `**/prisma/migrations/**`, `**/alembic/versions/**`
+- `**/db/migrations/**`, `**/prisma/migrations/**`, `**/alembic/versions/**`, `**/priv/repo/migrations/**` (Ecto)
 - `**/security/**`, `**/crypto/**`, `**/encryption/**`
 - `**/rgpd/**`, `**/gdpr/**`, `**/user-data-export/**`, `**/user-data-delete/**`
 - `**/webhooks/**` receiving payment / auth callbacks (explicit)
 
 **By explicit tag**:
-- Functions / classes decorated with `@critical` (Python) or `/** @critical */` JSDoc marker
+- Functions / classes decorated with `@critical` (Python), `/** @critical */` JSDoc (TS), `@tag :critical` (ExUnit), or `// @critical` comment (Rust)
 - Files listed in a project-level `docs/critical-paths.md` registry (project opt-in)
 
 **NOT critical paths** (standard 80% floor applies): UI components, content routes, blog pages, analytics, telemetry, A/B test helpers, dev tools, scripts, seed data, fixtures, docs generators, admin dashboards NOT touching auth/payment, feature flags NOT touching auth/payment.
@@ -54,11 +65,13 @@ Under literal reading (Opus 4.7), "critical paths" MUST be treated as the follow
 Ambiguous case: if a file imports from a critical path module AND mutates state derived from it, treat it as critical. Otherwise standard floor. If still ambiguous → apply the MORE RESTRICTIVE (95%) per Escalation Over Assumption.
 
 ### Test Rules
-- Name tests: `should_[action]_when_[condition]`
-- Real database for integration tests (no mocks for DB — proven failure risk)
-- Mutation testing with Stryker 9.5+ (monthly audit)
+- Name tests: `should_[action]_when_[condition]` (TS/Python), `test "action when condition"` (Elixir), `fn test_action_when_condition()` (Rust)
+- Real database for integration tests (no mocks for DB — proven failure risk). Elixir: use `Ecto.Sandbox` with `:auto` mode.
+- Mutation testing: Stryker 9.5+ (TS), mutmut (Python), Mutant.ex (Elixir), cargo-mutants (Rust). Monthly audit.
 - Contract testing with Pact for cross-service APIs
 - AI/LLM outputs: test structure and constraints, not exact content
+- **Elixir-specific**: `ExUnit.Case` for unit, `async: true` only when no DB state shared. StreamData for property-based testing.
+- **Rust-specific**: `#[test]` macro for unit tests, `proptest!` for PBT. Never `#[ignore]` without documented reason.
 
 ### Test Reliability Metrics (5 numbers, not 1)
 
@@ -120,7 +133,7 @@ Full protocol: `mnk/06-Quality.md`.
 
 Takumi proposes classification per module. Jay decides.
 
-## 4 Human Quality Gates (BLOCKING on public platforms)
+## 5 Human Quality Gates (BLOCKING on public platforms)
 
 | Gate | Key Metric | Threshold |
 |------|-----------|-----------|
@@ -128,8 +141,9 @@ Takumi proposes classification per module. Jay decides.
 | Sensory Comfort | prefers-reduced-motion coverage | 100% (BLOCKING) |
 | Error Resilience | Auto-save on forms > 3 fields | Required (BLOCKING) |
 | Adaptation | Preference persistence between sessions | Required (BLOCKING) |
+| Dignity | Données sans impact visible sur UX utilisateur + dark patterns + ton condescendant | 0 (BLOCKING) |
 
-Full framework (HECQ, design by neurotype): `mnk/15-Human-Quality.md`.
+Full framework (HECQ, design by neurotype): `mnk/15-Human-Quality.md`. Tests de conformité détaillés : `rules/Dignity.md`.
 
 ### Test Runtime Hygiene (BLOCKING)
 

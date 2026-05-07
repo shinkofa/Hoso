@@ -72,8 +72,9 @@ One logical change per commit. Hook-enforced. If you changed auth AND UI in the 
 | Desktop | PySide6 (NEVER tkinter) | 6.9+ |
 | Desktop (JS) | Electron | 40+ |
 | Linting | Biome 2.4+ (TS) / Ruff 0.15+ (Python) | |
-| Testing | Vitest 4.0+ (TS) / pytest (Python) / Playwright 1.58+ (E2E) | |
-| Mutation testing | Stryker | 9.5+ |
+| Testing | Vitest 4.0+ (TS) / pytest (Python) / ExUnit (Elixir) / cargo test (Rust) / Playwright 1.58+ (E2E) | |
+| Coverage | c8/vitest (TS) / pytest-cov (Python) / ExCoveralls (Elixir) / cargo-tarpaulin (Rust) | |
+| Mutation testing | Stryker 9.5+ (TS) / mutmut (Python) / Mutant.ex (Elixir) / cargo-mutants (Rust) | |
 | Package managers | pnpm (TS) / uv (Python) | |
 | AI local | Ollama + qwen3:8b-nothink | |
 | AI cloud | Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5 / DeepSeek-V3 | |
@@ -108,6 +109,7 @@ Elixir AND Rust are complementary, not alternatives:
 | Monozukuri (ものづくり) | Art of making — quality as identity | GoRin philosophy |
 | SQuBOK | Software Quality Body of Knowledge — Japanese holistic quality framework | Quality reference framework |
 | Devil's Advocate Protocol (formerly Ipcha Mistabra, איפכא מסתברא) | "What if the opposite is true?" — challenge every assertion | Attacker stories |
+| Dignity (尊厳) | Respecter l'intelligence de celui qui ne sait pas encore — l'utilisateur n'est jamais le produit | Foundational posture (BLOCKING) |
 
 ## Naming Registry
 

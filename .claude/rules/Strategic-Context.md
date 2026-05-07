@@ -5,9 +5,11 @@
 
 ## Layer 3 — POUR QUOI (the destination)
 
-Shinkofa = holistic life operating system for singular beings — hypersensitive, multipotential, neurodivergent. An invisible digital ecosystem that adapts morphically to each individual's holistic profile (Human Design, neurodiversity, energy cycles, sensory preferences) and makes humans better by respecting their individuality.
+Shinkofa = the digital that adapts to the human and helps the human align to thrive. An invisible digital ecosystem that adapts morphically to each individual's holistic profile (Human Design, neurodiversity, energy cycles, sensory preferences) and makes humans better by respecting their individuality. Neurodivergent users benefit first and most naturally, but the vision addresses every human being — zero categorization in first contact.
 
-**Decision filter**: Does this respect the user's individuality? Is it invisible through quality? Does it make the human better?
+**Tagline**: "Le monde te demande de t'adapter a lui. Shinkofa inverse la logique : comprends comment tu fonctionnes pour que le monde digital s'adapte a qui tu es."
+
+**Decision filter**: Does this respect the user's individuality? Is it invisible through quality? Does it make the human better? Is the message universal (zero categorization in first contact)?
 
 ## Layer 2 — FOCUS (the path)
 
@@ -30,6 +32,7 @@ The next concrete action that serves Layer 2, taking into account current energy
 - **Energy management**: Low energy = reduce scope, quick wins. Never push through.
 - **Modularity**: Each tool must work standalone before becoming part of the ecosystem.
 - **SKB = our brain**: Consult SKB (Shinkofa Knowledge Base) systematically — it contains the deep knowledge (coaching, neurodiversity, gaming, marketing, vision). Not just for tech.
+- **Dignity**: Respecter l'intelligence de celui qui ne sait pas encore. L'utilisateur n'est jamais le produit, l'ignorance n'est pas la stupidité, le consentement est informé pas manipulé. BLOCKING. Voir `rules/Dignity.md`.
 
 ## D12 — Build For Me First (2026-04-09)
 
@@ -51,7 +54,7 @@ Jay develops for himself. Products already on sale stay in maintenance. No new p
 3. **Streaming + auto-content pipelines** — Jay becomes a streamer. Gaming = natural magnetic visibility for a Projector. OBS + Streamer.bot + auto-clips → TikTok/Shorts/YouTube. Extend existing pipelines (LinkedIn/Discord/Telegram) + Dev.to/Hashnode/Reddit/Twitter-X.
 4. **3 revenue-critical platforms** — Kakusei, Shizen, Michi-Shinkofa = magnetic visibility. Security + bug fixes + features that serve magnetic visibility.
 5. **Other products in maintenance** — Michi-Niwa, Hibiki: security + bug fixes only. No new features.
-6. **ND adaptive design as Shinkofa entry point (D21)** — neurodivergent-friendly design is the natural differentiator and first magnetic hook for the ecosystem.
+6. **Adaptive design as Shinkofa entry point (D21)** — universal adaptive design is the natural differentiator and first magnetic hook for the ecosystem. ND users benefit first, but the message is universal.
 7. **Tri-layer architecture direction (D24)** — TS (current) + Elixir/Phoenix (fault isolation) + Rust (critical perf modules). Validated direction, POC pending.
 
 ## Existing Visibility Assets
