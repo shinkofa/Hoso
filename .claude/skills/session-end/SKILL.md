@@ -39,7 +39,7 @@ Execute these steps IN ORDER. Gate 8 must pass.
    - **Process (30%)**: Were methodology gates respected? (Obsidian, TDG, atomic commits, reformulation)
    - **Formula**: `Score = (Value × 0.4) + (Reliability × 0.3) + (Process × 0.3)`. Verify with arithmetic: e.g., V=85, R=80, P=90 → (85×0.4)+(80×0.3)+(90×0.3) = 34+24+27 = **85** (not an average).
    - In LITE_MODE, do NOT penalize absence of tests in Process dimension.
-   - Human Quality Gates compliance: if public-facing features were built, note whether the 4 gates were verified (Cognitive Load, Sensory Comfort, Error Resilience, Adaptation).
+   - Human Quality Gates compliance: if public-facing features were built, note whether the 5 gates were verified (Cognitive Load, Sensory Comfort, Error Resilience, Adaptation, Dignity).
 8. **VISIBILITY CHECK**: Evaluate if this session produced something shareable. For each candidate, append a ready-to-publish entry to Obsidian `01-Projets/Contenu.md` under the "Idées / candidates" section (one bullet per idea with title + format + status). Options: mini-repo (reusable standalone solution), article (educational, common problem solved), PR/contribution (fix or improvement to an existing open-source project). If nothing qualifies, document "nothing shareable this session" in the report.
 9. **SAVE**: Store report in `docs/Sessions/Session-YYYY-MM-DD-NNN.md`.
 

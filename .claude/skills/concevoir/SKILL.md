@@ -27,6 +27,7 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 12.
      - [ ] Sensory Comfort: 16px min, 1.5 lh, 75ch max, reduced motion, zero autoplay, dark/light/high-contrast
      - [ ] Error Resilience: auto-save on forms > 3 fields, zero-blame messages with recovery path, confirmation on destructive actions
      - [ ] Adaptation: preference persistence between sessions, onboarding adaptation capture
+     - [ ] Dignity: 0 dark patterns, 0 condescension, 0 data without visible UX impact, informed consent, depart in ≤ 2 clicks (see `rules/Dignity.md`)
    - **Feedback Widget** (BLOCKING on public projects and all Elixir projects): 2 clicks max, automatic context capture, zero PII. Reference: `mnk/06-Quality.md` + D25.
    - **Deviations**: any deviation from the Universal Project Checklist (`rules/Quality.md`) MUST be documented with explicit justification in the CDC. No silent omissions.
 

@@ -84,7 +84,7 @@ If ANY pre-flight fails → STOP. Do not proceed. Fix the issue first.
 
 8. **SMOKE TESTS** (BLOCKING):
    - Critical user paths verified (login, core features, payment if applicable)
-   - On public platforms: verify Human Quality Gates post-deploy (Cognitive Load, Sensory Comfort, Error Resilience, Adaptation)
+   - On public platforms: verify Human Quality Gates post-deploy (Cognitive Load, Sensory Comfort, Error Resilience, Adaptation, Dignity)
    - Feedback Widget visible and functional (D25)
    ```bash
    # Check for new errors in last 2 minutes of logs

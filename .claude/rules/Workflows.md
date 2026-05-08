@@ -127,7 +127,7 @@ Violation of this gate is BLOCKING.
 
 | Platform | Non-negotiable |
 |----------|---------------|
-| Web | Mobile-first 375px+, WCAG 2.2 AA, dark/light/high-contrast, reduced-motion, Core Web Vitals, FR/EN/ES, ND-friendly |
+| Web | Mobile-first 375px+, WCAG 2.2 AA, dark/light/high-contrast, reduced-motion, Core Web Vitals, FR/EN/ES, ND-friendly, **cross-browser (Chrome/Firefox/Safari/Edge)** |
 | Desktop | Dark/light themes, keyboard shortcuts, responsive resize, non-blocking UI |
 | Mobile | Touch 44x44px, offline-first, <200KB initial, TTI <3s on 3G |
 | CLI | `--help`, exit codes, JSON output, `--no-color` |
@@ -153,6 +153,82 @@ Every public-facing feature ships with its visibility pipeline. Building the too
 | Capture | Email capture or CTA present on public pages | Before launch |
 
 This is not about marketing as a task — it is about marketing as infrastructure. Build the pipes now, so content flows forever. A platform without distribution is invisible, and invisible contradicts L2 (visibility).
+
+## Post-Deploy Smoke Test (BLOCKING on live apps)
+
+Every deployment MUST include a smoke test that verifies:
+
+| Check | What | How |
+|-------|------|-----|
+| **Auth integrity** | Authentication is not broken or bypassed | Hit a protected endpoint without token → expect 401/403. Hit with valid token → expect 200. |
+| **API connections** | All external API integrations respond | Health-check each connected service (DB, Redis, external APIs). Log response status. |
+| **Critical paths** | Core user flows still work | Automated or manual check of login, main feature, payment (if applicable). |
+| **Reverse proxy** | nginx/Caddy routes correctly | Verify public URL returns expected response, not 502/504. |
+
+**Timing**: within 5 minutes of deploy. **Failure**: rollback or hotfix immediately — do not leave a broken deploy live.
+
+**Origin**: Session 2026-05-08 audit revealed 2 services (Takumi Companion + Video Pipeline) running without auth on public internet for 3+ weeks undetected. Post-deploy smoke tests would have caught this on day one.
+
+## Nginx Maintenance Pages (BLOCKING on exposed services)
+
+Every service exposed via nginx reverse proxy MUST have custom error pages for downtime scenarios:
+
+| Error | Page | Content |
+|-------|------|---------|
+| 502 Bad Gateway | `/var/www/maintenance/502.html` | "Service en maintenance. Retour imminent." |
+| 503 Service Unavailable | `/var/www/maintenance/503.html` | "Service temporairement indisponible." |
+| 504 Gateway Timeout | `/var/www/maintenance/504.html` | "Le service met trop de temps a repondre." |
+
+**nginx config** (per vhost):
+```nginx
+error_page 502 /502.html;
+error_page 503 /503.html;
+error_page 504 /504.html;
+location = /502.html { root /var/www/maintenance; internal; }
+location = /503.html { root /var/www/maintenance; internal; }
+location = /504.html { root /var/www/maintenance; internal; }
+```
+
+**Rules**:
+- Pages are static HTML (no JS dependency, no external CSS CDN)
+- Branded with Shinkofa identity (logo, colors) — Dignity-compliant (no "Oops!", no guilt-trip)
+- Include estimated return time if known, or "retour imminent" if not
+- Mobile-responsive (the user might be on their phone)
+- Deployed to VPS ONCE, shared by all vhosts
+
+## Cross-Browser Compatibility (BLOCKING on public platforms)
+
+Every public-facing platform MUST work on all major browsers. "Works on Chrome" is not shipped.
+
+### Target Browsers
+
+| Browser | Minimum Version | Engine |
+|---------|----------------|--------|
+| Chrome / Edge | Last 2 major versions | Blink |
+| Firefox | Last 2 major versions | Gecko |
+| Safari (macOS + iOS) | 15.4+ | WebKit |
+| Samsung Internet | Last 2 major versions | Blink |
+
+### Mandatory Practices
+
+- **`.browserslistrc`** in every web project root: `defaults, iOS >= 15.4, Safari >= 15.4`
+- **No API without fallback**: `crypto.randomUUID()`, `AbortSignal.timeout()`, `Array.at()`, `structuredClone()` — all require feature detection + polyfill/fallback
+- **CSS with fallbacks**: `color-mix()`, `oklch()`, `backdrop-filter` — always provide RGB/hex fallback BEFORE the modern declaration (CSS cascade)
+- **Vendor prefixes**: `-webkit-backdrop-filter` for Safari. Use autoprefixer in build pipeline.
+- **Image formats**: WebP/AVIF with JPEG/PNG fallback (`<picture>` element or canvas feature detection)
+- **Testing**: test on Safari (real device or BrowserStack) before any public deploy. Chrome DevTools mobile emulation does NOT catch WebKit issues.
+
+### Pre-Deploy Cross-Browser Checklist
+
+| Check | Tool | Blocking? |
+|-------|------|-----------|
+| `.browserslistrc` present | File check | Yes |
+| No unsupported APIs without fallback | ESLint `compat` plugin or manual review | Yes |
+| CSS fallbacks before modern properties | Stylelint or manual review | Yes |
+| autoprefixer in build pipeline | Build config check | Yes |
+| Safari manual test on critical paths | Real device / BrowserStack | Yes (public platforms) |
+
+**Origin**: Session 2026-05-06 — Kakusei and Shizen both broken on Safari mobile. 11 files fixed across 2 projects. `color-mix()`, `crypto.randomUUID()`, `AbortSignal.timeout()` had zero fallbacks.
 
 ## Fix = Deploy
 

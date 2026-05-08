@@ -163,8 +163,15 @@ Track in session reports. Trend over time reveals process health.
 
 When deploying multi-runtime services:
 
-- **BEAM apps**: verify Erlang release boots (`bin/app eval "IO.puts(:ok)"`), check supervision tree health, verify clustering if applicable
-- **Rust NIFs**: verify NIF loads correctly (`mix app.start` succeeds), no missing .so/.dylib
+- **BEAM apps (Elixir/Phoenix)**:
+  - **Pre-deploy test**: `mix test` must pass with coverage >= threshold (80% standard, 95% critical)
+  - **Coverage**: `mix test --cover` (or ExCoveralls in CI)
+  - Verify Erlang release boots: `bin/app eval "IO.puts(:ok)"`
+  - Check supervision tree health, verify clustering if applicable
+- **Rust NIFs (via BEAM)**:
+  - **Pre-deploy test**: `cargo test` must pass with coverage >= threshold
+  - **Coverage**: `cargo tarpaulin --out Html --timeout 300`
+  - Verify NIF loads correctly (`mix app.start` succeeds), no missing .so/.dylib
 - **Multi-service deploy**: deploy dependencies first (DB -> backend -> frontend), verify inter-service health
 
 ## Coverage by Risk Classification (D20)
@@ -179,6 +186,15 @@ Pre-deploy coverage gate per risk level:
 | Tooling | 60% | scripts, dev tools |
 
 If coverage below threshold for any module: deploy BLOCKED.
+
+### Coverage Measurement by Stack
+
+| Stack | Command | Threshold Check |
+|-------|---------|-----------------|
+| TypeScript | `npx vitest run --coverage` | `coverage/index.html` → Lines >= threshold |
+| Python | `pytest --cov=src --cov-report=term` | Terminal output Lines % >= threshold |
+| Elixir | `mix test --cover` | Terminal "Coverage: X.X%" >= threshold |
+| Rust | `cargo tarpaulin --out Html --timeout 300` | Report Lines % >= threshold |
 
 ## Feedback Widget Post-Deploy (D25)
 
