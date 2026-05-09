@@ -63,10 +63,15 @@ One logical change per commit. Hook-enforced. If you changed auth AND UI in the 
 | Frontend | Next.js | 16+ |
 | UI | React | 19 |
 | Styling | TailwindCSS | 4.x |
-| Backend | FastAPI | 0.135+ |
-| Validation (backend) | Pydantic | 2.12+ |
+| Backend API (principal) | Elixir/Phoenix | 1.19+ / 1.8+ |
+| Backend AI/ML pipelines | FastAPI | 0.136+ |
+| Backend (legacy, migration) | FastAPI | 0.136+ |
+| Validation (Elixir) | Ecto changesets | 3.13+ |
+| Validation (backend Python) | Pydantic | 2.12+ |
 | Validation (frontend) | Zod | 3.x |
-| ORM | Prisma (TS) / SQLAlchemy (Python) | 7.x / 2.x |
+| ORM | Ecto (Elixir) / SQLAlchemy (Python) / Prisma (TS) | 3.13+ / 2.x / 7.x |
+| Job queue | Oban (Elixir) | 2.22+ |
+| HTTP server | Bandit (Elixir) | 1.11+ |
 | Database | PostgreSQL | 18 |
 | Cache | Redis | 8.x |
 | Desktop | PySide6 (NEVER tkinter) | 6.9+ |
@@ -75,11 +80,12 @@ One logical change per commit. Hook-enforced. If you changed auth AND UI in the 
 | Testing | Vitest 4.0+ (TS) / pytest (Python) / ExUnit (Elixir) / cargo test (Rust) / Playwright 1.58+ (E2E) | |
 | Coverage | c8/vitest (TS) / pytest-cov (Python) / ExCoveralls (Elixir) / cargo-tarpaulin (Rust) | |
 | Mutation testing | Stryker 9.5+ (TS) / mutmut (Python) / Mutant.ex (Elixir) / cargo-mutants (Rust) | |
-| Package managers | pnpm (TS) / uv (Python) | |
+| Linting (Elixir) | Credo 1.7+ (strict) + mix format | |
+| Security (Elixir) | Sobelow 0.14+ | |
+| Package managers | pnpm (TS) / uv (Python) / mix (Elixir) | |
 | AI local | Ollama + qwen3:8b-nothink | |
 | AI cloud | Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5 / DeepSeek-V3 | |
-| Backend (validated direction) | Elixir/Phoenix | 1.18+ / 1.7+ | Direction validated, POC to plan |
-| Critical modules (validated direction) | Rust via NIFs in Elixir | 1.87+ | Direction validated, POC to plan |
+| Critical modules | Rust via NIFs in Elixir (Rustler) | 1.87+ |
 
 **Zero Dogma**: This stack is preferred, not mandatory. If a project needs something else, justify and document.
 
@@ -92,12 +98,13 @@ Elixir AND Rust are complementary, not alternatives:
 | Visible | UI, UX, ND adaptation | TypeScript/React + @shinkofa/ui |
 | Backend API | Fault isolation, real-time, orchestration | Elixir/Phoenix (progressive migration via Strangler Fig) |
 | Critical modules | Auth, crypto, validation | Rust via NIFs in Elixir (Discord uses this in prod) |
-| AI/ML | Processing pipelines | Python (ecosystem irreplaceable) |
+| AI/ML | Training pipelines, embeddings | Python (ecosystem irreplaceable for training) |
 
 ## Schema Source of Truth
 
 - Frontend: Zod schemas → derive TypeScript types
-- Backend: Pydantic models → derive API schemas
+- Backend Elixir: Ecto schemas + changesets → validation at the boundary
+- Backend Python: Pydantic models → derive API schemas
 - Never duplicate types manually between frontend and backend. Generate or share via @shinkofa/types.
 
 ## Quality Terminology

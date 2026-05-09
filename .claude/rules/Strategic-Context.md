@@ -55,7 +55,7 @@ Jay develops for himself. Products already on sale stay in maintenance. No new p
 4. **3 revenue-critical platforms** — Kakusei, Shizen, Michi-Shinkofa = magnetic visibility. Security + bug fixes + features that serve magnetic visibility.
 5. **Other products in maintenance** — Michi-Niwa, Hibiki: security + bug fixes only. No new features.
 6. **Adaptive design as Shinkofa entry point (D21)** — universal adaptive design is the natural differentiator and first magnetic hook for the ecosystem. ND users benefit first, but the message is universal.
-7. **Tri-layer architecture direction (D24)** — TS (current) + Elixir/Phoenix (fault isolation) + Rust (critical perf modules). Validated direction, POC pending.
+7. **Tri-layer architecture (D24, D26-D29)** — TS (frontend) + Elixir/Phoenix (backend API principal, proven by Kobo) + Rust NIFs (critical perf modules). Elixir/Phoenix is the default for all new backends. FastAPI retained for AI/ML training pipelines only.
 
 ## Existing Visibility Assets
 

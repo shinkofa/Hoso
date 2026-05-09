@@ -84,6 +84,7 @@ A single coverage % is misleading. Five metrics tell the truth:
 | Trivial tests | < 10% of total | `assert x is not None` doesn't verify behavior |
 | Mock:Assert ratio | < 3:1 per test | If mocks > assertions by 3:1, you're testing the mock, not the code |
 | Type coverage (mypy/tsc strict) | 100% new code | Catches type-level bugs statically |
+| Type specs (Elixir @spec + Dialyzer) | 100% new public functions | Type-level bugs caught statically (WARNING — objective, not BLOCKING yet) |
 
 **Detection rules**:
 - A test with zero `assert` or `pytest.raises` = empty test = BLOCKING
