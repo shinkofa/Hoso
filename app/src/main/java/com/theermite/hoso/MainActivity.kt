@@ -48,6 +48,16 @@ class MainActivity : AppCompatActivity() {
     private val stoppedReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
             runOnUiThread {
+                // The service self-stopped (notification Stop tapped, or
+                // streamer error). Release our bind BEFORE clearing the
+                // connection reference, otherwise the binding leaks and a
+                // subsequent start fails (stale ServiceConnection inside the
+                // ActivityManager) — observable as "service not started" on
+                // the next start attempt.
+                stopOverlay()
+                connection?.let {
+                    try { unbindService(it) } catch (_: Exception) {}
+                }
                 streamer = null
                 connection = null
                 requestedOrientation =
