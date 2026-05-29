@@ -6,7 +6,9 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.WindowManager
@@ -19,6 +21,9 @@ class OverlayService : Service() {
     private var windowManager: WindowManager? = null
     private var overlayView: ImageView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
+
+    private val idleHandler = Handler(Looper.getMainLooper())
+    private val dimRunnable = Runnable { dimOverlay() }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -84,6 +89,7 @@ class OverlayService : Service() {
                         startParamX = params.x
                         startParamY = params.y
                         dragged = false
+                        wakeOverlay()
                         true
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -101,6 +107,7 @@ class OverlayService : Service() {
                         if (!dragged) {
                             stopStream()
                         }
+                        scheduleDim()
                         true
                     }
                     else -> false
@@ -110,6 +117,31 @@ class OverlayService : Service() {
 
         overlayView = button
         windowManager?.addView(button, params)
+        scheduleDim()
+    }
+
+    private fun scheduleDim() {
+        idleHandler.removeCallbacks(dimRunnable)
+        idleHandler.postDelayed(dimRunnable, IDLE_TIMEOUT_MS)
+    }
+
+    private fun dimOverlay() {
+        overlayView?.animate()
+            ?.alpha(DIM_ALPHA)
+            ?.setDuration(FADE_DURATION_MS)
+            ?.start()
+    }
+
+    private fun wakeOverlay() {
+        idleHandler.removeCallbacks(dimRunnable)
+        overlayView?.let { v ->
+            if (v.alpha < FULL_ALPHA) {
+                v.animate()
+                    .alpha(FULL_ALPHA)
+                    .setDuration(WAKE_DURATION_MS)
+                    .start()
+            }
+        }
     }
 
     private fun stopStream() {
@@ -122,6 +154,7 @@ class OverlayService : Service() {
     }
 
     override fun onDestroy() {
+        idleHandler.removeCallbacks(dimRunnable)
         overlayView?.let {
             try {
                 windowManager?.removeView(it)
@@ -138,5 +171,14 @@ class OverlayService : Service() {
         private const val DRAG_THRESHOLD = 15f
         private const val DRAG_THRESHOLD_SQ =
             DRAG_THRESHOLD * DRAG_THRESHOLD
+
+        // Idle fade: 7 s after last touch, the overlay fades to 30%
+        // alpha so it stops covering the game. Any touch wakes it
+        // back instantly to 100%.
+        private const val IDLE_TIMEOUT_MS = 7_000L
+        private const val DIM_ALPHA = 0.3f
+        private const val FULL_ALPHA = 1.0f
+        private const val FADE_DURATION_MS = 400L
+        private const val WAKE_DURATION_MS = 120L
     }
 }
