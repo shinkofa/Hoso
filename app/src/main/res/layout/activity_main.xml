@@ -38,47 +38,52 @@
             android:textColor="@color/text_secondary"
             android:layout_marginBottom="4dp" />
 
+        <Spinner
+            android:id="@+id/spinner_preset"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/spinner_bg"
+            android:layout_marginBottom="8dp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="20dp">
 
-            <Spinner
-                android:id="@+id/spinner_preset"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_preset_add"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
+                android:layout_height="52dp"
                 android:layout_weight="1"
-                android:layout_height="48dp"
-                android:background="@drawable/spinner_bg" />
+                android:layout_marginEnd="6dp"
+                android:textSize="15sp"
+                android:textAllCaps="false"
+                android:text="@string/preset_add" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_preset_edit"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:layout_marginStart="4dp"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="3dp"
+                android:textSize="15sp"
+                android:textAllCaps="false"
                 android:text="@string/preset_edit" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_preset_delete"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:textSize="15sp"
+                android:textAllCaps="false"
                 android:text="@string/preset_delete" />
         </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_preset_add"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/preset_add"
-            android:layout_marginBottom="20dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
