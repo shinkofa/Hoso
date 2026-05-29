@@ -18,12 +18,15 @@ import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import com.theermite.hoso.config.StreamConfig
 import com.theermite.hoso.databinding.ActivityMainBinding
 import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
+import io.github.thibaultbee.streampack.core.logger.ILogger
+import io.github.thibaultbee.streampack.core.logger.Logger
 import io.github.thibaultbee.streampack.core.interfaces.startStream
 import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
 import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
@@ -104,6 +107,27 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Remap all StreamPack logs (v/d/i/w/e) to Log.i with SP/ prefix
+        // so verbose/debug levels survive logcat default filtering.
+        Logger.logger = object : ILogger {
+            override fun e(tag: String, message: String, tr: Throwable?) {
+                Log.i("SP/$tag", "E $message", tr)
+            }
+            override fun w(tag: String, message: String, tr: Throwable?) {
+                Log.i("SP/$tag", "W $message", tr)
+            }
+            override fun i(tag: String, message: String, tr: Throwable?) {
+                Log.i("SP/$tag", "I $message", tr)
+            }
+            override fun v(tag: String, message: String, tr: Throwable?) {
+                Log.i("SP/$tag", "V $message", tr)
+            }
+            override fun d(tag: String, message: String, tr: Throwable?) {
+                Log.i("SP/$tag", "D $message", tr)
+            }
+        }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

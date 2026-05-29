@@ -4,9 +4,12 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.projection.MediaProjection
+import android.os.Build
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import androidx.lifecycle.lifecycleScope
 import com.theermite.hoso.MainActivity
 import com.theermite.hoso.R
@@ -27,6 +30,25 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
     channelId = CHANNEL_ID,
     channelNameResourceId = R.string.notification_channel_name
 ) {
+
+    override fun onCreate() {
+        super.onCreate()
+        // StreamPack's StreamerService.onCreate() promotes the service
+        // to foreground with FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION only.
+        // Android 14+ requires MICROPHONE in the bitmask so the framework
+        // calls AppOps.startOp(RECORD_AUDIO); without it the mic is silenced
+        // (observed on ColorOS via VD.AudioRecordMonitor isSilenced=true).
+        // Re-call startForeground with both types to upgrade.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                onOpenNotification(),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION or
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            )
+        }
+    }
 
     override fun createDefaultAudioSource(
         mediaProjection: MediaProjection,
