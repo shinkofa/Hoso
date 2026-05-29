@@ -60,6 +60,9 @@
                 android:layout_marginEnd="6dp"
                 android:textSize="15sp"
                 android:textAllCaps="false"
+                android:textColor="@color/purple_primary"
+                app:strokeColor="@color/purple_primary"
+                app:rippleColor="@color/purple_dark"
                 android:text="@string/preset_add" />
 
             <com.google.android.material.button.MaterialButton
@@ -71,6 +74,9 @@
                 android:layout_marginHorizontal="3dp"
                 android:textSize="15sp"
                 android:textAllCaps="false"
+                android:textColor="@color/text_primary"
+                app:strokeColor="@color/divider"
+                app:rippleColor="@color/purple_dark"
                 android:text="@string/preset_edit" />
 
             <com.google.android.material.button.MaterialButton
@@ -82,6 +88,9 @@
                 android:layout_marginStart="6dp"
                 android:textSize="15sp"
                 android:textAllCaps="false"
+                android:textColor="@color/stream_stop"
+                app:strokeColor="@color/stream_stop"
+                app:rippleColor="@color/stream_stop"
                 android:text="@string/preset_delete" />
         </LinearLayout>
 
