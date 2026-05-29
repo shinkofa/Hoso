@@ -13,14 +13,19 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Size
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
+import com.theermite.hoso.config.DestinationPreset
 import com.theermite.hoso.config.StreamConfig
+import com.theermite.hoso.databinding.DialogPresetEditBinding
 import com.theermite.hoso.databinding.ActivityMainBinding
 import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
@@ -173,12 +178,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var suppressPresetSpinnerEvent = false
+
     private fun setupUI() {
         binding.spinnerResolution.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_dropdown_item,
             config.presetLabels
         )
+
+        setupPresetUI()
 
         val steps = (StreamConfig.BITRATE_MAX - StreamConfig.BITRATE_MIN) /
             StreamConfig.BITRATE_STEP
@@ -199,6 +208,157 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnStart.setOnClickListener { startStreaming() }
         binding.btnStop.setOnClickListener { stopStreaming() }
+    }
+
+    private fun setupPresetUI() {
+        refreshPresetSpinner()
+
+        binding.spinnerPreset.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?, view: View?,
+                    position: Int, id: Long
+                ) {
+                    if (suppressPresetSpinnerEvent) return
+                    val presets = config.presetList
+                    val selected = presets.getOrNull(position) ?: return
+                    if (selected.id == config.activePresetId) return
+                    // Persist any in-progress UI edits into the previously
+                    // active preset before switching, so we don't lose them.
+                    saveConfigFromUI()
+                    config.activePresetId = selected.id
+                    loadConfigToUI()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+
+        binding.btnPresetAdd.setOnClickListener { showPresetDialog(null) }
+        binding.btnPresetEdit.setOnClickListener {
+            config.activePreset?.let { showPresetDialog(it) }
+        }
+        binding.btnPresetDelete.setOnClickListener { confirmDeleteActivePreset() }
+    }
+
+    private fun refreshPresetSpinner() {
+        val presets = config.presetList
+        val labels = presets.map { p ->
+            "${p.name} (${p.type.displayLabel})"
+        }
+        suppressPresetSpinnerEvent = true
+        binding.spinnerPreset.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            labels
+        )
+        val activeId = config.activePresetId
+        val activeIdx = presets.indexOfFirst { it.id == activeId }
+            .takeIf { it >= 0 } ?: 0
+        binding.spinnerPreset.setSelection(activeIdx)
+        binding.spinnerPreset.post { suppressPresetSpinnerEvent = false }
+
+        binding.btnPresetDelete.isEnabled = presets.size > 1
+    }
+
+    private fun showPresetDialog(existing: DestinationPreset?) {
+        val dlgBinding = DialogPresetEditBinding.inflate(layoutInflater)
+
+        val types = DestinationPreset.Type.values()
+        dlgBinding.spinnerPresetType.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            types.map { it.displayLabel }
+        )
+
+        val initialType = existing?.type ?: DestinationPreset.Type.TWITCH
+        dlgBinding.spinnerPresetType.setSelection(
+            types.indexOf(initialType).coerceAtLeast(0)
+        )
+        dlgBinding.editPresetName.setText(
+            existing?.name ?: initialType.displayLabel
+        )
+        dlgBinding.editPresetUrl.setText(
+            existing?.rtmpUrl ?: initialType.defaultUrl
+        )
+        dlgBinding.editPresetKey.setText(existing?.streamKey ?: "")
+
+        // When the user changes type on a brand-new preset, swap the URL
+        // to the type's default so they don't have to type it manually.
+        // For existing presets, never overwrite their custom URL silently.
+        dlgBinding.spinnerPresetType.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?, view: View?,
+                    position: Int, id: Long
+                ) {
+                    if (existing != null) return
+                    val t = types.getOrNull(position) ?: return
+                    dlgBinding.editPresetUrl.setText(t.defaultUrl)
+                    val currentName = dlgBinding.editPresetName.text.toString()
+                    if (currentName.isBlank() ||
+                        types.any { it.displayLabel == currentName }
+                    ) {
+                        dlgBinding.editPresetName.setText(t.displayLabel)
+                    }
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+
+        val titleRes = if (existing == null)
+            R.string.preset_dialog_title_new
+        else R.string.preset_dialog_title_edit
+
+        AlertDialog.Builder(this)
+            .setTitle(titleRes)
+            .setView(dlgBinding.root)
+            .setPositiveButton(R.string.action_save) { _, _ ->
+                val name = dlgBinding.editPresetName.text.toString()
+                    .trim().ifBlank { initialType.displayLabel }
+                val type = types[
+                    dlgBinding.spinnerPresetType.selectedItemPosition
+                ]
+                val url = dlgBinding.editPresetUrl.text.toString().trim()
+                val key = dlgBinding.editPresetKey.text.toString().trim()
+
+                if (existing != null) {
+                    existing.name = name
+                    existing.type = type
+                    existing.rtmpUrl = url
+                    existing.streamKey = key
+                    config.upsertPreset(existing)
+                } else {
+                    val created = DestinationPreset(
+                        id = DestinationPreset.newId(),
+                        name = name,
+                        type = type,
+                        rtmpUrl = url,
+                        streamKey = key,
+                        resolutionIndex = config.resolutionIndex,
+                        videoBitrate = config.videoBitrate,
+                    )
+                    config.upsertPreset(created)
+                    config.activePresetId = created.id
+                }
+                refreshPresetSpinner()
+                loadConfigToUI()
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
+
+    private fun confirmDeleteActivePreset() {
+        val active = config.activePreset ?: return
+        if (config.presetList.size <= 1) return
+        AlertDialog.Builder(this)
+            .setTitle(R.string.preset_delete_confirm_title)
+            .setMessage(getString(R.string.preset_delete_confirm_msg, active.name))
+            .setPositiveButton(R.string.action_delete) { _, _ ->
+                config.deletePreset(active.id)
+                refreshPresetSpinner()
+                loadConfigToUI()
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun loadConfigToUI() {
