@@ -12,27 +12,134 @@ class StreamConfig(context: Context) {
 
     val nativeScreen: Size = detectNativeScreen(context)
 
-    var streamKey: String
-        get() = prefs.getString(KEY_STREAM_KEY, "") ?: ""
+    init {
+        // Silent migration: if no presets stored yet (fresh install OR
+        // user upgrading from per-key storage), seed a default Twitch
+        // preset from whatever values were previously in prefs.
+        if (prefs.getString(KEY_PRESETS_JSON, null).isNullOrBlank()) {
+            val legacyKey = prefs.getString(KEY_STREAM_KEY, "") ?: ""
+            val legacyUrl = prefs.getString(
+                KEY_RTMP_URL, DEFAULT_TWITCH_URL
+            ) ?: DEFAULT_TWITCH_URL
+            val legacyBitrate = prefs.getInt(
+                KEY_VIDEO_BITRATE, DEFAULT_VIDEO_BITRATE
+            )
+            val legacyResIdx = prefs.getInt(KEY_RES_INDEX, 0)
+
+            val seed = DestinationPreset(
+                id = DestinationPreset.newId(),
+                name = DestinationPreset.Type.TWITCH.displayLabel,
+                type = DestinationPreset.Type.TWITCH,
+                rtmpUrl = legacyUrl,
+                streamKey = legacyKey,
+                resolutionIndex = legacyResIdx,
+                videoBitrate = legacyBitrate,
+            )
+            prefs.edit()
+                .putString(
+                    KEY_PRESETS_JSON,
+                    DestinationPreset.listToJson(listOf(seed))
+                )
+                .putString(KEY_ACTIVE_PRESET_ID, seed.id)
+                .apply()
+        }
+    }
+
+    // ── Preset list management ────────────────────────────────────────
+
+    var presetList: List<DestinationPreset>
+        get() = DestinationPreset.listFromJson(
+            prefs.getString(KEY_PRESETS_JSON, null)
+        )
+        set(value) {
+            prefs.edit()
+                .putString(
+                    KEY_PRESETS_JSON,
+                    DestinationPreset.listToJson(value)
+                )
+                .apply()
+        }
+
+    var activePresetId: String
+        get() = prefs.getString(KEY_ACTIVE_PRESET_ID, "") ?: ""
         set(value) = prefs.edit()
-            .putString(KEY_STREAM_KEY, value).apply()
+            .putString(KEY_ACTIVE_PRESET_ID, value).apply()
+
+    val activePreset: DestinationPreset?
+        get() {
+            val id = activePresetId
+            val list = presetList
+            return list.firstOrNull { it.id == id }
+                ?: list.firstOrNull()
+        }
+
+    fun upsertPreset(preset: DestinationPreset) {
+        val list = presetList.toMutableList()
+        val idx = list.indexOfFirst { it.id == preset.id }
+        if (idx >= 0) list[idx] = preset else list.add(preset)
+        presetList = list
+    }
+
+    fun deletePreset(id: String) {
+        val list = presetList.toMutableList()
+        list.removeAll { it.id == id }
+        if (list.isEmpty()) {
+            // Never leave the user with zero presets — re-seed a fresh
+            // default Twitch one so the UI always has something to bind to.
+            val seed = DestinationPreset(
+                id = DestinationPreset.newId(),
+                name = DestinationPreset.Type.TWITCH.displayLabel,
+                type = DestinationPreset.Type.TWITCH,
+                rtmpUrl = DEFAULT_TWITCH_URL,
+                streamKey = "",
+                resolutionIndex = 0,
+                videoBitrate = DEFAULT_VIDEO_BITRATE,
+            )
+            list.add(seed)
+            activePresetId = seed.id
+        } else if (activePresetId == id) {
+            activePresetId = list.first().id
+        }
+        presetList = list
+    }
+
+    // ── Active-preset accessors (UI binds to these) ──────────────────
+
+    var streamKey: String
+        get() = activePreset?.streamKey ?: ""
+        set(value) {
+            activePreset?.let { p ->
+                p.streamKey = value
+                upsertPreset(p)
+            }
+        }
 
     var rtmpBaseUrl: String
-        get() = prefs.getString(
-            KEY_RTMP_URL, DEFAULT_TWITCH_URL
-        ) ?: DEFAULT_TWITCH_URL
-        set(value) = prefs.edit()
-            .putString(KEY_RTMP_URL, value).apply()
+        get() = activePreset?.rtmpUrl ?: DEFAULT_TWITCH_URL
+        set(value) {
+            activePreset?.let { p ->
+                p.rtmpUrl = value
+                upsertPreset(p)
+            }
+        }
 
     var videoBitrate: Int
-        get() = prefs.getInt(KEY_VIDEO_BITRATE, DEFAULT_VIDEO_BITRATE)
-        set(value) = prefs.edit()
-            .putInt(KEY_VIDEO_BITRATE, value).apply()
+        get() = activePreset?.videoBitrate ?: DEFAULT_VIDEO_BITRATE
+        set(value) {
+            activePreset?.let { p ->
+                p.videoBitrate = value
+                upsertPreset(p)
+            }
+        }
 
     var resolutionIndex: Int
-        get() = prefs.getInt(KEY_RES_INDEX, 0)
-        set(value) = prefs.edit()
-            .putInt(KEY_RES_INDEX, value).apply()
+        get() = activePreset?.resolutionIndex ?: 0
+        set(value) {
+            activePreset?.let { p ->
+                p.resolutionIndex = value
+                upsertPreset(p)
+            }
+        }
 
     val resolution: Size
         get() {
@@ -66,12 +173,17 @@ class StreamConfig(context: Context) {
 
     companion object {
         private const val PREFS_NAME = "hoso_stream_config"
+        // Legacy keys (kept readable for migration only)
         private const val KEY_STREAM_KEY = "stream_key"
         private const val KEY_RTMP_URL = "rtmp_base_url"
         private const val KEY_VIDEO_BITRATE = "video_bitrate"
         private const val KEY_RES_INDEX = "res_idx_v3"
+        // Non-preset keys (apply to all destinations)
         private const val KEY_FPS = "fps"
         private const val KEY_AUDIO_BITRATE = "audio_bitrate"
+        // Preset storage
+        private const val KEY_PRESETS_JSON = "presets_json_v1"
+        private const val KEY_ACTIVE_PRESET_ID = "active_preset_id"
 
         const val DEFAULT_TWITCH_URL = "rtmp://live.twitch.tv/app/"
         const val DEFAULT_VIDEO_BITRATE = 3_000
