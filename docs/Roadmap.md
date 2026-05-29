@@ -16,14 +16,14 @@
 
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
-| G1.1 | Auto-save preferences étendu | Étend `StreamConfig` (déjà existant) pour stocker tous les nouveaux réglages des features suivantes (présets destination, alpha overlay, comportements mute, etc.). | Petit | ⬜ |
-| G1.2 | Multi-destination (présets) | Préset par destination : Twitch / YouTube Live / Kick / custom RTMP. Stockage clé / URL / résolution / bitrate par préset. UI : spinner ou liste de profils. Repose sur G1.1. | Moyen | ⬜ |
+| G1.1 | Auto-save preferences étendu | Étend `StreamConfig` (déjà existant) pour stocker tous les nouveaux réglages des features suivantes (présets destination, alpha overlay, comportements mute, etc.). | Petit | ✅ `58dc549` |
+| G1.2 | Multi-destination (présets) | Préset par destination : Twitch / YouTube Live / Kick / custom RTMP. Stockage clé / URL / résolution / bitrate par préset. UI : spinner ou liste de profils. Repose sur G1.1. | Moyen | ✅ `951aced` |
 
 ## Groupe 2 — UX overlay (polish, faible risque)
 
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
-| G2.1 | Overlay transparence auto | Timer 5-10 s sans touch → anim alpha vers ~30 %. Touch / drag → restore 100 %. Côté `OverlayService` uniquement. | Petit | ⬜ |
+| G2.1 | Overlay transparence auto | Timer 5-10 s sans touch → anim alpha vers ~30 %. Touch / drag → restore 100 %. Côté `OverlayService` uniquement. | Petit | ✅ `915e94e` (7 s, 30 %) |
 
 ## Groupe 3 — Contrôles live (UX streamer immédiat)
 
