@@ -17,3 +17,5 @@ local.properties
 !gradle/wrapper/gradle-wrapper.jar
 .kotlin/
 .research/
+streampack-fork/
+.claude/settings.local.json
