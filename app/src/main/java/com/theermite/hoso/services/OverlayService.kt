@@ -67,6 +67,7 @@ class OverlayService : Service() {
     private var btnPause: ImageView? = null
     private var btnStop: ImageView? = null
     private var btnCollapse: ImageView? = null
+    private var btnChat: ImageView? = null
     private var controlsRow: LinearLayout? = null
     private var hudText: TextView? = null
 
@@ -384,8 +385,10 @@ class OverlayService : Service() {
         btnMic = root.findViewById(R.id.btn_mic)
         btnPrivacy = root.findViewById(R.id.btn_privacy)
         btnPause = root.findViewById(R.id.btn_pause)
+        btnChat = root.findViewById(R.id.btn_chat)
         btnStop = root.findViewById(R.id.btn_stop)
         hudText = root.findViewById(R.id.hud_text)
+        refreshChatButtonState()
         mixGainsGroup = root.findViewById(R.id.overlay_mix_gains)
         seekbarMicGain = root.findViewById(R.id.overlay_seekbar_mic_gain)
         seekbarGameGain = root.findViewById(R.id.overlay_seekbar_game_gain)
@@ -503,6 +506,7 @@ class OverlayService : Service() {
         btnMic = null
         btnPrivacy = null
         btnPause = null
+        btnChat = null
         btnStop = null
         hudText = null
         mixGainsGroup = null
@@ -718,6 +722,7 @@ class OverlayService : Service() {
                             R.id.btn_pause -> sendStreamAction(
                                 ScreenRecordService.ACTION_TOGGLE_PAUSE
                             )
+                            R.id.btn_chat -> toggleChatBubble()
                             R.id.btn_stop -> stopStream()
                         }
                     }
@@ -797,6 +802,35 @@ class OverlayService : Service() {
             if (paused) R.string.btn_resume
             else R.string.btn_pause
         )
+    }
+
+    // ---- G6.2 chat bubble toggle -----------------------------------
+
+    /**
+     * Start or stop the chat bubble service depending on its current
+     * [StreamConfig.chatEnabled] flag. Idempotent — calling twice while
+     * enabling is a no-op (Android coalesces startForegroundService).
+     * The flag is the single source of truth: ChatBubbleService.onDestroy
+     * resets it, so kill-from-recents leaves us in a coherent state.
+     */
+    private fun toggleChatBubble() {
+        val cfg = streamConfig ?: return
+        val intent = Intent(this, ChatBubbleService::class.java)
+        if (cfg.chatEnabled) {
+            // Disable: stop the service (its onDestroy resets the flag).
+            stopService(intent)
+        } else {
+            cfg.chatEnabled = true
+            startForegroundService(intent)
+        }
+        // Optimistic UI — the icon updates instantly, the service catches up.
+        refreshChatButtonState()
+    }
+
+    private fun refreshChatButtonState() {
+        val enabled = streamConfig?.chatEnabled == true
+        btnChat?.alpha = if (enabled) 1.0f else 0.6f
+        btnChat?.contentDescription = getString(R.string.btn_chat)
     }
 
     // ---- G5.1 HUD live stats ---------------------------------------

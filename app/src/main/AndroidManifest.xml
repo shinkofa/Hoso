@@ -45,5 +45,15 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Stream overlay stop button" />
         </service>
+
+        <service
+            android:name=".services.ChatBubbleService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Twitch chat overlay for live streamer" />
+        </service>
     </application>
 </manifest>

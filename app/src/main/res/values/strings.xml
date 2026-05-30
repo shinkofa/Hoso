@@ -46,6 +46,7 @@
     <string name="chat_notif_channel">Chat overlay</string>
     <string name="chat_notif_title">Chat Twitch</string>
     <string name="chat_notif_text">Bulle visible — appuie pour ouvrir Hoso</string>
+    <string name="btn_chat">Afficher / masquer le chat</string>
     <string name="preset_dialog_title_new">Nouvelle destination</string>
     <string name="preset_dialog_title_edit">Modifier la destination</string>
     <string name="preset_delete_confirm_title">Supprimer la destination ?</string>
