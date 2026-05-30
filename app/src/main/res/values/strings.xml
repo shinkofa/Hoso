@@ -58,4 +58,15 @@
 
     <!-- G4.5 overlay collapse/expand ergonomics -->
     <string name="overlay_trigger_label">Ouvrir les contrôles Hōsō</string>
+
+    <!-- G5.1 HUD live stats (overlay EXPANDED).
+         Métriques honnêtes seulement : durée + bitrate sortant réel
+         de l'UID (TrafficStats) + état connexion + état mic. Pas de
+         FPS / RTT / frame-drops : le SDK ne les expose pas pour RTMP. -->
+    <string name="hud_state_live">LIVE</string>
+    <string name="hud_state_reconnect">RECONNEXION %1$d/%2$d</string>
+    <string name="hud_state_lost">PERDU</string>
+    <string name="hud_mic_on">MIC ON</string>
+    <string name="hud_mic_muted">MIC MUTED</string>
+    <string name="hud_bitrate_unavailable">--</string>
 </resources>

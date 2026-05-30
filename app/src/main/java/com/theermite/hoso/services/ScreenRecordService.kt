@@ -79,6 +79,7 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         when (intent?.action) {
             ACTION_STOP -> {
                 stopRequested = true
+                streamStartedAt = 0L
                 reconnectAttemptJob?.cancel()
                 reconnectWatcherJob?.cancel()
                 lifecycleScope.launch {
@@ -95,7 +96,16 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
                 val url = intent.getStringExtra(EXTRA_RTMP_URL)
                 if (!url.isNullOrBlank()) {
                     currentRtmpUrl = url
+                    // G5.1 — first time we get a URL = stream just
+                    // started (MainActivity sends this immediately
+                    // after streamer.startStream returns). We don't
+                    // reset on subsequent reconnects so the HUD timer
+                    // keeps the original session duration.
+                    if (streamStartedAt == 0L) {
+                        streamStartedAt = System.currentTimeMillis()
+                    }
                     startReconnectWatcher()
+                    broadcastState()
                 }
                 return START_NOT_STICKY
             }
@@ -167,11 +177,17 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
                 .setPackage(packageName)
                 .putExtra(EXTRA_IS_MUTED, isMuted)
                 .putExtra(EXTRA_MASK_MODE, currentMask)
+                .putExtra(EXTRA_STREAM_STARTED_AT, streamStartedAt)
         )
     }
 
     private var currentMask: String = MASK_NONE
     private var muteBeforeMask: Boolean = false
+
+    // G5.1 — wall-clock at first successful stream start. 0L = no
+    // active stream. Used by OverlayService HUD to compute duration.
+    // Survives reconnects.
+    private var streamStartedAt: Long = 0L
 
     // G4.1 — Auto-reconnect state. URL is captured at first successful
     // startStream (MainActivity sends ACTION_REMEMBER_URL right after
@@ -361,6 +377,7 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         const val EXTRA_RECONNECT_ATTEMPT = "reconnect_attempt"
         const val EXTRA_RECONNECT_GIVE_UP = "reconnect_give_up"
         const val EXTRA_RECONNECT_RECOVERED = "reconnect_recovered"
+        const val EXTRA_STREAM_STARTED_AT = "stream_started_at"
 
         // G4.1 — Auto-reconnect timings. 5 short attempts then capped
         // 30 s slots, 20 total = ~8 minutes before giving up. Covers

@@ -9,9 +9,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.PixelFormat
+import android.net.TrafficStats
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.Process
+import android.os.SystemClock
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -61,6 +64,7 @@ class OverlayService : Service() {
     private var btnStop: ImageView? = null
     private var btnCollapse: ImageView? = null
     private var controlsRow: LinearLayout? = null
+    private var hudText: TextView? = null
 
     // COLLAPSED state remembers the last drag-applied position so a
     // collapse after expand returns to where the user parked it.
@@ -76,8 +80,34 @@ class OverlayService : Service() {
     // restore the right mic icon without an extra broadcast.
     private var lastMuted: Boolean = false
 
+    // G5.1 — HUD state. streamStartedAt arrives via BROADCAST_STATE_CHANGED;
+    // 0 = no active stream, hide HUD. Reconnect state mirrors the
+    // service-side backoff loop, updated by handleReconnect().
+    private var streamStartedAt: Long = 0L
+    private var isReconnecting: Boolean = false
+    private var reconnectAttempt: Int = 0
+    private var hasGivenUp: Boolean = false
+
+    // TrafficStats sampling baseline. We measure UID tx delta on each
+    // tick; the RTMP stream dominates traffic by orders of magnitude
+    // during a live, so this is an honest proxy for outgoing bitrate.
+    // UNSUPPORTED on some OEMs (returns -1) — handled by formatBitrate.
+    private var lastTxBytes: Long = -1L
+    private var lastSampleAt: Long = 0L
+    private var currentKbps: Int = -1
+
     private val idleHandler = Handler(Looper.getMainLooper())
     private val collapseRunnable = Runnable { collapse() }
+
+    // G5.1 — HUD tick. Re-posts itself every HUD_TICK_MS only while the
+    // overlay is expanded, so collapsed state has zero recurring cost.
+    private val hudTickRunnable = object : Runnable {
+        override fun run() {
+            if (!expanded) return
+            tickHud()
+            idleHandler.postDelayed(this, HUD_TICK_MS)
+        }
+    }
 
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -89,7 +119,25 @@ class OverlayService : Service() {
                     val maskMode = intent.getStringExtra(
                         ScreenRecordService.EXTRA_MASK_MODE
                     ) ?: ScreenRecordService.MASK_NONE
+                    val startedAt = intent.getLongExtra(
+                        ScreenRecordService.EXTRA_STREAM_STARTED_AT, 0L
+                    )
                     lastMuted = muted
+                    // First reception of streamStartedAt (or a refresh
+                    // after stop/start) → reset the HUD baselines so
+                    // bitrate doesn't show a fake spike on the first tick.
+                    if (startedAt != streamStartedAt) {
+                        streamStartedAt = startedAt
+                        if (startedAt == 0L) {
+                            // Stream stopped — clear reconnect state too.
+                            isReconnecting = false
+                            reconnectAttempt = 0
+                            hasGivenUp = false
+                        }
+                        lastTxBytes = -1L
+                        lastSampleAt = 0L
+                        currentKbps = -1
+                    }
                     // Activating a mask is a high-urgency moment for the
                     // streamer — make sure controls are right there.
                     if (maskMode != ScreenRecordService.MASK_NONE
@@ -102,6 +150,7 @@ class OverlayService : Service() {
                     refreshPrivacyIcon(
                         maskMode == ScreenRecordService.MASK_PRIVACY
                     )
+                    if (expanded) tickHud()
                 }
                 ScreenRecordService.BROADCAST_RECONNECT_STATE -> {
                     handleReconnect(intent)
@@ -129,10 +178,15 @@ class OverlayService : Service() {
         when {
             recovered -> {
                 lastReconnectAttempt = 0
+                isReconnecting = false
+                reconnectAttempt = 0
+                hasGivenUp = false
                 toast(getString(R.string.reconnect_recovered))
             }
             giveUp -> {
                 lastReconnectAttempt = 0
+                isReconnecting = false
+                hasGivenUp = true
                 toast(
                     getString(
                         R.string.reconnect_give_up,
@@ -142,12 +196,18 @@ class OverlayService : Service() {
             }
             attempt == 1 && lastReconnectAttempt == 0 -> {
                 lastReconnectAttempt = attempt
+                isReconnecting = true
+                reconnectAttempt = attempt
+                hasGivenUp = false
                 toast(getString(R.string.reconnect_lost))
             }
             else -> {
                 lastReconnectAttempt = attempt
+                isReconnecting = true
+                reconnectAttempt = attempt
             }
         }
+        if (expanded) tickHud()
     }
 
     private fun toast(msg: String) {
@@ -282,6 +342,7 @@ class OverlayService : Service() {
         btnPrivacy = root.findViewById(R.id.btn_privacy)
         btnPause = root.findViewById(R.id.btn_pause)
         btnStop = root.findViewById(R.id.btn_stop)
+        hudText = root.findViewById(R.id.hud_text)
 
         // Re-paint icons from cached state so the row reflects reality
         // the instant it appears (no flicker from defaults).
@@ -298,6 +359,7 @@ class OverlayService : Service() {
         wm.addView(root, params)
         expanded = true
         scheduleCollapse()
+        startHudTicker()
     }
 
     /**
@@ -310,6 +372,7 @@ class OverlayService : Service() {
         if (!expanded) return
         val wm = windowManager ?: return
         idleHandler.removeCallbacks(collapseRunnable)
+        stopHudTicker()
 
         rootView?.let {
             try { wm.removeView(it) } catch (_: Exception) {}
@@ -328,6 +391,7 @@ class OverlayService : Service() {
         btnPrivacy = null
         btnPause = null
         btnStop = null
+        hudText = null
     }
 
     private fun scheduleCollapse() {
@@ -407,6 +471,7 @@ class OverlayService : Service() {
             btnPrivacy = root.findViewById(R.id.btn_privacy)
             btnPause = root.findViewById(R.id.btn_pause)
             btnStop = root.findViewById(R.id.btn_stop)
+            hudText = root.findViewById(R.id.hud_text)
             refreshMicIcon(lastMuted)
             refreshPauseIcon(
                 currentMaskMode == ScreenRecordService.MASK_PAUSE
@@ -417,6 +482,7 @@ class OverlayService : Service() {
             attachExpandedTouch(root, params)
             wm.addView(root, params)
             scheduleCollapse()
+            startHudTicker()
         } else {
             val root = LayoutInflater.from(this)
                 .inflate(R.layout.overlay_collapsed, null) as FrameLayout
@@ -620,6 +686,102 @@ class OverlayService : Service() {
         )
     }
 
+    // ---- G5.1 HUD live stats ---------------------------------------
+
+    /**
+     * Start the per-second HUD tick. Renders one frame immediately so
+     * the row doesn't appear empty for a second on expand. The ticker
+     * self-cancels in onRun if expanded has flipped to false in the
+     * meantime (defensive against race with collapse()).
+     */
+    private fun startHudTicker() {
+        idleHandler.removeCallbacks(hudTickRunnable)
+        tickHud()
+        idleHandler.postDelayed(hudTickRunnable, HUD_TICK_MS)
+    }
+
+    private fun stopHudTicker() {
+        idleHandler.removeCallbacks(hudTickRunnable)
+    }
+
+    /**
+     * One HUD frame. Sample TrafficStats delta to derive outgoing
+     * bitrate (UID-level; RTMP dominates traffic during a live so
+     * this is honest within a few kbps). Compose duration + bitrate
+     * + state + mic into the reserved hud_text TextView. When no
+     * stream is active (streamStartedAt == 0), keep the HUD hidden.
+     */
+    private fun tickHud() {
+        val hud = hudText ?: return
+        if (streamStartedAt == 0L) {
+            hud.visibility = View.GONE
+            return
+        }
+        sampleBitrate()
+        val durationStr = formatDuration(
+            System.currentTimeMillis() - streamStartedAt
+        )
+        val bitrateStr = formatBitrate(currentKbps)
+        val stateStr = formatState()
+        val micStr = getString(
+            if (lastMuted) R.string.hud_mic_muted
+            else R.string.hud_mic_on
+        )
+        hud.text = "$durationStr  $bitrateStr\n$stateStr  $micStr"
+        hud.visibility = View.VISIBLE
+    }
+
+    /**
+     * Update lastTxBytes / lastSampleAt baselines and recompute
+     * currentKbps as a 1-sample delta. First sample (lastSampleAt == 0)
+     * just seeds the baseline; subsequent samples produce real numbers.
+     * Returns -1 (UNAVAILABLE) when the OEM doesn't report UID stats.
+     */
+    private fun sampleBitrate() {
+        val tx = TrafficStats.getUidTxBytes(Process.myUid())
+        if (tx < 0L) {
+            currentKbps = -1
+            return
+        }
+        val now = SystemClock.elapsedRealtime()
+        if (lastSampleAt > 0L && lastTxBytes >= 0L) {
+            val dtMs = now - lastSampleAt
+            if (dtMs > 0) {
+                val deltaBytes = (tx - lastTxBytes).coerceAtLeast(0L)
+                // bits/s = bytes * 8 / sec ; kbps = /1000
+                currentKbps =
+                    ((deltaBytes * 8.0) / dtMs).toInt() // bytes*8/ms = kbits/s
+            }
+        }
+        lastTxBytes = tx
+        lastSampleAt = now
+    }
+
+    private fun formatDuration(elapsedMs: Long): String {
+        val totalSec = (elapsedMs / 1000L).coerceAtLeast(0L)
+        val h = totalSec / 3600
+        val m = (totalSec % 3600) / 60
+        val s = totalSec % 60
+        return String.format("%02d:%02d:%02d", h, m, s)
+    }
+
+    private fun formatBitrate(kbps: Int): String {
+        if (kbps < 0) {
+            return getString(R.string.hud_bitrate_unavailable) + " kbps"
+        }
+        return "$kbps kbps"
+    }
+
+    private fun formatState(): String = when {
+        hasGivenUp -> getString(R.string.hud_state_lost)
+        isReconnecting -> getString(
+            R.string.hud_state_reconnect,
+            reconnectAttempt,
+            ScreenRecordService.MAX_RECONNECT_ATTEMPTS
+        )
+        else -> getString(R.string.hud_state_live)
+    }
+
     private fun stopStream() {
         val intent = Intent(
             this, ScreenRecordService::class.java
@@ -631,6 +793,7 @@ class OverlayService : Service() {
 
     override fun onDestroy() {
         idleHandler.removeCallbacks(collapseRunnable)
+        idleHandler.removeCallbacks(hudTickRunnable)
         try { unregisterReceiver(stateReceiver) } catch (_: Exception) {}
         maskView?.let {
             try { windowManager?.removeView(it) } catch (_: Exception) {}
@@ -656,5 +819,11 @@ class OverlayService : Service() {
         // enough to let the streamer line up a 2-button sequence
         // (e.g. mute → pause) without the row vanishing mid-action.
         private const val IDLE_TIMEOUT_MS = 5_000L
+
+        // G5.1 — HUD refresh cadence. 1 s aligns with the human eye's
+        // ability to read changing numbers without strobing, and it
+        // gives TrafficStats a comfortable window for delta math.
+        // Ticker is gated on `expanded` so collapsed costs zero.
+        private const val HUD_TICK_MS = 1_000L
     }
 }
