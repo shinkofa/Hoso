@@ -49,4 +49,10 @@
     <string name="btn_privacy">Mode confidentialité</string>
     <string name="btn_privacy_off">Désactiver confidentialité</string>
     <string name="privacy_mask_label">Hōsō — Mode confidentialité</string>
+
+    <!-- G4.1 auto-reconnect -->
+    <string name="notification_reconnecting">Hōsō — Reconnexion (%1$d/%2$d)</string>
+    <string name="reconnect_lost">Connexion perdue, reconnexion…</string>
+    <string name="reconnect_recovered">Reconnecté</string>
+    <string name="reconnect_give_up">Reconnexion abandonnée après %1$d tentatives</string>
 </resources>

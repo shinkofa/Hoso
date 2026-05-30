@@ -21,6 +21,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.theermite.hoso.R
 
@@ -55,22 +56,70 @@ class OverlayService : Service() {
 
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action ==
-                ScreenRecordService.BROADCAST_STATE_CHANGED
-            ) {
-                val muted = intent.getBooleanExtra(
-                    ScreenRecordService.EXTRA_IS_MUTED, false
-                )
-                val maskMode = intent.getStringExtra(
-                    ScreenRecordService.EXTRA_MASK_MODE
-                ) ?: ScreenRecordService.MASK_NONE
-                refreshMicIcon(muted)
-                applyMaskMode(maskMode)
-                refreshPrivacyIcon(
-                    maskMode == ScreenRecordService.MASK_PRIVACY
-                )
+            when (intent?.action) {
+                ScreenRecordService.BROADCAST_STATE_CHANGED -> {
+                    val muted = intent.getBooleanExtra(
+                        ScreenRecordService.EXTRA_IS_MUTED, false
+                    )
+                    val maskMode = intent.getStringExtra(
+                        ScreenRecordService.EXTRA_MASK_MODE
+                    ) ?: ScreenRecordService.MASK_NONE
+                    refreshMicIcon(muted)
+                    applyMaskMode(maskMode)
+                    refreshPrivacyIcon(
+                        maskMode == ScreenRecordService.MASK_PRIVACY
+                    )
+                }
+                ScreenRecordService.BROADCAST_RECONNECT_STATE -> {
+                    handleReconnect(intent)
+                }
             }
         }
+    }
+
+    // Track which reconnect events we've already toasted so we don't
+    // spam the user with a Toast for every backoff iteration. We show
+    // ONE Toast at attempt 1 (connection lost), ONE on recovery, and
+    // ONE on give-up. Backoff progress is visible in the FGS
+    // notification text instead.
+    private var lastReconnectAttempt: Int = 0
+
+    private fun handleReconnect(intent: Intent) {
+        val attempt = intent.getIntExtra(
+            ScreenRecordService.EXTRA_RECONNECT_ATTEMPT, 0
+        )
+        val giveUp = intent.getBooleanExtra(
+            ScreenRecordService.EXTRA_RECONNECT_GIVE_UP, false
+        )
+        val recovered = intent.getBooleanExtra(
+            ScreenRecordService.EXTRA_RECONNECT_RECOVERED, false
+        )
+        when {
+            recovered -> {
+                lastReconnectAttempt = 0
+                toast(getString(R.string.reconnect_recovered))
+            }
+            giveUp -> {
+                lastReconnectAttempt = 0
+                toast(
+                    getString(
+                        R.string.reconnect_give_up,
+                        ScreenRecordService.MAX_RECONNECT_ATTEMPTS
+                    )
+                )
+            }
+            attempt == 1 && lastReconnectAttempt == 0 -> {
+                lastReconnectAttempt = attempt
+                toast(getString(R.string.reconnect_lost))
+            }
+            else -> {
+                lastReconnectAttempt = attempt
+            }
+        }
+    }
+
+    private fun toast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -83,7 +132,10 @@ class OverlayService : Service() {
 
         registerReceiver(
             stateReceiver,
-            IntentFilter(ScreenRecordService.BROADCAST_STATE_CHANGED),
+            IntentFilter().apply {
+                addAction(ScreenRecordService.BROADCAST_STATE_CHANGED)
+                addAction(ScreenRecordService.BROADCAST_RECONNECT_STATE)
+            },
             RECEIVER_NOT_EXPORTED
         )
 

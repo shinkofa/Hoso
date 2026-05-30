@@ -433,6 +433,19 @@ class MainActivity : AppCompatActivity() {
             )
             streamer.startStream(descriptor)
 
+            // Hand the resolved RTMP URL to the foreground service so
+            // it can drive its own auto-reconnect loop (G4.1) without
+            // having to call back into this activity.
+            startService(
+                Intent(this, ScreenRecordService::class.java).apply {
+                    action = ScreenRecordService.ACTION_REMEMBER_URL
+                    putExtra(
+                        ScreenRecordService.EXTRA_RTMP_URL,
+                        config.fullRtmpUrl
+                    )
+                }
+            )
+
             runOnUiThread {
                 updateUI(streaming = true)
                 startOverlay()
