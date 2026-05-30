@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Privacy mode inactive — Ermite sky blue circle with an open-eye
+  glyph (white dot inside a ring). State the user can tap to enter
+  privacy mode (mute + opaque mask).
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#CC3DC3FF" />
+            <size android:width="56dp" android:height="56dp" />
+        </shape>
+    </item>
+    <item
+        android:left="18dp"
+        android:top="18dp"
+        android:right="18dp"
+        android:bottom="18dp">
+        <shape android:shape="oval">
+            <solid android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+    <item
+        android:left="24dp"
+        android:top="24dp"
+        android:right="24dp"
+        android:bottom="24dp">
+        <shape android:shape="oval">
+            <solid android:color="#CC3DC3FF" />
+        </shape>
+    </item>
+</layer-list>

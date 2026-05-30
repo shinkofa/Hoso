@@ -42,6 +42,7 @@ class OverlayService : Service() {
     private var windowManager: WindowManager? = null
     private var rootView: LinearLayout? = null
     private var btnMic: ImageView? = null
+    private var btnPrivacy: ImageView? = null
     private var btnPause: ImageView? = null
     private var btnStop: ImageView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
@@ -65,6 +66,9 @@ class OverlayService : Service() {
                 ) ?: ScreenRecordService.MASK_NONE
                 refreshMicIcon(muted)
                 applyMaskMode(maskMode)
+                refreshPrivacyIcon(
+                    maskMode == ScreenRecordService.MASK_PRIVACY
+                )
             }
         }
     }
@@ -135,6 +139,7 @@ class OverlayService : Service() {
             .inflate(R.layout.overlay_controls, null) as LinearLayout
         rootView = root
         btnMic = root.findViewById(R.id.btn_mic)
+        btnPrivacy = root.findViewById(R.id.btn_privacy)
         btnPause = root.findViewById(R.id.btn_pause)
         btnStop = root.findViewById(R.id.btn_stop)
 
@@ -215,6 +220,7 @@ class OverlayService : Service() {
             .inflate(R.layout.overlay_controls, null) as LinearLayout
         rootView = root
         btnMic = root.findViewById(R.id.btn_mic)
+        btnPrivacy = root.findViewById(R.id.btn_privacy)
         btnPause = root.findViewById(R.id.btn_pause)
         btnStop = root.findViewById(R.id.btn_stop)
         attachTouchHandling(root, params)
@@ -271,6 +277,9 @@ class OverlayService : Service() {
                             R.id.btn_mic -> sendStreamAction(
                                 ScreenRecordService.ACTION_TOGGLE_MUTE
                             )
+                            R.id.btn_privacy -> sendStreamAction(
+                                ScreenRecordService.ACTION_TOGGLE_PRIVACY
+                            )
                             R.id.btn_pause -> sendStreamAction(
                                 ScreenRecordService.ACTION_TOGGLE_PAUSE
                             )
@@ -325,6 +334,17 @@ class OverlayService : Service() {
         btnMic?.contentDescription = getString(
             if (muted) R.string.btn_unmute
             else R.string.btn_mute
+        )
+    }
+
+    private fun refreshPrivacyIcon(privacy: Boolean) {
+        btnPrivacy?.setImageResource(
+            if (privacy) R.drawable.ic_privacy_on
+            else R.drawable.ic_privacy_off
+        )
+        btnPrivacy?.contentDescription = getString(
+            if (privacy) R.string.btn_privacy_off
+            else R.string.btn_privacy
         )
     }
 
@@ -384,6 +404,7 @@ class OverlayService : Service() {
         maskView = null
         rootView = null
         btnMic = null
+        btnPrivacy = null
         btnPause = null
         btnStop = null
         super.onDestroy()

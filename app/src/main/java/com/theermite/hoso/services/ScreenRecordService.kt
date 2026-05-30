@@ -86,6 +86,10 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
                 toggleMask(MASK_PAUSE)
                 return START_NOT_STICKY
             }
+            ACTION_TOGGLE_PRIVACY -> {
+                toggleMask(MASK_PRIVACY)
+                return START_NOT_STICKY
+            }
             ACTION_QUERY_STATE -> {
                 broadcastState()
                 return START_NOT_STICKY
@@ -184,6 +188,8 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
             "com.theermite.hoso.TOGGLE_MUTE"
         const val ACTION_TOGGLE_PAUSE =
             "com.theermite.hoso.TOGGLE_PAUSE"
+        const val ACTION_TOGGLE_PRIVACY =
+            "com.theermite.hoso.TOGGLE_PRIVACY"
         const val ACTION_QUERY_STATE =
             "com.theermite.hoso.QUERY_STATE"
         const val BROADCAST_STOPPED =
