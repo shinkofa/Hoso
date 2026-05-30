@@ -82,6 +82,10 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
                 toggleMute()
                 return START_NOT_STICKY
             }
+            ACTION_TOGGLE_PAUSE -> {
+                toggleMask(MASK_PAUSE)
+                return START_NOT_STICKY
+            }
             ACTION_QUERY_STATE -> {
                 broadcastState()
                 return START_NOT_STICKY
@@ -105,6 +109,31 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         broadcastState()
     }
 
+    /**
+     * Toggle a mask mode (pause / privacy). Activating a mask:
+     * - Saves the pre-mask mute state, then force-mutes
+     * - Asks the overlay to draw a fullscreen opaque mask
+     * Deactivating restores the pre-mask mute state.
+     * Switching directly between two mask modes preserves the saved
+     * "pre-first-mask" mute state so a PAUSE -> PRIVACY -> off cycle
+     * still ends on the user's original mic state.
+     */
+    private fun toggleMask(newMode: String) {
+        val audio = (streamer as? IWithAudioSource)?.audioInput
+        if (currentMask == newMode) {
+            // toggle off
+            audio?.isMuted = muteBeforeMask
+            currentMask = MASK_NONE
+        } else {
+            if (currentMask == MASK_NONE) {
+                muteBeforeMask = audio?.isMuted ?: false
+            }
+            audio?.isMuted = true
+            currentMask = newMode
+        }
+        broadcastState()
+    }
+
     private fun broadcastState() {
         val isMuted =
             (streamer as? IWithAudioSource)?.audioInput?.isMuted ?: false
@@ -112,8 +141,12 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
             Intent(BROADCAST_STATE_CHANGED)
                 .setPackage(packageName)
                 .putExtra(EXTRA_IS_MUTED, isMuted)
+                .putExtra(EXTRA_MASK_MODE, currentMask)
         )
     }
+
+    private var currentMask: String = MASK_NONE
+    private var muteBeforeMask: Boolean = false
 
     override fun onOpenNotification(): Notification {
         val openIntent = Intent(this, MainActivity::class.java).apply {
@@ -149,6 +182,8 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
             "com.theermite.hoso.STOP_STREAM"
         const val ACTION_TOGGLE_MUTE =
             "com.theermite.hoso.TOGGLE_MUTE"
+        const val ACTION_TOGGLE_PAUSE =
+            "com.theermite.hoso.TOGGLE_PAUSE"
         const val ACTION_QUERY_STATE =
             "com.theermite.hoso.QUERY_STATE"
         const val BROADCAST_STOPPED =
@@ -156,6 +191,14 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         const val BROADCAST_STATE_CHANGED =
             "com.theermite.hoso.STATE_CHANGED"
         const val EXTRA_IS_MUTED = "is_muted"
+        const val EXTRA_MASK_MODE = "mask_mode"
+
+        // Mask modes for the fullscreen pause / privacy overlay.
+        // String constants keep the intent extras serializable
+        // without bringing in @IntDef ceremony for 3 values.
+        const val MASK_NONE = "none"
+        const val MASK_PAUSE = "pause"
+        const val MASK_PRIVACY = "privacy"
 
         fun buildStopPending(context: Context): PendingIntent {
             val intent = Intent(

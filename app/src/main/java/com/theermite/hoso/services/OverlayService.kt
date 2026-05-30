@@ -17,8 +17,10 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import com.theermite.hoso.R
 
@@ -40,8 +42,12 @@ class OverlayService : Service() {
     private var windowManager: WindowManager? = null
     private var rootView: LinearLayout? = null
     private var btnMic: ImageView? = null
+    private var btnPause: ImageView? = null
     private var btnStop: ImageView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
+
+    private var maskView: FrameLayout? = null
+    private var currentMaskMode: String = ScreenRecordService.MASK_NONE
 
     private val idleHandler = Handler(Looper.getMainLooper())
     private val dimRunnable = Runnable { dimOverlay() }
@@ -54,7 +60,11 @@ class OverlayService : Service() {
                 val muted = intent.getBooleanExtra(
                     ScreenRecordService.EXTRA_IS_MUTED, false
                 )
+                val maskMode = intent.getStringExtra(
+                    ScreenRecordService.EXTRA_MASK_MODE
+                ) ?: ScreenRecordService.MASK_NONE
                 refreshMicIcon(muted)
+                applyMaskMode(maskMode)
             }
         }
     }
@@ -125,11 +135,90 @@ class OverlayService : Service() {
             .inflate(R.layout.overlay_controls, null) as LinearLayout
         rootView = root
         btnMic = root.findViewById(R.id.btn_mic)
+        btnPause = root.findViewById(R.id.btn_pause)
         btnStop = root.findViewById(R.id.btn_stop)
 
         attachTouchHandling(root, params)
 
         windowManager?.addView(root, params)
+        scheduleDim()
+    }
+
+    /**
+     * Add or remove the fullscreen pause/privacy mask. When a mask is
+     * already shown and a different mode is requested, we just refresh
+     * the label (no remove/add cycle). When the mask is removed, the
+     * control row is brought back to top by re-adding it.
+     */
+    private fun applyMaskMode(mode: String) {
+        if (mode == currentMaskMode) return
+        val wm = windowManager ?: return
+
+        when {
+            mode == ScreenRecordService.MASK_NONE -> {
+                maskView?.let {
+                    try { wm.removeView(it) } catch (_: Exception) {}
+                }
+                maskView = null
+            }
+            currentMaskMode == ScreenRecordService.MASK_NONE -> {
+                // Coming from no mask: inflate and add fullscreen mask
+                // BELOW the controls. To force z-order with two
+                // TYPE_APPLICATION_OVERLAY windows of the same app we
+                // remove and re-add the controls so they end up on top.
+                val mask = LayoutInflater.from(this)
+                    .inflate(R.layout.stream_mask, null) as FrameLayout
+                mask.findViewById<TextView>(R.id.mask_title).text =
+                    getString(maskTitleRes(mode))
+                val mp = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                        or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                    PixelFormat.OPAQUE
+                )
+                wm.addView(mask, mp)
+                maskView = mask
+                bringControlsToFront()
+            }
+            else -> {
+                // Switching pause <-> privacy without leaving mask state
+                maskView?.findViewById<TextView>(R.id.mask_title)?.text =
+                    getString(maskTitleRes(mode))
+            }
+        }
+        currentMaskMode = mode
+        refreshPauseIcon(mode == ScreenRecordService.MASK_PAUSE)
+    }
+
+    private fun maskTitleRes(mode: String): Int = when (mode) {
+        ScreenRecordService.MASK_PRIVACY -> R.string.btn_privacy
+        else -> R.string.btn_pause
+    }
+
+    /**
+     * Re-add the control row so it stacks above the mask. Re-inflation
+     * is heavier than we need but it's the only stable way (in stock
+     * WindowManager) to guarantee z-order between two overlay windows
+     * of the same app. Touch state is preserved by reattaching the
+     * handler with fresh closures; preset state lives in the service.
+     */
+    private fun bringControlsToFront() {
+        val wm = windowManager ?: return
+        val params = layoutParams ?: return
+        rootView?.let {
+            try { wm.removeView(it) } catch (_: Exception) {}
+        }
+        val root = LayoutInflater.from(this)
+            .inflate(R.layout.overlay_controls, null) as LinearLayout
+        rootView = root
+        btnMic = root.findViewById(R.id.btn_mic)
+        btnPause = root.findViewById(R.id.btn_pause)
+        btnStop = root.findViewById(R.id.btn_stop)
+        attachTouchHandling(root, params)
+        wm.addView(root, params)
         scheduleDim()
     }
 
@@ -181,6 +270,9 @@ class OverlayService : Service() {
                         when (candidate?.id) {
                             R.id.btn_mic -> sendStreamAction(
                                 ScreenRecordService.ACTION_TOGGLE_MUTE
+                            )
+                            R.id.btn_pause -> sendStreamAction(
+                                ScreenRecordService.ACTION_TOGGLE_PAUSE
                             )
                             R.id.btn_stop -> stopStream()
                         }
@@ -236,6 +328,17 @@ class OverlayService : Service() {
         )
     }
 
+    private fun refreshPauseIcon(paused: Boolean) {
+        btnPause?.setImageResource(
+            if (paused) R.drawable.ic_play
+            else R.drawable.ic_pause
+        )
+        btnPause?.contentDescription = getString(
+            if (paused) R.string.btn_resume
+            else R.string.btn_pause
+        )
+    }
+
     private fun scheduleDim() {
         idleHandler.removeCallbacks(dimRunnable)
         idleHandler.postDelayed(dimRunnable, IDLE_TIMEOUT_MS)
@@ -272,13 +375,16 @@ class OverlayService : Service() {
     override fun onDestroy() {
         idleHandler.removeCallbacks(dimRunnable)
         try { unregisterReceiver(stateReceiver) } catch (_: Exception) {}
-        rootView?.let {
-            try {
-                windowManager?.removeView(it)
-            } catch (_: Exception) { }
+        maskView?.let {
+            try { windowManager?.removeView(it) } catch (_: Exception) {}
         }
+        rootView?.let {
+            try { windowManager?.removeView(it) } catch (_: Exception) {}
+        }
+        maskView = null
         rootView = null
         btnMic = null
+        btnPause = null
         btnStop = null
         super.onDestroy()
     }
