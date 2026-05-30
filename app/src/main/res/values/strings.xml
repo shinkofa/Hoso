@@ -40,4 +40,13 @@
     <string name="action_save">Enregistrer</string>
     <string name="action_cancel">Annuler</string>
     <string name="action_delete">Supprimer</string>
+
+    <!-- G3 stream control overlay buttons -->
+    <string name="btn_mute">Couper le micro</string>
+    <string name="btn_unmute">Activer le micro</string>
+    <string name="btn_pause">Mettre en pause</string>
+    <string name="btn_resume">Reprendre</string>
+    <string name="btn_privacy">Mode confidentialité</string>
+    <string name="btn_privacy_off">Désactiver confidentialité</string>
+    <string name="privacy_mask_label">Hōsō — Mode confidentialité</string>
 </resources>

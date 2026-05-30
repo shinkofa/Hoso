@@ -16,6 +16,7 @@ import com.theermite.hoso.R
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import android.media.MediaRecorder
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
+import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.services.MediaProjectionService
 import io.github.thibaultbee.streampack.services.utils.SingleStreamerFactory
@@ -65,18 +66,53 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         flags: Int,
         startId: Int
     ): Int {
-        if (intent?.action == ACTION_STOP) {
-            lifecycleScope.launch {
-                try { streamer?.stopStream() } catch (_: Exception) {}
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
-                sendBroadcast(
-                    Intent(BROADCAST_STOPPED).setPackage(packageName)
-                )
+        when (intent?.action) {
+            ACTION_STOP -> {
+                lifecycleScope.launch {
+                    try { streamer?.stopStream() } catch (_: Exception) {}
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                    sendBroadcast(
+                        Intent(BROADCAST_STOPPED).setPackage(packageName)
+                    )
+                }
+                return START_NOT_STICKY
             }
-            return START_NOT_STICKY
+            ACTION_TOGGLE_MUTE -> {
+                toggleMute()
+                return START_NOT_STICKY
+            }
+            ACTION_QUERY_STATE -> {
+                broadcastState()
+                return START_NOT_STICKY
+            }
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    /**
+     * Flip the mic mute state on the StreamPack audio input and notify
+     * the overlay so it can refresh its icon. Safe to call before the
+     * stream is fully up: if the audio input isn't available yet, the
+     * call is a no-op and the broadcast still carries the current
+     * (unchanged) state.
+     */
+    private fun toggleMute() {
+        val audio = (streamer as? IWithAudioSource)?.audioInput
+        if (audio != null) {
+            audio.isMuted = !audio.isMuted
+        }
+        broadcastState()
+    }
+
+    private fun broadcastState() {
+        val isMuted =
+            (streamer as? IWithAudioSource)?.audioInput?.isMuted ?: false
+        sendBroadcast(
+            Intent(BROADCAST_STATE_CHANGED)
+                .setPackage(packageName)
+                .putExtra(EXTRA_IS_MUTED, isMuted)
+        )
     }
 
     override fun onOpenNotification(): Notification {
@@ -111,8 +147,15 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         const val CHANNEL_ID = "com.theermite.hoso.stream"
         const val ACTION_STOP =
             "com.theermite.hoso.STOP_STREAM"
+        const val ACTION_TOGGLE_MUTE =
+            "com.theermite.hoso.TOGGLE_MUTE"
+        const val ACTION_QUERY_STATE =
+            "com.theermite.hoso.QUERY_STATE"
         const val BROADCAST_STOPPED =
             "com.theermite.hoso.STREAM_STOPPED"
+        const val BROADCAST_STATE_CHANGED =
+            "com.theermite.hoso.STATE_CHANGED"
+        const val EXTRA_IS_MUTED = "is_muted"
 
         fun buildStopPending(context: Context): PendingIntent {
             val intent = Intent(
