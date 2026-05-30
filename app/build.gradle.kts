@@ -45,8 +45,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.androidx.recyclerview)
 
     implementation(libs.streampack.core)
     implementation(libs.streampack.services)
     implementation(libs.streampack.rtmp)
+
+    testImplementation(libs.junit)
 }
