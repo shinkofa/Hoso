@@ -57,7 +57,7 @@
 
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
-| G7.1 | Mix audio mic + game audio | Android 10+ `AudioPlaybackCapture` API (game audio via MediaProjection) + mix avec `AudioRecord` MIC. Complexité OEM (ColorOS peut filtrer). Sujet déjà exploré et archivé dans `.research/audio-backup-revert-archive/MixedAudioSource.kt`. Session dédiée. | Gros | ⬜ |
+| G7.1 | Mix audio mic + game audio | Vrai mixeur PCM logiciel : `MixedAudioSource` composite (mic + `AudioPlaybackCapture`), in-place 16-bit signed PCM avec clipping ±32767. Gains permil AtomicInteger lock-free (mic 100% / jeu 60% défaut), persistance globale via prefs (hardware-bound, pas par préset). Sliders live MainActivity (MIX uniquement) + overlay EXPANDED. FGS bitmask `MEDIA_PROJECTION \| MICROPHONE`. Bug racine : `position()` → `capacity()` (AudioRecord.read ne déplace pas position). | Gros | ✅ Phase B.2 (9b15518 + 4fe55a5 + ff30e35 + 6e5392b) |
 
 ## Ordre d'exécution validé (2026-05-29)
 
@@ -66,8 +66,8 @@
 3. **G4.1** — fiabilité mobile — ✅ livré 2026-05-30 (bea7df2)
 4. **G4.5** — ergonomie overlay (collapse/expand) — ✅ livré 2026-05-30 (9832348)
 5. **G5.1** — instrumentation streamer (HUD honnête) — ✅ livré 2026-05-30 (1e16ad7)
-6. **G6.1** — Streamer.bot bridge
-7. **G7.1** — mix audio (session dédiée)
+6. **G7.1 Phase B.2** — mix audio mic + jeu — ✅ livré 2026-05-30 (9b15518 + 4fe55a5 + ff30e35 + 6e5392b)
+7. **G6.1** — Streamer.bot bridge
 8. **G6.2** — chat overlay (session dédiée)
 
 ## Méthodologie pour chaque feature
