@@ -38,6 +38,7 @@
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
 | G4.1 | Auto-reconnect RTMP | Watcher sur `streamer.isOpenFlow` (drop(1), distinctUntilChanged) détecte les déco non voulues. Backoff 1 → 2 → 5 → 10 → 15 → 30 s puis cap 30 s, 20 tentatives ≈ 8 min. Service rappelle `startStream(descriptor)` lui-même via URL capturée par `ACTION_REMEMBER_URL`. Notification FGS live ("Reconnexion n/20") + Toast overlay perte/reprise/abandon. | Moyen | ✅ bea7df2 |
+| G4.5 | Overlay collapse/expand | Rangée de boutons permanente non-ergonomique en stream. Bascule vers état COLLAPSED (un seul trigger 48dp draggable) ↔ EXPANDED (rangée complète centrée à l'écran). Auto-collapse 5 s d'inactivité, auto-expand forcé sur activation masque (mute/privacy/pause) pour garder Resume à un tap. Zone HUD réservée (`visibility=gone`) pour câblage G5.1. Design icônes/palette différé jusqu'à intégration complète des features. | Moyen | ✅ 9832348 |
 
 ## Groupe 5 — Instrumentation (HUD)
 
@@ -63,10 +64,11 @@
 1. **G1.1 + G1.2 + G2.1** — fondation + quick win UX (livrable cohérent, zéro risque sur le pipeline streaming) — ✅ livré 2026-05-30
 2. **G3.1 + G3.2 + G3.3** — contrôles essentiels live — ✅ livré 2026-05-30 (a903479 + 61ad178 + 09bbb08)
 3. **G4.1** — fiabilité mobile — ✅ livré 2026-05-30 (bea7df2)
-4. **G5.1** — instrumentation streamer
-5. **G6.1** — Streamer.bot bridge
-6. **G7.1** — mix audio (session dédiée)
-7. **G6.2** — chat overlay (session dédiée)
+4. **G4.5** — ergonomie overlay (collapse/expand) — ✅ livré 2026-05-30 (9832348)
+5. **G5.1** — instrumentation streamer
+6. **G6.1** — Streamer.bot bridge
+7. **G7.1** — mix audio (session dédiée)
+8. **G6.2** — chat overlay (session dédiée)
 
 ## Méthodologie pour chaque feature
 
