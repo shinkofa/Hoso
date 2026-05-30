@@ -44,7 +44,7 @@
 
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
-| G5.1 | HUD overlay live stats | Bitrate live, fps, RTT (si exposé), frame drops, durée stream, état audio (mute on / off). Récupérer via API StreamPack (`streamer.encoder.*`) ou hook FLV. À auditer ce que le SDK expose précisément. | Moyen-Gros | ⬜ |
+| G5.1 | HUD overlay live stats | Audit SDK livré : RTMP n'expose pas FPS / RTT / frame-drops (SRT-only). Scope honnête retenu : durée HH:MM:SS depuis premier startStream (survit aux reconnexions), bitrate sortant via `TrafficStats.getUidTxBytes` (delta 1 s — proxy du RTMP qui domine le trafic UID), état connexion (LIVE / RECONNEXION n/20 / PERDU) dérivé du watcher G4.1, état mic. Ticker 1 Hz actif uniquement en EXPANDED (zéro coût en COLLAPSED). | Moyen | ✅ 1e16ad7 |
 
 ## Groupe 6 — Intégrations externes (réseau + UI complexes)
 
@@ -65,7 +65,7 @@
 2. **G3.1 + G3.2 + G3.3** — contrôles essentiels live — ✅ livré 2026-05-30 (a903479 + 61ad178 + 09bbb08)
 3. **G4.1** — fiabilité mobile — ✅ livré 2026-05-30 (bea7df2)
 4. **G4.5** — ergonomie overlay (collapse/expand) — ✅ livré 2026-05-30 (9832348)
-5. **G5.1** — instrumentation streamer
+5. **G5.1** — instrumentation streamer (HUD honnête) — ✅ livré 2026-05-30 (1e16ad7)
 6. **G6.1** — Streamer.bot bridge
 7. **G7.1** — mix audio (session dédiée)
 8. **G6.2** — chat overlay (session dédiée)
