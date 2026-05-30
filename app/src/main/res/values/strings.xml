@@ -55,4 +55,7 @@
     <string name="reconnect_lost">Connexion perdue, reconnexion…</string>
     <string name="reconnect_recovered">Reconnecté</string>
     <string name="reconnect_give_up">Reconnexion abandonnée après %1$d tentatives</string>
+
+    <!-- G4.5 overlay collapse/expand ergonomics -->
+    <string name="overlay_trigger_label">Ouvrir les contrôles Hōsō</string>
 </resources>

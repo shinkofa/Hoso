@@ -1,48 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Hoso live stream overlay control row.
-  Floating, draggable as a whole. Each child is a tap target.
-  Order is the on-screen order: mic mute, privacy mask, pause, stop.
-  All four children are wired post-G3.3: mic toggles audio, privacy
-  toggles the opaque mask + force-mute combo, pause uses the same
-  mask machinery with a different label, stop tears down the stream.
+  Hoso live stream overlay control row (état EXPANDED — G4.5).
+  Affiché au centre de l'écran sur tap du trigger collapsed.
+  Contient une zone HUD (réservée G5.1) au-dessus, et la rangée
+  de boutons d'action en dessous. Tap sur btn_collapse referme
+  l'overlay vers l'état COLLAPSED. Auto-collapse après 5 s d'inactivité.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/overlay_root"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical">
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
 
-    <ImageView
-        android:id="@+id/btn_mic"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="6dp"
-        android:src="@drawable/ic_mic_on"
-        android:contentDescription="@string/btn_mute" />
+    <!--
+      Zone HUD réservée pour G5.1 (durée, bitrate réseau réel, état).
+      Masquée tant que G5.1 n'a pas câblé son contenu — la View occupe
+      0 px en visibility="gone" donc zéro impact layout actuel.
+    -->
+    <TextView
+        android:id="@+id/hud_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:padding="8dp"
+        android:background="#CC0F1729"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        android:fontFamily="monospace"
+        android:visibility="gone" />
 
-    <ImageView
-        android:id="@+id/btn_privacy"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="6dp"
-        android:src="@drawable/ic_privacy_off"
-        android:contentDescription="@string/btn_privacy" />
+    <LinearLayout
+        android:id="@+id/controls_row"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <ImageView
-        android:id="@+id/btn_pause"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="6dp"
-        android:src="@drawable/ic_pause"
-        android:contentDescription="@string/btn_pause" />
+        <ImageView
+            android:id="@+id/btn_collapse"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/ic_overlay_trigger"
+            android:contentDescription="@string/overlay_trigger_label" />
 
-    <ImageView
-        android:id="@+id/btn_stop"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:src="@drawable/ic_stop_overlay"
-        android:contentDescription="@string/btn_stop" />
+        <ImageView
+            android:id="@+id/btn_mic"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/ic_mic_on"
+            android:contentDescription="@string/btn_mute" />
+
+        <ImageView
+            android:id="@+id/btn_privacy"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/ic_privacy_off"
+            android:contentDescription="@string/btn_privacy" />
+
+        <ImageView
+            android:id="@+id/btn_pause"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/ic_pause"
+            android:contentDescription="@string/btn_pause" />
+
+        <ImageView
+            android:id="@+id/btn_stop"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_stop_overlay"
+            android:contentDescription="@string/btn_stop" />
+
+    </LinearLayout>
 
 </LinearLayout>

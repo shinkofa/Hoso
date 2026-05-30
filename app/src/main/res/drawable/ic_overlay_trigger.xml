@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Trigger discret de l'overlay en mode COLLAPSED.
+  Placeholder design (la passe visuelle finale est différée).
+  Disque semi-transparent palette Ermite accent yellow + glyphe
+  central simple (trois points horizontaux) qui suggère "menu"
+  sans encombrer le stream.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#99F5CD3E" />
+            <size android:width="48dp" android:height="48dp" />
+        </shape>
+    </item>
+    <item
+        android:left="14dp"
+        android:top="22dp"
+        android:right="32dp"
+        android:bottom="22dp">
+        <shape android:shape="oval">
+            <solid android:color="#FF0F1729" />
+        </shape>
+    </item>
+    <item
+        android:left="22dp"
+        android:top="22dp"
+        android:right="24dp"
+        android:bottom="22dp">
+        <shape android:shape="oval">
+            <solid android:color="#FF0F1729" />
+        </shape>
+    </item>
+    <item
+        android:left="30dp"
+        android:top="22dp"
+        android:right="16dp"
+        android:bottom="22dp">
+        <shape android:shape="oval">
+            <solid android:color="#FF0F1729" />
+        </shape>
+    </item>
+</layer-list>
