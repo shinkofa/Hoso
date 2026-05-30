@@ -57,6 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/preset_key_hint"
+            android:layout_marginBottom="16dp"
             app:endIconMode="password_toggle">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -64,6 +65,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_preset_twitch_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/preset_twitch_user_hint">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_preset_twitch_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
                 android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
 

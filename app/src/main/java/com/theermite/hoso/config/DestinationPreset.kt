@@ -21,6 +21,12 @@ data class DestinationPreset(
     var streamKey: String,
     var resolutionIndex: Int,
     var videoBitrate: Int,
+    /**
+     * Twitch channel/login used by the chat IRC overlay (read-only). Saved
+     * once at preset creation because Twitch stream keys are opaque and
+     * cannot be reversed to a channel name. Empty for non-Twitch presets.
+     */
+    var twitchUsername: String = "",
 ) {
 
     enum class Type(val defaultUrl: String, val displayLabel: String) {
@@ -43,6 +49,7 @@ data class DestinationPreset(
         put(K_KEY, streamKey)
         put(K_RES_IDX, resolutionIndex)
         put(K_BITRATE, videoBitrate)
+        put(K_TWITCH_USER, twitchUsername)
     }
 
     companion object {
@@ -53,6 +60,7 @@ data class DestinationPreset(
         private const val K_KEY = "key"
         private const val K_RES_IDX = "res_idx"
         private const val K_BITRATE = "bitrate"
+        private const val K_TWITCH_USER = "twitch_user"
 
         fun newId(): String = UUID.randomUUID().toString()
 
@@ -64,6 +72,7 @@ data class DestinationPreset(
             streamKey = obj.optString(K_KEY, ""),
             resolutionIndex = obj.optInt(K_RES_IDX, 0),
             videoBitrate = obj.optInt(K_BITRATE, 3_000),
+            twitchUsername = obj.optString(K_TWITCH_USER, ""),
         )
 
         fun listToJson(list: List<DestinationPreset>): String {

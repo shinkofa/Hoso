@@ -366,18 +366,26 @@ class MainActivity : AppCompatActivity() {
             existing?.rtmpUrl ?: initialType.defaultUrl
         )
         dlgBinding.editPresetKey.setText(existing?.streamKey ?: "")
+        dlgBinding.editPresetTwitchUser.setText(existing?.twitchUsername ?: "")
+        dlgBinding.layoutPresetTwitchUser.visibility =
+            if (initialType == DestinationPreset.Type.TWITCH) View.VISIBLE
+            else View.GONE
 
         // When the user changes type on a brand-new preset, swap the URL
         // to the type's default so they don't have to type it manually.
         // For existing presets, never overwrite their custom URL silently.
+        // Twitch username field follows the type selection in both cases.
         dlgBinding.spinnerPresetType.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>?, view: View?,
                     position: Int, id: Long
                 ) {
-                    if (existing != null) return
                     val t = types.getOrNull(position) ?: return
+                    dlgBinding.layoutPresetTwitchUser.visibility =
+                        if (t == DestinationPreset.Type.TWITCH) View.VISIBLE
+                        else View.GONE
+                    if (existing != null) return
                     dlgBinding.editPresetUrl.setText(t.defaultUrl)
                     val currentName = dlgBinding.editPresetName.text.toString()
                     if (currentName.isBlank() ||
@@ -404,12 +412,16 @@ class MainActivity : AppCompatActivity() {
                 ]
                 val url = dlgBinding.editPresetUrl.text.toString().trim()
                 val key = dlgBinding.editPresetKey.text.toString().trim()
+                val twitchUser = dlgBinding.editPresetTwitchUser.text
+                    .toString().trim().lowercase().removePrefix("#")
+                    .takeIf { type == DestinationPreset.Type.TWITCH } ?: ""
 
                 if (existing != null) {
                     existing.name = name
                     existing.type = type
                     existing.rtmpUrl = url
                     existing.streamKey = key
+                    existing.twitchUsername = twitchUser
                     config.upsertPreset(existing)
                 } else {
                     val created = DestinationPreset(
@@ -420,6 +432,7 @@ class MainActivity : AppCompatActivity() {
                         streamKey = key,
                         resolutionIndex = config.resolutionIndex,
                         videoBitrate = config.videoBitrate,
+                        twitchUsername = twitchUser,
                     )
                     config.upsertPreset(created)
                     config.activePresetId = created.id

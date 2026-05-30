@@ -33,6 +33,7 @@
     <string name="preset_type_label">Type de destination</string>
     <string name="preset_url_hint">URL RTMP</string>
     <string name="preset_key_hint">Stream Key</string>
+    <string name="preset_twitch_user_hint">Chaîne Twitch (pour le chat)</string>
     <string name="preset_dialog_title_new">Nouvelle destination</string>
     <string name="preset_dialog_title_edit">Modifier la destination</string>
     <string name="preset_delete_confirm_title">Supprimer la destination ?</string>
