@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Size
 import android.view.WindowManager
+import com.theermite.hoso.audio.AudioGains
 
 class StreamConfig(context: Context) {
 
@@ -13,6 +14,16 @@ class StreamConfig(context: Context) {
     val nativeScreen: Size = detectNativeScreen(context)
 
     init {
+        // Hydrate the in-memory AudioGains singleton from persisted prefs
+        // so the audio pipeline reads the user's last-known mix gains
+        // from frame #1 — and so the UI sliders bind to the same values.
+        AudioGains.micGainPermil = prefs.getInt(
+            KEY_MIC_GAIN_PERMIL, AudioGains.GAIN_DEFAULT_MIC
+        )
+        AudioGains.gameGainPermil = prefs.getInt(
+            KEY_GAME_GAIN_PERMIL, AudioGains.GAIN_DEFAULT_GAME
+        )
+
         // Silent migration: if no presets stored yet (fresh install OR
         // user upgrading from per-key storage), seed a default Twitch
         // preset from whatever values were previously in prefs.
@@ -160,6 +171,36 @@ class StreamConfig(context: Context) {
         set(value) = prefs.edit()
             .putInt(KEY_AUDIO_BITRATE, value).apply()
 
+    // G7.1 Phase B.1 — chosen audio capture source. Default = MIC keeps
+    // legacy behavior so existing users notice no change after upgrade.
+    var audioSource: AudioSource
+        get() = AudioSource.fromStorageKey(
+            prefs.getString(KEY_AUDIO_SOURCE, null)
+        )
+        set(value) = prefs.edit()
+            .putString(KEY_AUDIO_SOURCE, value.storageKey).apply()
+
+    // G7.1 Phase B.2 — mix gains, global across destinations. The UI
+    // slider writes here; the audio pipeline reads them via AudioGains
+    // every frame. Persistence is global on purpose: a Bluetooth-mic /
+    // wired-headset trade-off is a hardware preference of the user, not
+    // a property of "the Twitch destination" vs "another".
+    var micGainPermil: Int
+        get() = prefs.getInt(KEY_MIC_GAIN_PERMIL, AudioGains.GAIN_DEFAULT_MIC)
+        set(value) {
+            val clamped = value.coerceIn(AudioGains.GAIN_MIN, AudioGains.GAIN_MAX)
+            prefs.edit().putInt(KEY_MIC_GAIN_PERMIL, clamped).apply()
+            AudioGains.micGainPermil = clamped
+        }
+
+    var gameGainPermil: Int
+        get() = prefs.getInt(KEY_GAME_GAIN_PERMIL, AudioGains.GAIN_DEFAULT_GAME)
+        set(value) {
+            val clamped = value.coerceIn(AudioGains.GAIN_MIN, AudioGains.GAIN_MAX)
+            prefs.edit().putInt(KEY_GAME_GAIN_PERMIL, clamped).apply()
+            AudioGains.gameGainPermil = clamped
+        }
+
     val fullRtmpUrl: String
         get() = "$rtmpBaseUrl$streamKey"
 
@@ -181,6 +222,9 @@ class StreamConfig(context: Context) {
         // Non-preset keys (apply to all destinations)
         private const val KEY_FPS = "fps"
         private const val KEY_AUDIO_BITRATE = "audio_bitrate"
+        private const val KEY_AUDIO_SOURCE = "audio_source"
+        private const val KEY_MIC_GAIN_PERMIL = "mix_mic_gain_permil"
+        private const val KEY_GAME_GAIN_PERMIL = "mix_game_gain_permil"
         // Preset storage
         private const val KEY_PRESETS_JSON = "presets_json_v1"
         private const val KEY_ACTIVE_PRESET_ID = "active_preset_id"
