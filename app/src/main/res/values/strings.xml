@@ -34,6 +34,18 @@
     <string name="preset_url_hint">URL RTMP</string>
     <string name="preset_key_hint">Stream Key</string>
     <string name="preset_twitch_user_hint">Chaîne Twitch (pour le chat)</string>
+
+    <!-- Chat overlay (G6.2) -->
+    <string name="chat_status_connecting">Connexion…</string>
+    <string name="chat_status_connected">●</string>
+    <string name="chat_status_reconnecting">Reconnexion…</string>
+    <string name="chat_status_stopped">Hors-ligne</string>
+    <string name="chat_status_no_channel">Pas de chaîne</string>
+    <string name="chat_close_desc">Fermer le chat</string>
+    <string name="chat_new_badge">%1$d nouveaux ↓</string>
+    <string name="chat_notif_channel">Chat overlay</string>
+    <string name="chat_notif_title">Chat Twitch</string>
+    <string name="chat_notif_text">Bulle visible — appuie pour ouvrir Hoso</string>
     <string name="preset_dialog_title_new">Nouvelle destination</string>
     <string name="preset_dialog_title_edit">Modifier la destination</string>
     <string name="preset_delete_confirm_title">Supprimer la destination ?</string>

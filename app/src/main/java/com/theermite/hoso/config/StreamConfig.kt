@@ -204,6 +204,39 @@ class StreamConfig(context: Context) {
     val fullRtmpUrl: String
         get() = "$rtmpBaseUrl$streamKey"
 
+    // ── Chat bubble overlay (G6.2) ───────────────────────────────────
+    // Position is stored as an edge-anchor (LEFT/RIGHT) + Y offset so
+    // the bubble re-snaps cleanly to the same edge after rotation
+    // instead of drifting toward the center.
+
+    var chatEnabled: Boolean
+        get() = prefs.getBoolean(KEY_CHAT_ENABLED, false)
+        set(value) = prefs.edit()
+            .putBoolean(KEY_CHAT_ENABLED, value).apply()
+
+    var chatSizeIndex: Int
+        get() = prefs.getInt(KEY_CHAT_SIZE_IDX, CHAT_SIZE_DEFAULT)
+        set(value) = prefs.edit()
+            .putInt(KEY_CHAT_SIZE_IDX, value.coerceIn(0, 2)).apply()
+
+    /** 0..100 — slider unit. The window alpha = opacity/100. */
+    var chatOpacity: Int
+        get() = prefs.getInt(KEY_CHAT_OPACITY, CHAT_OPACITY_DEFAULT)
+        set(value) = prefs.edit()
+            .putInt(KEY_CHAT_OPACITY, value.coerceIn(CHAT_OPACITY_MIN, CHAT_OPACITY_MAX))
+            .apply()
+
+    /** "L" or "R" — which screen edge the bubble snaps to. */
+    var chatEdge: String
+        get() = prefs.getString(KEY_CHAT_EDGE, CHAT_EDGE_DEFAULT) ?: CHAT_EDGE_DEFAULT
+        set(value) = prefs.edit()
+            .putString(KEY_CHAT_EDGE, if (value == "L") "L" else "R").apply()
+
+    /** Y offset in px from the top of the screen for the bubble origin. */
+    var chatY: Int
+        get() = prefs.getInt(KEY_CHAT_Y, -1)
+        set(value) = prefs.edit().putInt(KEY_CHAT_Y, value).apply()
+
     val presets: List<Pair<String, Size>> by lazy {
         buildPresets(nativeScreen)
     }
@@ -228,6 +261,17 @@ class StreamConfig(context: Context) {
         // Preset storage
         private const val KEY_PRESETS_JSON = "presets_json_v1"
         private const val KEY_ACTIVE_PRESET_ID = "active_preset_id"
+        // Chat overlay (G6.2)
+        private const val KEY_CHAT_ENABLED = "chat_enabled"
+        private const val KEY_CHAT_SIZE_IDX = "chat_size_idx"
+        private const val KEY_CHAT_OPACITY = "chat_opacity"
+        private const val KEY_CHAT_EDGE = "chat_edge"
+        private const val KEY_CHAT_Y = "chat_y"
+        const val CHAT_SIZE_DEFAULT = 1   // M
+        const val CHAT_OPACITY_DEFAULT = 70
+        const val CHAT_OPACITY_MIN = 20
+        const val CHAT_OPACITY_MAX = 80
+        const val CHAT_EDGE_DEFAULT = "R"
 
         const val DEFAULT_TWITCH_URL = "rtmp://live.twitch.tv/app/"
         const val DEFAULT_VIDEO_BITRATE = 3_000

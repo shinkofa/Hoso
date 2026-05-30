@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Chat bubble overlay window. Sized in code by ChatBubbleService based
+  on the user's chosen size preset (S/M/L). Touch-passthrough is OFF —
+  the bubble is interactive (drag header, scroll list, long-press for
+  opacity). Only the control overlay needs alpha-capped passthrough.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/chat_bubble_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/chat_bubble_bg"
+    android:elevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/chat_header"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:background="@drawable/chat_header_bg">
+
+            <TextView
+                android:id="@+id/chat_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="10dp"
+                android:text="@string/chat_status_connecting"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+
+            <ImageView
+                android:id="@+id/chat_close"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="4dp"
+                android:contentDescription="@string/chat_close_desc"
+                android:padding="6dp"
+                android:src="@drawable/ic_stop_overlay" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chat_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="6dp"
+                android:scrollbars="vertical" />
+
+            <TextView
+                android:id="@+id/chat_new_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/chat_badge_bg"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:textColor="#FF0F1729"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:ignore="UnusedAttribute"
+                xmlns:tools="http://schemas.android.com/tools" />
+        </FrameLayout>
+
+        <View
+            android:id="@+id/chat_resize"
+            android:layout_width="match_parent"
+            android:layout_height="14dp"
+            android:background="#1AFFFFFF" />
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "N nouveaux ↓" pill that appears when the user scrolled away from bottom. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF3DC3FF" />
+    <corners android:radius="12dp" />
+</shape>
