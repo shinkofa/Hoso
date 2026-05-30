@@ -37,7 +37,7 @@
 
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
-| G4.1 | Auto-reconnect RTMP | Hook sur `endpoint` failure → backoff exponentiel (1 s → 2 s → 5 s → 10 s) → retry. Préserver le notification FGS pendant la reconnexion. Toast / log overlay sur reconnexions. | Moyen | ⬜ |
+| G4.1 | Auto-reconnect RTMP | Watcher sur `streamer.isOpenFlow` (drop(1), distinctUntilChanged) détecte les déco non voulues. Backoff 1 → 2 → 5 → 10 → 15 → 30 s puis cap 30 s, 20 tentatives ≈ 8 min. Service rappelle `startStream(descriptor)` lui-même via URL capturée par `ACTION_REMEMBER_URL`. Notification FGS live ("Reconnexion n/20") + Toast overlay perte/reprise/abandon. | Moyen | ✅ bea7df2 |
 
 ## Groupe 5 — Instrumentation (HUD)
 
@@ -62,7 +62,7 @@
 
 1. **G1.1 + G1.2 + G2.1** — fondation + quick win UX (livrable cohérent, zéro risque sur le pipeline streaming) — ✅ livré 2026-05-30
 2. **G3.1 + G3.2 + G3.3** — contrôles essentiels live — ✅ livré 2026-05-30 (a903479 + 61ad178 + 09bbb08)
-3. **G4.1** — fiabilité mobile
+3. **G4.1** — fiabilité mobile — ✅ livré 2026-05-30 (bea7df2)
 4. **G5.1** — instrumentation streamer
 5. **G6.1** — Streamer.bot bridge
 6. **G7.1** — mix audio (session dédiée)
