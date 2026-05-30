@@ -69,4 +69,18 @@
     <string name="hud_mic_on">MIC ON</string>
     <string name="hud_mic_muted">MIC MUTED</string>
     <string name="hud_bitrate_unavailable">--</string>
+
+    <!-- G7.1 Phase B.2 — audio source selector on main screen.
+         MIC = microphone seul. MIX = micro + son du jeu mixés en PCM
+         avec deux gains indépendants exposés ci-dessous. Le mode
+         "Son du jeu" pur (legacy "game") a été abandonné : pour ce
+         comportement, basculer en MIX et glisser le gain micro à 0. -->
+    <string name="label_audio_source">Source audio</string>
+    <string name="audio_source_mic">Micro</string>
+    <string name="audio_source_mix">Mix (micro + jeu)</string>
+
+    <!-- Mix gain sliders (visibles uniquement en MIX). -->
+    <string name="label_mic_gain">Volume micro</string>
+    <string name="label_game_gain">Volume jeu</string>
+    <string name="gain_value_format">%1$d %%</string>
 </resources>

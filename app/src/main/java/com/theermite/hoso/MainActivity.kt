@@ -23,6 +23,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
+import com.theermite.hoso.audio.AudioGains
+import com.theermite.hoso.config.AudioSource
 import com.theermite.hoso.config.DestinationPreset
 import com.theermite.hoso.config.StreamConfig
 import com.theermite.hoso.databinding.DialogPresetEditBinding
@@ -187,6 +189,8 @@ class MainActivity : AppCompatActivity() {
             config.presetLabels
         )
 
+        setupAudioSourceUI()
+        setupMixGainSliders()
         setupPresetUI()
 
         val steps = (StreamConfig.BITRATE_MAX - StreamConfig.BITRATE_MIN) /
@@ -208,6 +212,87 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnStart.setOnClickListener { startStreaming() }
         binding.btnStop.setOnClickListener { stopStreaming() }
+    }
+
+    // G7.1 Phase B.2 — order matches AudioSource enum declaration so
+    // spinner index == enum ordinal. Keep these aligned if a new entry
+    // is added.
+    private val audioSourceOptions = listOf(
+        AudioSource.MIC,
+        AudioSource.MIX
+    )
+
+    private fun setupAudioSourceUI() {
+        val labels = audioSourceOptions.map { src ->
+            getString(
+                when (src) {
+                    AudioSource.MIC -> R.string.audio_source_mic
+                    AudioSource.MIX -> R.string.audio_source_mix
+                }
+            )
+        }
+        binding.spinnerAudioSource.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            labels
+        )
+        binding.spinnerAudioSource.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?, view: View?,
+                    position: Int, id: Long
+                ) {
+                    val chosen = audioSourceOptions.getOrNull(position)
+                        ?: return
+                    if (chosen != config.audioSource) {
+                        config.audioSource = chosen
+                    }
+                    applyMixSlidersVisibility(chosen)
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+    }
+
+    private fun applyMixSlidersVisibility(source: AudioSource) {
+        binding.groupMixGains.visibility = when (source) {
+            AudioSource.MIX -> View.VISIBLE
+            AudioSource.MIC -> View.GONE
+        }
+    }
+
+    private fun setupMixGainSliders() {
+        // Both sliders feed AudioGains (lock-free atomics read by the
+        // mixer every frame) AND config.{mic,game}GainPermil (which
+        // persists to prefs). Slider range is permil 0..2000 so the
+        // text shows full % and dragging is a single int write.
+        binding.seekbarMicGain.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    sb: SeekBar?, progress: Int, fromUser: Boolean
+                ) {
+                    binding.textMicGainValue.text = getString(
+                        R.string.gain_value_format, progress / 10
+                    )
+                    if (fromUser) config.micGainPermil = progress
+                }
+                override fun onStartTrackingTouch(sb: SeekBar?) {}
+                override fun onStopTrackingTouch(sb: SeekBar?) {}
+            }
+        )
+        binding.seekbarGameGain.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    sb: SeekBar?, progress: Int, fromUser: Boolean
+                ) {
+                    binding.textGameGainValue.text = getString(
+                        R.string.gain_value_format, progress / 10
+                    )
+                    if (fromUser) config.gameGainPermil = progress
+                }
+                override fun onStartTrackingTouch(sb: SeekBar?) {}
+                override fun onStopTrackingTouch(sb: SeekBar?) {}
+            }
+        )
     }
 
     private fun setupPresetUI() {
@@ -371,6 +456,18 @@ class MainActivity : AppCompatActivity() {
             0, binding.seekbarBitrate.max
         )
         binding.textBitrateValue.text = "${config.videoBitrate} kbps"
+
+        val audioIdx = audioSourceOptions.indexOf(config.audioSource)
+            .takeIf { it >= 0 } ?: 0
+        binding.spinnerAudioSource.setSelection(audioIdx)
+        applyMixSlidersVisibility(config.audioSource)
+
+        // Mix gains — read from persisted config (already mirrored into
+        // AudioGains via StreamConfig.init). Programmatic progress change
+        // fires onProgressChanged with fromUser=false → text updates,
+        // but no write-back to prefs (avoids the load→save→load loop).
+        binding.seekbarMicGain.progress = config.micGainPermil
+        binding.seekbarGameGain.progress = config.gameGainPermil
     }
 
     private fun saveConfigFromUI() {
@@ -499,6 +596,7 @@ class MainActivity : AppCompatActivity() {
         binding.editStreamKey.isEnabled = !streaming
         binding.spinnerResolution.isEnabled = !streaming
         binding.seekbarBitrate.isEnabled = !streaming
+        binding.spinnerAudioSource.isEnabled = !streaming
 
         showStatus(
             getString(
