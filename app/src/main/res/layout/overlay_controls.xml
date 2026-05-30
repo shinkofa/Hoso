@@ -78,4 +78,82 @@
 
     </LinearLayout>
 
+    <!--
+      G7.1 Phase B.2 — sliders de mix live (micro + jeu). Visibles
+      uniquement quand la source audio = MIX. Largeur fixe en dp pour
+      ne pas étirer la rangée de boutons sur les écrans larges.
+      Le fond opaque sombre garantit la lisibilité du texte par-dessus
+      n'importe quel jeu (light scene, sky, neige…).
+    -->
+    <LinearLayout
+        android:id="@+id/overlay_mix_gains"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        android:padding="10dp"
+        android:background="#CC0F1729"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="2dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_mic_gain"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/overlay_mic_gain_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/overlay_seekbar_mic_gain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="2000"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="2dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_game_gain"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/overlay_game_gain_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/overlay_seekbar_game_gain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="2000" />
+
+    </LinearLayout>
+
 </LinearLayout>

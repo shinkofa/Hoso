@@ -24,10 +24,14 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.theermite.hoso.R
+import com.theermite.hoso.audio.AudioGains
+import com.theermite.hoso.config.AudioSource
+import com.theermite.hoso.config.StreamConfig
 
 /**
  * Floating overlay shown over the captured screen while Hoso is live.
@@ -65,6 +69,16 @@ class OverlayService : Service() {
     private var btnCollapse: ImageView? = null
     private var controlsRow: LinearLayout? = null
     private var hudText: TextView? = null
+
+    // G7.1 Phase B.2 — mix gain sliders. Only inflated/visible when the
+    // active audio source is MIX. AudioGains receives the value on every
+    // drag step for live audio response; StreamConfig persists on release.
+    private var mixGainsGroup: LinearLayout? = null
+    private var seekbarMicGain: SeekBar? = null
+    private var seekbarGameGain: SeekBar? = null
+    private var textMicGainValue: TextView? = null
+    private var textGameGainValue: TextView? = null
+    private var streamConfig: StreamConfig? = null
 
     // COLLAPSED state remembers the last drag-applied position so a
     // collapse after expand returns to where the user parked it.
@@ -221,6 +235,7 @@ class OverlayService : Service() {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        streamConfig = StreamConfig(this)
 
         registerReceiver(
             stateReceiver,
@@ -336,13 +351,7 @@ class OverlayService : Service() {
         val root = LayoutInflater.from(this)
             .inflate(R.layout.overlay_controls, null) as LinearLayout
         rootView = root
-        controlsRow = root.findViewById(R.id.controls_row)
-        btnCollapse = root.findViewById(R.id.btn_collapse)
-        btnMic = root.findViewById(R.id.btn_mic)
-        btnPrivacy = root.findViewById(R.id.btn_privacy)
-        btnPause = root.findViewById(R.id.btn_pause)
-        btnStop = root.findViewById(R.id.btn_stop)
-        hudText = root.findViewById(R.id.hud_text)
+        bindExpandedViews(root)
 
         // Re-paint icons from cached state so the row reflects reality
         // the instant it appears (no flicker from defaults).
@@ -353,6 +362,7 @@ class OverlayService : Service() {
         refreshPrivacyIcon(
             currentMaskMode == ScreenRecordService.MASK_PRIVACY
         )
+        applyMixSlidersVisibility()
 
         attachExpandedTouch(root, params)
 
@@ -360,6 +370,109 @@ class OverlayService : Service() {
         expanded = true
         scheduleCollapse()
         startHudTicker()
+    }
+
+    /**
+     * Locate every EXPANDED-state child view in [root] and store the
+     * references. Called from expand() AND bringControlsToFront() —
+     * the latter re-inflates the controls view to enforce z-order over
+     * the mask, so the binding must happen in both code paths.
+     */
+    private fun bindExpandedViews(root: LinearLayout) {
+        controlsRow = root.findViewById(R.id.controls_row)
+        btnCollapse = root.findViewById(R.id.btn_collapse)
+        btnMic = root.findViewById(R.id.btn_mic)
+        btnPrivacy = root.findViewById(R.id.btn_privacy)
+        btnPause = root.findViewById(R.id.btn_pause)
+        btnStop = root.findViewById(R.id.btn_stop)
+        hudText = root.findViewById(R.id.hud_text)
+        mixGainsGroup = root.findViewById(R.id.overlay_mix_gains)
+        seekbarMicGain = root.findViewById(R.id.overlay_seekbar_mic_gain)
+        seekbarGameGain = root.findViewById(R.id.overlay_seekbar_game_gain)
+        textMicGainValue = root.findViewById(R.id.overlay_mic_gain_value)
+        textGameGainValue = root.findViewById(R.id.overlay_game_gain_value)
+        wireMixGainSliders()
+    }
+
+    /**
+     * Toggle the gain sliders depending on the configured audio source.
+     * Source is read once per expand — it can only change while not
+     * streaming (spinner disabled in MainActivity.updateUI(true)), so
+     * caching across the EXPANDED lifetime is safe.
+     */
+    private fun applyMixSlidersVisibility() {
+        val source = streamConfig?.audioSource ?: AudioSource.MIC
+        mixGainsGroup?.visibility = when (source) {
+            AudioSource.MIX -> View.VISIBLE
+            AudioSource.MIC -> View.GONE
+        }
+    }
+
+    /**
+     * Bind both sliders to AudioGains (live, every drag step) AND
+     * StreamConfig (persisted on release only — avoids one I/O write
+     * per drag pixel). Every interaction also bumps the auto-collapse
+     * timer so the row stays visible while the user is fine-tuning.
+     */
+    private fun wireMixGainSliders() {
+        seekbarMicGain?.progress = AudioGains.micGainPermil
+        seekbarGameGain?.progress = AudioGains.gameGainPermil
+        renderMicGainLabel(AudioGains.micGainPermil)
+        renderGameGainLabel(AudioGains.gameGainPermil)
+
+        seekbarMicGain?.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    sb: SeekBar?, progress: Int, fromUser: Boolean
+                ) {
+                    renderMicGainLabel(progress)
+                    if (fromUser) {
+                        AudioGains.micGainPermil = progress
+                        scheduleCollapse()
+                    }
+                }
+                override fun onStartTrackingTouch(sb: SeekBar?) {
+                    scheduleCollapse()
+                }
+                override fun onStopTrackingTouch(sb: SeekBar?) {
+                    sb?.progress?.let { streamConfig?.micGainPermil = it }
+                    scheduleCollapse()
+                }
+            }
+        )
+
+        seekbarGameGain?.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    sb: SeekBar?, progress: Int, fromUser: Boolean
+                ) {
+                    renderGameGainLabel(progress)
+                    if (fromUser) {
+                        AudioGains.gameGainPermil = progress
+                        scheduleCollapse()
+                    }
+                }
+                override fun onStartTrackingTouch(sb: SeekBar?) {
+                    scheduleCollapse()
+                }
+                override fun onStopTrackingTouch(sb: SeekBar?) {
+                    sb?.progress?.let { streamConfig?.gameGainPermil = it }
+                    scheduleCollapse()
+                }
+            }
+        )
+    }
+
+    private fun renderMicGainLabel(permil: Int) {
+        textMicGainValue?.text = getString(
+            R.string.gain_value_format, permil / 10
+        )
+    }
+
+    private fun renderGameGainLabel(permil: Int) {
+        textGameGainValue?.text = getString(
+            R.string.gain_value_format, permil / 10
+        )
     }
 
     /**
@@ -392,6 +505,11 @@ class OverlayService : Service() {
         btnPause = null
         btnStop = null
         hudText = null
+        mixGainsGroup = null
+        seekbarMicGain = null
+        seekbarGameGain = null
+        textMicGainValue = null
+        textGameGainValue = null
     }
 
     private fun scheduleCollapse() {
@@ -465,13 +583,7 @@ class OverlayService : Service() {
             val root = LayoutInflater.from(this)
                 .inflate(R.layout.overlay_controls, null) as LinearLayout
             rootView = root
-            controlsRow = root.findViewById(R.id.controls_row)
-            btnCollapse = root.findViewById(R.id.btn_collapse)
-            btnMic = root.findViewById(R.id.btn_mic)
-            btnPrivacy = root.findViewById(R.id.btn_privacy)
-            btnPause = root.findViewById(R.id.btn_pause)
-            btnStop = root.findViewById(R.id.btn_stop)
-            hudText = root.findViewById(R.id.hud_text)
+            bindExpandedViews(root)
             refreshMicIcon(lastMuted)
             refreshPauseIcon(
                 currentMaskMode == ScreenRecordService.MASK_PAUSE
@@ -479,6 +591,7 @@ class OverlayService : Service() {
             refreshPrivacyIcon(
                 currentMaskMode == ScreenRecordService.MASK_PRIVACY
             )
+            applyMixSlidersVisibility()
             attachExpandedTouch(root, params)
             wm.addView(root, params)
             scheduleCollapse()
