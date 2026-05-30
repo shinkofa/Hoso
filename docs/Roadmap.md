@@ -29,9 +29,9 @@
 
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
-| G3.1 | Mute mic | Couper `AudioRecord` côté StreamPack sans stopper le stream. Vérifier API SDK (`microphoneSource.mute()` ou injecter silence dans la source). Bouton dédié overlay. | Petit-Moyen | ⬜ |
-| G3.2 | Pause stream | StreamPack 3.1.2 ne supporte pas de pause native ; Twitch non plus. Stratégie : freeze l'écran sur dernière frame (Surface noir / image) + mute mic. Vraie "pause UX" sans déco RTMP. | Moyen | ⬜ |
-| G3.3 | Privacy mode | Combinaison 1-tap : mute mic + masque opaque Surface au-dessus du screen capture. Override visuel total mais le stream continue. | Moyen | ⬜ |
+| G3.1 | Mute mic | `IAudioInput.isMuted` via `IWithAudioSource` (StreamPack SDK natif). Bouton overlay sky blue / danger red. | Petit-Moyen | ✅ a903479 |
+| G3.2 | Pause stream | Masque opaque plein écran (TYPE_APPLICATION_OVERLAY MATCH_PARENT) capté par MediaProjection + force-mute. State machine sauvegarde mute pré-masque. Z-order via remove+re-add des contrôles. | Moyen | ✅ 61ad178 |
+| G3.3 | Privacy mode | Réutilise la machinerie G3.2 avec `MASK_PRIVACY` + label dédié. 1-tap sur bouton privacy = mute + masque opaque. | Moyen | ✅ 09bbb08 |
 
 ## Groupe 4 — Robustesse réseau (stream fiable mobile)
 
@@ -60,8 +60,8 @@
 
 ## Ordre d'exécution validé (2026-05-29)
 
-1. **G1.1 + G1.2 + G2.1** — fondation + quick win UX (livrable cohérent, zéro risque sur le pipeline streaming)
-2. **G3.1 + G3.2 + G3.3** — contrôles essentiels live
+1. **G1.1 + G1.2 + G2.1** — fondation + quick win UX (livrable cohérent, zéro risque sur le pipeline streaming) — ✅ livré 2026-05-30
+2. **G3.1 + G3.2 + G3.3** — contrôles essentiels live — ✅ livré 2026-05-30 (a903479 + 61ad178 + 09bbb08)
 3. **G4.1** — fiabilité mobile
 4. **G5.1** — instrumentation streamer
 5. **G6.1** — Streamer.bot bridge
