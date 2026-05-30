@@ -18,6 +18,9 @@ import com.theermite.hoso.R
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import android.media.MediaRecorder
+import com.theermite.hoso.audio.MixedAudioSourceFactory
+import com.theermite.hoso.config.AudioSource
+import com.theermite.hoso.config.StreamConfig
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.startStream
@@ -46,17 +49,28 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         super.onCreate()
         // StreamPack's StreamerService.onCreate() promotes the service
         // to foreground with FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION only.
-        // Android 14+ requires MICROPHONE in the bitmask so the framework
-        // calls AppOps.startOp(RECORD_AUDIO); without it the mic is silenced
-        // (observed on ColorOS via VD.AudioRecordMonitor isSilenced=true).
-        // Re-call startForeground with both types to upgrade.
+        // G7.1 Phase B.2 — bitmask doit matcher la source réelle :
+        //  - MIC : MEDIA_PROJECTION | MICROPHONE (Android 14+ requiert MICROPHONE
+        //          sinon AppOps silence le mic, observé ColorOS)
+        //  - MIX : MEDIA_PROJECTION | MICROPHONE (mic ET playback capture
+        //          actifs simultanément, donc on déclare les deux types)
+        //  Source officielle : developer.android.com/develop/background-work/
+        //  services/fgs/service-types — "mediaProjection is sufficient for
+        //  capturing audio via the AudioPlaybackCapture API", auquel on ajoute
+        //  MICROPHONE dès qu'un AudioRecord MIC est actif.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val source = StreamConfig(this).audioSource
+            val fgsType = when (source) {
+                AudioSource.MIC,
+                AudioSource.MIX ->
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION or
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            }
             ServiceCompat.startForeground(
                 this,
                 NOTIFICATION_ID,
                 onOpenNotification(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION or
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                fgsType
             )
         }
     }
@@ -65,10 +79,17 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
         mediaProjection: MediaProjection,
         extras: Bundle
     ): IAudioSourceInternal.Factory {
-        return MicrophoneSourceFactory(
-            audioSource = MediaRecorder.AudioSource.MIC,
-            effects = emptySet()
-        )
+        // G7.1 Phase B.2 — MIC = upstream microphone source only.
+        // MIX = our composite MixedAudioSource (mic + AudioPlaybackCapture,
+        // PCM-summed with independent gains read live from AudioGains).
+        val source = StreamConfig(this).audioSource
+        return when (source) {
+            AudioSource.MIC -> MicrophoneSourceFactory(
+                audioSource = MediaRecorder.AudioSource.MIC,
+                effects = emptySet()
+            )
+            AudioSource.MIX -> MixedAudioSourceFactory(mediaProjection)
+        }
     }
 
     override fun onStartCommand(
