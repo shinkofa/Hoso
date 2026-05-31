@@ -37,7 +37,8 @@ import com.theermite.hoso.config.StreamConfig
  * owns the control disc and the mask windows.
  *
  * Behaviors:
- *   - Header drag, edge snap (L/R) on release.
+ *   - Header drag, free positioning anywhere on screen (clamped to
+ *     screen bounds). X/Y persisted to prefs at drag release.
  *   - Tap the bottom strip to cycle size S → M → L → S.
  *   - Long-press the header to cycle opacity 80 → 60 → 40 → 20 → 80.
  *   - Auto-fade content to 30% after 5 s of no interaction. Any touch
@@ -189,9 +190,15 @@ class ChatBubbleService : Service() {
         val (wDp, hDp) = SIZE_PRESETS[streamConfig.chatSizeIndex.coerceIn(0, 2)]
         val w = dp(wDp)
         val h = dp(hDp)
-        val edge = streamConfig.chatEdge
+        val storedX = streamConfig.chatX
         val storedY = streamConfig.chatY
-        val y = if (storedY < 0) (screenH - h) / 2 else storedY.coerceIn(0, screenH - h)
+        // Free positioning. First launch (storedX < 0) anchors on the
+        // right edge, vertically centered. Subsequent launches reuse
+        // whatever the user dragged to, clamped inside the screen.
+        val x = if (storedX < 0) screenW - w
+            else storedX.coerceIn(0, (screenW - w).coerceAtLeast(0))
+        val y = if (storedY < 0) (screenH - h) / 2
+            else storedY.coerceIn(0, (screenH - h).coerceAtLeast(0))
 
         return WindowManager.LayoutParams(
             w,
@@ -202,7 +209,7 @@ class ChatBubbleService : Service() {
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = if (edge == "L") 0 else screenW - w
+            this.x = x
             this.y = y
             alpha = streamConfig.chatOpacity / 100f
         }
@@ -244,7 +251,7 @@ class ChatBubbleService : Service() {
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (dragging) snapToNearestEdge()
+                    if (dragging) persistFreePosition()
                     dragging
                 }
                 else -> false
@@ -252,13 +259,14 @@ class ChatBubbleService : Service() {
         }
     }
 
-    private fun snapToNearestEdge() {
+    /**
+     * Save the current free position to prefs. Called on drag release —
+     * no edge snap, the bubble stays wherever the user lifted the finger
+     * (still clamped to the screen by the move handler above).
+     */
+    private fun persistFreePosition() {
         val p = params ?: return
-        val center = p.x + p.width / 2
-        val edge = if (center < screenW / 2) "L" else "R"
-        p.x = if (edge == "L") 0 else screenW - p.width
-        runCatching { windowManager?.updateViewLayout(root, p) }
-        streamConfig.chatEdge = edge
+        streamConfig.chatX = p.x
         streamConfig.chatY = p.y
     }
 
@@ -296,10 +304,13 @@ class ChatBubbleService : Service() {
         val (wDp, hDp) = SIZE_PRESETS[streamConfig.chatSizeIndex.coerceIn(0, 2)]
         p.width = dp(wDp)
         p.height = dp(hDp)
-        // Re-anchor to current edge after resize so the bubble doesn't
-        // stray over the safe area.
-        p.x = if (streamConfig.chatEdge == "L") 0 else screenW - p.width
-        p.y = p.y.coerceIn(0, screenH - p.height)
+        // Keep the current position after resize, just clamp so the
+        // bubble doesn't bleed off-screen if the new size is larger.
+        p.x = p.x.coerceIn(0, (screenW - p.width).coerceAtLeast(0))
+        p.y = p.y.coerceIn(0, (screenH - p.height).coerceAtLeast(0))
+        // Persist the (possibly clamped) position so a relaunch keeps it.
+        streamConfig.chatX = p.x
+        streamConfig.chatY = p.y
         runCatching { windowManager?.updateViewLayout(root, p) }
     }
 
