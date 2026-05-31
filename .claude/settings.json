@@ -38,6 +38,11 @@
             "type": "command",
             "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/bash-guard.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "All Bash guards: secrets, destructive, commits, deploy, migrations, deps"
+          },
+          {
+            "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/quality/anti-quick-fix.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "Block git commit fix:/hotfix: without [ROBUSTNESS] (6 mois / cause racine / alternative durable) or [ROBUSTNESS-SKIP] motif"
           }
         ]
       },
@@ -78,7 +83,18 @@
         ]
       }
     ],
-    "Stop": [],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/quality/simple-language-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "Scan Takumi's last response for Simple Language violations (Honesty.md, WARN only)"
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "matcher": "",
@@ -99,6 +115,11 @@
             "type": "prompt",
             "prompt": "CONTEXT WAS JUST COMPACTED. Critical recovery steps:\n\n1. READ TODOS: Check your todo list — it contains your task state from before compaction.\n2. RE-READ CLAUDE.md: Your identity rules are in .claude/CLAUDE.md and .claude/rules/. They survive compaction but refresh your awareness.\n3. CHECK GIT: Run 'git status' and 'git log --oneline -5' to see where you are.\n4. TELL JAY: Briefly tell Jay what you remember working on and ask if anything is missing.\n5. CONTINUE: Resume the in-progress task from your todo list.\n\nDo NOT start new work without confirming continuity with Jay.",
             "description": "Restore session state after context compaction"
+          },
+          {
+            "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/lifecycle/post-compact-recheck.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "Surface handoff brief path after compaction (non-blocking, WARN only)"
           }
         ]
       }
