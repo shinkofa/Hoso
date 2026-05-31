@@ -1,24 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Resume state — Ermite accent yellow circle, white play triangle.
-  Shown while paused; tap returns to live.
--->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="oval">
-            <solid android:color="#CCF5CD3E" />
-            <size android:width="56dp" android:height="56dp" />
-        </shape>
-    </item>
-    <item
-        android:left="20dp"
-        android:top="16dp"
-        android:right="14dp"
-        android:bottom="16dp">
-        <rotate android:fromDegrees="45">
-            <shape android:shape="rectangle">
-                <solid android:color="#FFFFFFFF" />
-            </shape>
-        </rotate>
-    </item>
-</layer-list>
+<!-- Material Symbols Rounded — play_arrow (filled). Glyphe pur, fond
+     géré via android:background sur l'ImageView. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFE8EAF0"
+        android:pathData="M8,5.14v13.72c0,0.79 0.87,1.27 1.54,0.84l10.8,-6.86c0.62,-0.39 0.62,-1.29 0,-1.69L9.54,4.3C8.87,3.87 8,4.35 8,5.14z" />
+</vector>

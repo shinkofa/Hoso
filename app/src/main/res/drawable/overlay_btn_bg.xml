@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- État repos : cercle surface_light avec contour très discret. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FF1E2A50" />
+    <stroke android:width="1dp" android:color="#FF2A3660" />
+</shape>

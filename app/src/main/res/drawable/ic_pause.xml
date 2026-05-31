@@ -1,31 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Pause state — Ermite sky blue circle, white pause glyph (two bars).
-  Shown when stream is live and not paused (button starts pause).
--->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="oval">
-            <solid android:color="#CC3DC3FF" />
-            <size android:width="56dp" android:height="56dp" />
-        </shape>
-    </item>
-    <item
-        android:left="18dp"
-        android:top="16dp"
-        android:right="32dp"
-        android:bottom="16dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#FFFFFFFF" />
-        </shape>
-    </item>
-    <item
-        android:left="32dp"
-        android:top="16dp"
-        android:right="18dp"
-        android:bottom="16dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#FFFFFFFF" />
-        </shape>
-    </item>
-</layer-list>
+<!-- Material Symbols Rounded — pause (filled). Glyphe pur, fond géré
+     via android:background sur l'ImageView. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFE8EAF0"
+        android:pathData="M8,19c1.1,0 2,-0.9 2,-2L10,7c0,-1.1 -0.9,-2 -2,-2S6,5.9 6,7l0,10C6,18.1 6.9,19 8,19zM14,7l0,10c0,1.1 0.9,2 2,2s2,-0.9 2,-2L18,7c0,-1.1 -0.9,-2 -2,-2S14,5.9 14,7z" />
+</vector>

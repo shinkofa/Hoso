@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pilule HUD compacte. Mêmes tokens que overlay_pill_bg mais coins
+     plus petits car le HUD est mince. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#E60F1729" />
+    <stroke android:width="1dp" android:color="#FF2A3660" />
+    <corners android:radius="16dp" />
+</shape>

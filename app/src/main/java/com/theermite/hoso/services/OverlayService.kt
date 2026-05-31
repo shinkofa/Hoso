@@ -8,9 +8,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.net.TrafficStats
 import android.os.Handler
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.os.IBinder
 import android.os.Looper
 import android.os.Process
@@ -311,6 +315,7 @@ class OverlayService : Service() {
             .inflate(R.layout.overlay_collapsed, null) as FrameLayout
         rootView = root
         attachCollapsedTouch(root, params)
+        refreshCollapsedChatPastille(root)
 
         wm.addView(root, params)
         clearExpandedRefs()
@@ -318,11 +323,24 @@ class OverlayService : Service() {
     }
 
     /**
-     * Replace collapsed with expanded. The expanded row is always
-     * centered horizontally on screen (per Jay's request — under
-     * pressure, predictable position beats freedom). Vertical position
-     * defaults to centered too; the streamer can drag it after if
-     * needed. Auto-collapse timer starts immediately.
+     * Show/hide the small sky-blue dot on the COLLAPSED trigger.
+     * Visible when the chat bubble service is active so the streamer
+     * can confirm chat is wired without expanding the controls. Called
+     * every time we re-inflate the collapsed layout.
+     */
+    private fun refreshCollapsedChatPastille(collapsedRoot: View) {
+        val pastille = collapsedRoot.findViewById<View>(R.id.chat_pastille)
+            ?: return
+        pastille.visibility =
+            if (streamConfig?.chatEnabled == true) View.VISIBLE
+            else View.GONE
+    }
+
+    /**
+     * Replace collapsed with expanded. The expanded row is pinned to the
+     * right edge, vertically centered (G7.1 Phase D polish — under
+     * pressure the streamer always knows where to reach with the thumb
+     * holding the phone). Auto-collapse timer starts immediately.
      */
     private fun expand() {
         if (expanded) {
@@ -343,7 +361,7 @@ class OverlayService : Service() {
                 or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.CENTER
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
             x = 0
             y = 0
         }
@@ -605,6 +623,7 @@ class OverlayService : Service() {
                 .inflate(R.layout.overlay_collapsed, null) as FrameLayout
             rootView = root
             attachCollapsedTouch(root, params)
+            refreshCollapsedChatPastille(root)
             wm.addView(root, params)
         }
     }
@@ -776,6 +795,10 @@ class OverlayService : Service() {
             if (muted) R.drawable.ic_mic_off
             else R.drawable.ic_mic_on
         )
+        btnMic?.setBackgroundResource(
+            if (muted) R.drawable.overlay_btn_active_bg
+            else R.drawable.overlay_btn_bg
+        )
         btnMic?.contentDescription = getString(
             if (muted) R.string.btn_unmute
             else R.string.btn_mute
@@ -787,6 +810,10 @@ class OverlayService : Service() {
             if (privacy) R.drawable.ic_privacy_on
             else R.drawable.ic_privacy_off
         )
+        btnPrivacy?.setBackgroundResource(
+            if (privacy) R.drawable.overlay_btn_active_bg
+            else R.drawable.overlay_btn_bg
+        )
         btnPrivacy?.contentDescription = getString(
             if (privacy) R.string.btn_privacy_off
             else R.string.btn_privacy
@@ -797,6 +824,10 @@ class OverlayService : Service() {
         btnPause?.setImageResource(
             if (paused) R.drawable.ic_play
             else R.drawable.ic_pause
+        )
+        btnPause?.setBackgroundResource(
+            if (paused) R.drawable.overlay_btn_active_bg
+            else R.drawable.overlay_btn_bg
         )
         btnPause?.contentDescription = getString(
             if (paused) R.string.btn_resume
@@ -829,7 +860,11 @@ class OverlayService : Service() {
 
     private fun refreshChatButtonState() {
         val enabled = streamConfig?.chatEnabled == true
-        btnChat?.alpha = if (enabled) 1.0f else 0.6f
+        btnChat?.setBackgroundResource(
+            if (enabled) R.drawable.overlay_btn_chat_on_bg
+            else R.drawable.overlay_btn_bg
+        )
+        btnChat?.alpha = 1.0f
         btnChat?.contentDescription = getString(R.string.btn_chat)
     }
 
@@ -852,10 +887,13 @@ class OverlayService : Service() {
     }
 
     /**
-     * One HUD frame. Sample TrafficStats delta to derive outgoing
-     * bitrate (UID-level; RTMP dominates traffic during a live so
-     * this is honest within a few kbps). Compose duration + bitrate
-     * + state + mic into the reserved hud_text TextView. When no
+     * One HUD frame. G7.1 Phase D — compact single-line HUD designed to
+     * sit horizontally next to the control row at the right edge:
+     *   "⏱ 00:42:13 · ↑ 4.2M · ●"
+     * The trailing dot is colored from the connection state (green =
+     * LIVE, orange = RECONNECT, red = LOST). Sample TrafficStats delta
+     * to derive outgoing bitrate (UID-level; RTMP dominates traffic
+     * during a live so this is honest within a few kbps). When no
      * stream is active (streamStartedAt == 0), keep the HUD hidden.
      */
     private fun tickHud() {
@@ -868,14 +906,46 @@ class OverlayService : Service() {
         val durationStr = formatDuration(
             System.currentTimeMillis() - streamStartedAt
         )
-        val bitrateStr = formatBitrate(currentKbps)
-        val stateStr = formatState()
-        val micStr = getString(
-            if (lastMuted) R.string.hud_mic_muted
-            else R.string.hud_mic_on
+        val bitrateStr = formatBitrateCompact(currentKbps)
+
+        val builder = SpannableStringBuilder()
+        builder.append("⏱ ").append(durationStr)
+        builder.append("  ·  ↑ ").append(bitrateStr)
+        builder.append("  ·  ")
+        val dotStart = builder.length
+        builder.append("●")
+        builder.setSpan(
+            ForegroundColorSpan(stateDotColor()),
+            dotStart,
+            builder.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        hud.text = "$durationStr  $bitrateStr\n$stateStr  $micStr"
+        hud.text = builder
         hud.visibility = View.VISIBLE
+    }
+
+    /**
+     * Color of the trailing status dot in the compact HUD.
+     * Green = healthy live, orange = reconnect attempt in progress,
+     * red = reconnection definitively given up.
+     */
+    private fun stateDotColor(): Int = when {
+        hasGivenUp -> Color.parseColor("#FFF87171")       // stream_stop
+        isReconnecting -> Color.parseColor("#FFFBBF24")   // amber
+        else -> Color.parseColor("#FF4ADE80")             // green
+    }
+
+    /**
+     * Compact bitrate for the single-line HUD: "4.2M" above 1000 kbps,
+     * "850k" below. Returns "--" when the OEM doesn't report UID stats.
+     */
+    private fun formatBitrateCompact(kbps: Int): String {
+        if (kbps < 0) return getString(R.string.hud_bitrate_unavailable)
+        if (kbps >= 1000) {
+            val mbps = kbps / 1000.0
+            return String.format("%.1fM", mbps)
+        }
+        return "${kbps}k"
     }
 
     /**

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stop : fond danger permanent. Action irréversible = identifiée
+     visuellement avant même le tap. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFF87171" />
+    <stroke android:width="1dp" android:color="#FFD45555" />
+</shape>

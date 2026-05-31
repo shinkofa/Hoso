@@ -1,113 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Hoso live stream overlay control row (état EXPANDED — G4.5).
-  Affiché au centre de l'écran sur tap du trigger collapsed.
-  Contient une zone HUD (réservée G5.1) au-dessus, et la rangée
-  de boutons d'action en dessous. Tap sur btn_collapse referme
-  l'overlay vers l'état COLLAPSED. Auto-collapse après 5 s d'inactivité.
+  Hoso live stream overlay control row (état EXPANDED — G4.5 + passe
+  design G7.2). Affiché sur le bord droit / centre vertical de l'écran
+  sur tap du trigger collapsed. Contient une zone HUD (G5.1) au-dessus,
+  la pilule de boutons d'action au milieu, et le panneau mix (G7.1) en
+  dessous. Tap sur btn_collapse referme l'overlay vers COLLAPSED.
+  Auto-collapse après 5 s d'inactivité.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/overlay_root"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:gravity="end">
 
-    <!--
-      Zone HUD réservée pour G5.1 (durée, bitrate réseau réel, état).
-      Masquée tant que G5.1 n'a pas câblé son contenu — la View occupe
-      0 px en visibility="gone" donc zéro impact layout actuel.
-    -->
+    <!-- HUD compact (G5.1) — pilule sky-blue dark glass, visible
+         seulement en stream actif. Format single-line :
+         "⏱ 00:42:13 · ↑ 4.2M · ●" avec dot coloré état. -->
     <TextView
         android:id="@+id/hud_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:padding="8dp"
-        android:background="#CC0F1729"
+        android:layout_marginBottom="6dp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:background="@drawable/overlay_hud_bg"
         android:textColor="@color/text_primary"
-        android:textSize="14sp"
+        android:textSize="12sp"
         android:fontFamily="monospace"
         android:visibility="gone" />
 
+    <!-- Pilule des actions — container arrondi qui détache la rangée
+         du jeu en dessous. Padding interne pour les boutons cercles. -->
     <LinearLayout
         android:id="@+id/controls_row"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:background="@drawable/overlay_pill_bg"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="8dp">
 
         <ImageView
             android:id="@+id/btn_collapse"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_marginEnd="6dp"
-            android:src="@drawable/ic_overlay_trigger"
+            android:padding="10dp"
+            android:background="@drawable/overlay_btn_bg"
+            android:src="@drawable/ic_close"
+            android:scaleType="fitCenter"
             android:contentDescription="@string/overlay_trigger_label" />
 
         <ImageView
             android:id="@+id/btn_mic"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:layout_marginEnd="6dp"
+            android:padding="12dp"
+            android:background="@drawable/overlay_btn_bg"
             android:src="@drawable/ic_mic_on"
+            android:scaleType="fitCenter"
             android:contentDescription="@string/btn_mute" />
 
         <ImageView
             android:id="@+id/btn_privacy"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:layout_marginEnd="6dp"
+            android:padding="12dp"
+            android:background="@drawable/overlay_btn_bg"
             android:src="@drawable/ic_privacy_off"
+            android:scaleType="fitCenter"
             android:contentDescription="@string/btn_privacy" />
 
         <ImageView
             android:id="@+id/btn_pause"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:layout_marginEnd="6dp"
+            android:padding="12dp"
+            android:background="@drawable/overlay_btn_bg"
             android:src="@drawable/ic_pause"
+            android:scaleType="fitCenter"
             android:contentDescription="@string/btn_pause" />
 
         <ImageView
             android:id="@+id/btn_chat"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:layout_marginEnd="6dp"
+            android:padding="12dp"
+            android:background="@drawable/overlay_btn_bg"
             android:src="@drawable/ic_chat"
+            android:scaleType="fitCenter"
             android:contentDescription="@string/btn_chat" />
 
         <ImageView
             android:id="@+id/btn_stop"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:padding="12dp"
+            android:background="@drawable/overlay_btn_stop_bg"
             android:src="@drawable/ic_stop_overlay"
+            android:scaleType="fitCenter"
             android:contentDescription="@string/btn_stop" />
 
     </LinearLayout>
 
     <!--
       G7.1 Phase B.2 — sliders de mix live (micro + jeu). Visibles
-      uniquement quand la source audio = MIX. Largeur fixe en dp pour
-      ne pas étirer la rangée de boutons sur les écrans larges.
-      Le fond opaque sombre garantit la lisibilité du texte par-dessus
-      n'importe quel jeu (light scene, sky, neige…).
+      uniquement quand la source audio = MIX. Panneau pilule sous la
+      rangée de boutons.
     -->
     <LinearLayout
         android:id="@+id/overlay_mix_gains"
-        android:layout_width="300dp"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:padding="10dp"
-        android:background="#CC0F1729"
+        android:background="@drawable/overlay_mix_panel_bg"
         android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="2dp">
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
@@ -115,29 +135,28 @@
                 android:layout_weight="1"
                 android:text="@string/label_mic_gain"
                 android:textColor="@color/text_primary"
-                android:textSize="12sp" />
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/overlay_mic_gain_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:fontFamily="monospace" />
         </LinearLayout>
 
         <SeekBar
             android:id="@+id/overlay_seekbar_mic_gain"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="20dp"
             android:max="2000"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginBottom="2dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="2dp">
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
@@ -145,21 +164,21 @@
                 android:layout_weight="1"
                 android:text="@string/label_game_gain"
                 android:textColor="@color/text_primary"
-                android:textSize="12sp" />
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/overlay_game_gain_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:fontFamily="monospace" />
         </LinearLayout>
 
         <SeekBar
             android:id="@+id/overlay_seekbar_game_gain"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="20dp"
             android:max="2000" />
 
     </LinearLayout>

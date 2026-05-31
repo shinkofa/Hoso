@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cercle de fond du trigger COLLAPSED. Même dark-glass que la
+     rangée EXPANDED pour la cohérence visuelle. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#E60F1729" />
+    <stroke android:width="1dp" android:color="#FF2A3660" />
+</shape>

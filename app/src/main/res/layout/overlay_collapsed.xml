@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  État COLLAPSED de l'overlay Hoso (G4.5).
+  État COLLAPSED de l'overlay Hoso (G4.5 + passe design G7.2).
   Un seul élément discret, draggable, qui sert à la fois de
   marqueur de présence ("l'overlay est là") et de bouton d'ouverture
-  (tap court → EXPANDED).
+  (tap court → EXPANDED). Cercle dark-glass + logo Hōsō sky-blue
+  pour rester reconnaissable sans cogner visuellement.
   Position : libre, déplaçable par drag (sauvegardée dans l'état
   service tant que le service vit).
+  Pastille sky-blue top-end visible quand la bulle chat est active.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/collapsed_root"
@@ -16,7 +18,20 @@
         android:id="@+id/btn_trigger"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:padding="12dp"
+        android:background="@drawable/overlay_trigger_bg"
         android:src="@drawable/ic_overlay_trigger"
+        android:scaleType="fitCenter"
         android:contentDescription="@string/overlay_trigger_label" />
+
+    <View
+        android:id="@+id/chat_pastille"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="2dp"
+        android:background="@drawable/chat_pastille_bg"
+        android:visibility="gone" />
 
 </FrameLayout>
