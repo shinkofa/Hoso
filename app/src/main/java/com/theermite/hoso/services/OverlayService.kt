@@ -32,10 +32,16 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.theermite.hoso.R
 import com.theermite.hoso.audio.AudioGains
 import com.theermite.hoso.config.AudioSource
 import com.theermite.hoso.config.StreamConfig
+import com.theermite.hoso.streamerbot.StreamerBotAction
+import com.theermite.hoso.streamerbot.StreamerBotActionAdapter
+import com.theermite.hoso.streamerbot.StreamerBotClient
+import org.json.JSONArray
 
 /**
  * Floating overlay shown over the captured screen while Hoso is live.
@@ -72,8 +78,26 @@ class OverlayService : Service() {
     private var btnStop: ImageView? = null
     private var btnCollapse: ImageView? = null
     private var btnChat: ImageView? = null
+    private var btnBot: ImageView? = null
     private var controlsRow: LinearLayout? = null
     private var hudText: TextView? = null
+
+    // G6.1 Phase E.1 — actions panel under the controls pill.
+    // Inflated as part of overlay_controls; the adapter is rebuilt per
+    // expand (cheap — actions list is bounded by what the streamer
+    // chose to publish, typically <30 items).
+    private var actionsPanel: RecyclerView? = null
+    private var actionsEmpty: TextView? = null
+    private var actionsAdapter: StreamerBotActionAdapter? = null
+    private var actionsPanelOpen: Boolean = false
+
+    // Latest Streamer.bot state and action list, received via package
+    // broadcasts from StreamerBotService. Cached at the service level
+    // so opening EXPANDED paints the panel immediately without waiting
+    // for the next push.
+    private var sbState: StreamerBotClient.State =
+        StreamerBotClient.State.IDLE
+    private var sbActions: List<StreamerBotAction> = emptyList()
 
     // G7.1 Phase B.2 — mix gain sliders. Only inflated/visible when the
     // active audio source is MIX. AudioGains receives the value on every
@@ -174,8 +198,49 @@ class OverlayService : Service() {
                 ScreenRecordService.BROADCAST_RECONNECT_STATE -> {
                     handleReconnect(intent)
                 }
+                StreamerBotService.BROADCAST_STATE_CHANGED -> {
+                    val name = intent.getStringExtra(
+                        StreamerBotService.EXTRA_STATE
+                    ) ?: return
+                    sbState = runCatching {
+                        StreamerBotClient.State.valueOf(name)
+                    }.getOrDefault(StreamerBotClient.State.IDLE)
+                    refreshSbViews()
+                }
+                StreamerBotService.BROADCAST_ACTIONS_UPDATED -> {
+                    val json = intent.getStringExtra(
+                        StreamerBotService.EXTRA_ACTIONS_JSON
+                    ) ?: "[]"
+                    sbActions = parseActions(json)
+                    refreshSbViews()
+                }
             }
         }
+    }
+
+    /**
+     * Decode the JSON array produced by [StreamerBotService.onClientActions]
+     * back into a typed list. Source of truth for the encoding lives in
+     * that service so the two stay in sync via the broadcast contract.
+     */
+    private fun parseActions(json: String): List<StreamerBotAction> {
+        return runCatching {
+            val arr = JSONArray(json)
+            val out = ArrayList<StreamerBotAction>(arr.length())
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                val group = if (o.has("group")) o.optString("group", "") else ""
+                out.add(
+                    StreamerBotAction(
+                        id = o.optString("id", ""),
+                        name = o.optString("name", ""),
+                        enabled = o.optBoolean("enabled", true),
+                        group = group.ifBlank { null },
+                    )
+                )
+            }
+            out.toList()
+        }.getOrDefault(emptyList())
     }
 
     // Track which reconnect events we've already toasted so we don't
@@ -247,6 +312,8 @@ class OverlayService : Service() {
             IntentFilter().apply {
                 addAction(ScreenRecordService.BROADCAST_STATE_CHANGED)
                 addAction(ScreenRecordService.BROADCAST_RECONNECT_STATE)
+                addAction(StreamerBotService.BROADCAST_STATE_CHANGED)
+                addAction(StreamerBotService.BROADCAST_ACTIONS_UPDATED)
             },
             RECEIVER_NOT_EXPORTED
         )
@@ -316,6 +383,7 @@ class OverlayService : Service() {
         rootView = root
         attachCollapsedTouch(root, params)
         refreshCollapsedChatPastille(root)
+        refreshCollapsedSbPastille(root)
 
         wm.addView(root, params)
         clearExpandedRefs()
@@ -404,6 +472,7 @@ class OverlayService : Service() {
         btnPrivacy = root.findViewById(R.id.btn_privacy)
         btnPause = root.findViewById(R.id.btn_pause)
         btnChat = root.findViewById(R.id.btn_chat)
+        btnBot = root.findViewById(R.id.btn_bot)
         btnStop = root.findViewById(R.id.btn_stop)
         hudText = root.findViewById(R.id.hud_text)
         refreshChatButtonState()
@@ -413,6 +482,28 @@ class OverlayService : Service() {
         textMicGainValue = root.findViewById(R.id.overlay_mic_gain_value)
         textGameGainValue = root.findViewById(R.id.overlay_game_gain_value)
         wireMixGainSliders()
+        bindActionsPanel(root)
+    }
+
+    /**
+     * Wire the G6.1 actions panel into the freshly inflated EXPANDED
+     * root. The panel stays hidden until the streamer taps btn_bot;
+     * we just prepare the adapter and the LayoutManager once per expand
+     * so the first tap is instant.
+     */
+    private fun bindActionsPanel(root: LinearLayout) {
+        actionsPanel = root.findViewById(R.id.overlay_actions_panel)
+        actionsEmpty = root.findViewById(R.id.overlay_actions_empty)
+        val adapter = StreamerBotActionAdapter { action ->
+            StreamerBotService.sendAction(this, action.id)
+            scheduleCollapse()
+        }
+        actionsAdapter = adapter
+        actionsPanel?.layoutManager = LinearLayoutManager(this)
+        actionsPanel?.adapter = adapter
+        // Panel always starts closed on a fresh expand — predictable.
+        actionsPanelOpen = false
+        refreshSbViews()
     }
 
     /**
@@ -525,6 +616,7 @@ class OverlayService : Service() {
         btnPrivacy = null
         btnPause = null
         btnChat = null
+        btnBot = null
         btnStop = null
         hudText = null
         mixGainsGroup = null
@@ -532,6 +624,10 @@ class OverlayService : Service() {
         seekbarGameGain = null
         textMicGainValue = null
         textGameGainValue = null
+        actionsPanel = null
+        actionsEmpty = null
+        actionsAdapter = null
+        actionsPanelOpen = false
     }
 
     private fun scheduleCollapse() {
@@ -624,6 +720,7 @@ class OverlayService : Service() {
             rootView = root
             attachCollapsedTouch(root, params)
             refreshCollapsedChatPastille(root)
+            refreshCollapsedSbPastille(root)
             wm.addView(root, params)
         }
     }
@@ -742,6 +839,7 @@ class OverlayService : Service() {
                                 ScreenRecordService.ACTION_TOGGLE_PAUSE
                             )
                             R.id.btn_chat -> toggleChatBubble()
+                            R.id.btn_bot -> toggleActionsPanel()
                             R.id.btn_stop -> stopStream()
                         }
                     }
@@ -866,6 +964,80 @@ class OverlayService : Service() {
         )
         btnChat?.alpha = 1.0f
         btnChat?.contentDescription = getString(R.string.btn_chat)
+    }
+
+    // ---- G6.1 Phase E.1 — Streamer.bot panel ----------------------
+
+    /**
+     * Tap handler for btn_bot. Toggles the actions panel below the
+     * controls pill. Empty/disconnected states use a dedicated text
+     * tile (overlay_actions_empty) so the streamer always gets visible
+     * feedback — never a tap that does nothing visible.
+     */
+    private fun toggleActionsPanel() {
+        actionsPanelOpen = !actionsPanelOpen
+        refreshSbViews()
+    }
+
+    /**
+     * Recompute and paint every Streamer.bot-dependent view: the btn_bot
+     * visibility/active background, the panel visibility (data vs empty
+     * tile), and the COLLAPSED pastille if we're not expanded. Called
+     * from broadcast reception AND from bindActionsPanel().
+     */
+    private fun refreshSbViews() {
+        val enabled = streamConfig?.streamerBotEnabled == true
+        val connected = sbState == StreamerBotClient.State.CONNECTED
+
+        // EXPANDED: btn_bot only shows up if the bridge is enabled.
+        btnBot?.visibility = if (enabled) View.VISIBLE else View.GONE
+        btnBot?.setBackgroundResource(
+            if (enabled && connected && actionsPanelOpen)
+                R.drawable.overlay_btn_active_bg
+            else R.drawable.overlay_btn_bg
+        )
+        btnBot?.alpha = if (enabled && connected) 1.0f else 0.55f
+
+        // Actions panel: visible iff bridge enabled AND panel toggled
+        // open. The data vs empty tile depends on connection + count.
+        val showPanel = enabled && actionsPanelOpen
+        if (!showPanel) {
+            actionsPanel?.visibility = View.GONE
+            actionsEmpty?.visibility = View.GONE
+        } else if (!connected) {
+            actionsPanel?.visibility = View.GONE
+            actionsEmpty?.visibility = View.VISIBLE
+            actionsEmpty?.text = getString(R.string.sb_actions_disconnected)
+        } else if (sbActions.isEmpty()) {
+            actionsPanel?.visibility = View.GONE
+            actionsEmpty?.visibility = View.VISIBLE
+            actionsEmpty?.text = getString(R.string.sb_actions_empty)
+        } else {
+            actionsEmpty?.visibility = View.GONE
+            actionsPanel?.visibility = View.VISIBLE
+            actionsAdapter?.submit(sbActions)
+        }
+
+        // COLLAPSED pastille mirrors the connection — repaint if we're
+        // currently showing the collapsed root.
+        if (!expanded) {
+            rootView?.let { refreshCollapsedSbPastille(it) }
+        }
+    }
+
+    /**
+     * Show/hide the small green dot on the COLLAPSED trigger. Visible
+     * when the Streamer.bot bridge is CONNECTED so the streamer can
+     * confirm the link is live without expanding the controls.
+     */
+    private fun refreshCollapsedSbPastille(collapsedRoot: View) {
+        val pastille = collapsedRoot.findViewById<View>(R.id.sb_pastille)
+            ?: return
+        val enabled = streamConfig?.streamerBotEnabled == true
+        val connected = sbState == StreamerBotClient.State.CONNECTED
+        pastille.visibility =
+            if (enabled && connected) View.VISIBLE
+            else View.GONE
     }
 
     // ---- G5.1 HUD live stats ---------------------------------------

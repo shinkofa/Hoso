@@ -34,4 +34,17 @@
         android:background="@drawable/chat_pastille_bg"
         android:visibility="gone" />
 
+    <!-- G6.1 Phase E.1 — Streamer.bot bridge status dot. Visible
+         seulement quand le pont est CONNECTED. Bottom-end pour ne pas
+         entrer en conflit visuel avec chat_pastille (top-end). -->
+    <View
+        android:id="@+id/sb_pastille"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="2dp"
+        android:background="@drawable/sb_pastille_bg"
+        android:visibility="gone" />
+
 </FrameLayout>

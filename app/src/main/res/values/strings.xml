@@ -114,4 +114,9 @@
     <string name="sb_notif_text_connecting">Connexion…</string>
     <string name="sb_notif_text_connected">Connecté</string>
     <string name="sb_notif_text_reconnecting">Reconnexion…</string>
+
+    <!-- G6.1 Phase E.1 — overlay bot button + actions panel. -->
+    <string name="btn_bot">Actions Streamer.bot</string>
+    <string name="sb_actions_empty">Aucune action publiée</string>
+    <string name="sb_actions_disconnected">Pont hors-ligne</string>
 </resources>
