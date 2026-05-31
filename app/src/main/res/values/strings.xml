@@ -106,4 +106,12 @@
     <string name="sb_hint_host">Hôte (IP Tailscale ou LAN)</string>
     <string name="sb_hint_port">Port (défaut 8080)</string>
     <string name="sb_hint_password">Mot de passe (optionnel)</string>
+
+    <!-- G6.1 — Streamer.bot foreground service notification. -->
+    <string name="sb_notif_channel">Pont Streamer.bot</string>
+    <string name="sb_notif_title">Hōsō — Streamer.bot</string>
+    <string name="sb_notif_text_idle">En attente</string>
+    <string name="sb_notif_text_connecting">Connexion…</string>
+    <string name="sb_notif_text_connected">Connecté</string>
+    <string name="sb_notif_text_reconnecting">Reconnexion…</string>
 </resources>

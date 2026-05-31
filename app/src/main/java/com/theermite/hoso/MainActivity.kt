@@ -31,6 +31,7 @@ import com.theermite.hoso.databinding.DialogPresetEditBinding
 import com.theermite.hoso.databinding.ActivityMainBinding
 import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
+import com.theermite.hoso.services.StreamerBotService
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.logger.ILogger
 import io.github.thibaultbee.streampack.core.logger.Logger
@@ -309,6 +310,17 @@ class MainActivity : AppCompatActivity() {
             if (checked) persistStreamerBotFields()
             config.streamerBotEnabled = checked
             applyStreamerBotGroupVisibility(checked)
+            if (checked) {
+                StreamerBotService.start(this)
+            } else {
+                StreamerBotService.stop(this)
+            }
+        }
+        // If the user had the bridge enabled in a previous session, auto-
+        // start the service on app open so the connection is up before
+        // they go live.
+        if (config.streamerBotEnabled && config.streamerBotHost.isNotBlank()) {
+            StreamerBotService.start(this)
         }
     }
 
