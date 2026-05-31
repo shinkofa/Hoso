@@ -214,7 +214,81 @@ class OverlayService : Service() {
                     sbActions = parseActions(json)
                     refreshSbViews()
                 }
+                StreamerBotService.BROADCAST_EVENT -> {
+                    handleSbEvent(intent)
+                }
             }
+        }
+    }
+
+    /**
+     * Render a Streamer.bot event as a long Android toast. The format
+     * picks an emoji + suffix per known Twitch event type, and falls
+     * back to a generic "{source}/{type} — {user}" for anything new.
+     *
+     * Why a system Toast and not an overlay tile: we already have the
+     * mask, the controls pill, the HUD strip, the actions panel, and
+     * the chat bubble fighting for screen space. A system toast appears
+     * outside all of them, auto-fades, and never steals input — which
+     * matches the "ambient signal" intent for live alerts. Streamer.bot
+     * already aggregates upstream events so spam-throttling is its job.
+     */
+    private fun handleSbEvent(intent: Intent) {
+        val type = intent.getStringExtra(
+            StreamerBotService.EXTRA_EVENT_TYPE
+        ) ?: return
+        val source = intent.getStringExtra(
+            StreamerBotService.EXTRA_EVENT_SOURCE
+        ) ?: ""
+        val user = intent.getStringExtra(
+            StreamerBotService.EXTRA_EVENT_USER
+        )
+        val bits = intent.getIntExtra(
+            StreamerBotService.EXTRA_EVENT_BITS, -1
+        ).takeIf { it >= 0 }
+        val viewers = intent.getIntExtra(
+            StreamerBotService.EXTRA_EVENT_VIEWERS, -1
+        ).takeIf { it >= 0 }
+        val months = intent.getIntExtra(
+            StreamerBotService.EXTRA_EVENT_MONTHS, -1
+        ).takeIf { it >= 0 }
+
+        val msg = formatSbEvent(source, type, user, bits, viewers, months)
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+    }
+
+    /**
+     * Pick a compact, glanceable representation of a Streamer.bot event.
+     * Known Twitch types get a tailored emoji + suffix; unknown types
+     * round-trip the raw `{source}/{type}` so the streamer still sees
+     * the signal land instead of nothing.
+     */
+    private fun formatSbEvent(
+        source: String,
+        type: String,
+        user: String?,
+        bits: Int?,
+        viewers: Int?,
+        months: Int?,
+    ): String {
+        val u = user ?: "?"
+        return when (type.lowercase()) {
+            "follow" -> "🎉 $u — Follow"
+            "sub", "subscription" ->
+                if (months != null && months > 1) "⭐ $u — Sub ($months mo)"
+                else "⭐ $u — Sub"
+            "resub" ->
+                if (months != null) "⭐ $u — ReSub ($months mo)"
+                else "⭐ $u — ReSub"
+            "giftsub", "subgift" -> "🎁 $u — Gift Sub"
+            "cheer" ->
+                if (bits != null) "💎 $u — $bits bits"
+                else "💎 $u — Cheer"
+            "raid" ->
+                if (viewers != null) "🚀 $u raid ($viewers)"
+                else "🚀 $u raid"
+            "host" -> "📡 $u host"
+            else -> if (source.isNotBlank()) "$source/$type — $u" else "$type — $u"
         }
     }
 
@@ -314,6 +388,7 @@ class OverlayService : Service() {
                 addAction(ScreenRecordService.BROADCAST_RECONNECT_STATE)
                 addAction(StreamerBotService.BROADCAST_STATE_CHANGED)
                 addAction(StreamerBotService.BROADCAST_ACTIONS_UPDATED)
+                addAction(StreamerBotService.BROADCAST_EVENT)
             },
             RECEIVER_NOT_EXPORTED
         )
