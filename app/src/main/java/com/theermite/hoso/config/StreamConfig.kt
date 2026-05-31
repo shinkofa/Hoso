@@ -252,7 +252,12 @@ class StreamConfig(context: Context) {
 
     var streamerBotHost: String
         get() = prefs.getString(KEY_SB_HOST, "") ?: ""
-        set(value) = prefs.edit().putString(KEY_SB_HOST, value.trim()).apply()
+        // Strip ALL whitespace, not just trim() — Hibiki voice
+        // dictation inserts spaces after dots ("100. 109.16.38"),
+        // which okhttp rejects with "Invalid URL host".
+        set(value) = prefs.edit()
+            .putString(KEY_SB_HOST, value.replace(Regex("\\s+"), ""))
+            .apply()
 
     var streamerBotPort: Int
         get() = prefs.getInt(KEY_SB_PORT, DEFAULT_SB_PORT)
@@ -268,6 +273,31 @@ class StreamConfig(context: Context) {
     var streamerBotPassword: String
         get() = prefs.getString(KEY_SB_PASSWORD, "") ?: ""
         set(value) = prefs.edit().putString(KEY_SB_PASSWORD, value).apply()
+
+    // ── Main screen collapsible cards (polish pass) ──────────────────
+    // Per-card collapsed state. Persisted so the screen reopens with the
+    // same folded/unfolded layout the user left it in. Default = false
+    // (all expanded on first launch) so the user discovers the inputs.
+
+    var cardDestinationCollapsed: Boolean
+        get() = prefs.getBoolean(KEY_CARD_DEST_COLLAPSED, false)
+        set(value) = prefs.edit()
+            .putBoolean(KEY_CARD_DEST_COLLAPSED, value).apply()
+
+    var cardStreamCollapsed: Boolean
+        get() = prefs.getBoolean(KEY_CARD_STREAM_COLLAPSED, false)
+        set(value) = prefs.edit()
+            .putBoolean(KEY_CARD_STREAM_COLLAPSED, value).apply()
+
+    var cardAudioCollapsed: Boolean
+        get() = prefs.getBoolean(KEY_CARD_AUDIO_COLLAPSED, false)
+        set(value) = prefs.edit()
+            .putBoolean(KEY_CARD_AUDIO_COLLAPSED, value).apply()
+
+    var cardSbCollapsed: Boolean
+        get() = prefs.getBoolean(KEY_CARD_SB_COLLAPSED, false)
+        set(value) = prefs.edit()
+            .putBoolean(KEY_CARD_SB_COLLAPSED, value).apply()
 
     val presets: List<Pair<String, Size>> by lazy {
         buildPresets(nativeScreen)
@@ -309,6 +339,11 @@ class StreamConfig(context: Context) {
         private const val KEY_SB_PORT = "sb_port"
         private const val KEY_SB_PASSWORD = "sb_password"
         const val DEFAULT_SB_PORT = 8080
+        // Main screen collapsible cards (polish pass)
+        private const val KEY_CARD_DEST_COLLAPSED = "card_dest_collapsed"
+        private const val KEY_CARD_STREAM_COLLAPSED = "card_stream_collapsed"
+        private const val KEY_CARD_AUDIO_COLLAPSED = "card_audio_collapsed"
+        private const val KEY_CARD_SB_COLLAPSED = "card_sb_collapsed"
 
         const val DEFAULT_TWITCH_URL = "rtmp://live.twitch.tv/app/"
         const val DEFAULT_VIDEO_BITRATE = 3_000

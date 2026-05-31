@@ -13,6 +13,13 @@
     <string name="status_idle">Prêt</string>
     <string name="status_connecting">Connexion en cours…</string>
     <string name="status_live">🔴 EN DIRECT</string>
+    <!-- G6.2 — settings screen status when overlay is up but no stream yet.
+         Tells Jay the next step lives on the floating bubble. -->
+    <string name="status_overlay_active">Overlay actif — démarre depuis la bulle</string>
+
+    <!-- G6.2 — overlay floating start/stop toggle. Single ImageView swaps
+         between play / stop glyphs depending on stream state. -->
+    <string name="btn_start_stream">Démarrer le stream</string>
 
     <string name="error_no_key">Stream key manquante</string>
     <string name="error_mic_denied">Permission micro refusée</string>
@@ -25,6 +32,18 @@
     <string name="bitrate_hint">Twitch recommande 3000-6000 kbps pour 720p/1080p</string>
     <string name="overlay_notification_title">Hōsō — Overlay actif</string>
 
+    <!-- Section headers for the polished main screen (Material Cards).
+         Short ALL-CAPS labels render the section identity at a glance. -->
+    <string name="section_destination">DESTINATION</string>
+    <string name="section_stream">STREAM</string>
+    <string name="section_audio">AUDIO</string>
+    <string name="section_streamerbot">STREAMER.BOT</string>
+    <string name="action_go_live">PASSER EN DIRECT</string>
+    <string name="action_stop_live">ARRÊTER LE STREAM</string>
+    <!-- Polish pass — collapsible cards on the main screen. Single
+         description shared by all 4 chevrons. -->
+    <string name="card_toggle_desc">Plier ou déplier la section</string>
+
     <string name="label_destination">Destination</string>
     <string name="preset_add">+ Nouveau</string>
     <string name="preset_edit">Modifier</string>
@@ -36,11 +55,16 @@
     <string name="preset_twitch_user_hint">Chaîne Twitch (pour le chat)</string>
 
     <!-- Chat overlay (G6.2) -->
-    <string name="chat_status_connecting">Connexion…</string>
-    <string name="chat_status_connected">●</string>
-    <string name="chat_status_reconnecting">Reconnexion…</string>
-    <string name="chat_status_stopped">Hors-ligne</string>
-    <string name="chat_status_no_channel">Pas de chaîne</string>
+    <!-- Polish pass: status labels are now short ALL-CAPS tokens that
+         render next to a colored dot in the overlay header. "LIVE" /
+         "OFF" / "..." reads at a glance even on a small phone strip. -->
+    <string name="chat_status_connecting">…</string>
+    <string name="chat_status_connected">LIVE</string>
+    <string name="chat_status_reconnecting">…</string>
+    <string name="chat_status_stopped">OFF</string>
+    <string name="chat_status_no_channel">N/A</string>
+    <string name="chat_drag_desc">Glisser pour déplacer</string>
+    <string name="chat_size_desc">Changer la taille du chat</string>
     <string name="chat_close_desc">Fermer le chat</string>
     <string name="chat_new_badge">%1$d nouveaux ↓</string>
     <string name="chat_notif_channel">Chat overlay</string>

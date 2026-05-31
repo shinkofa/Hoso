@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compact status pill rendered next to the app title on the main
+     screen. Color is set programmatically by MainActivity via
+     backgroundTintList so the same drawable can render IDLE (subtle),
+     LIVE (accent), or ERROR (warning). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF1E2A50" />
+    <corners android:radius="12dp" />
+</shape>

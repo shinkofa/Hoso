@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background for the visible "S/M/L" size indicator pill at the
+     bottom of the chat overlay. The pill is purely decorative on the
+     body window (FLAG_NOT_TOUCHABLE) — the dot overlay window stacked
+     on top captures the actual tap. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#33FFFFFF" />
+    <stroke
+        android:width="1dp"
+        android:color="#66FFFFFF" />
+    <corners android:radius="10dp" />
+</shape>

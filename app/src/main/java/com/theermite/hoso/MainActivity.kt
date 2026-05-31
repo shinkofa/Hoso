@@ -5,24 +5,21 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.ServiceConnection
 import android.content.pm.ActivityInfo
-import android.media.MediaCodecInfo
-import android.media.MediaFormat
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Size
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
+import androidx.core.content.ContextCompat
 import android.util.Log
-import androidx.lifecycle.lifecycleScope
 import com.theermite.hoso.audio.AudioGains
 import com.theermite.hoso.config.AudioSource
 import com.theermite.hoso.config.DestinationPreset
@@ -32,58 +29,37 @@ import com.theermite.hoso.databinding.ActivityMainBinding
 import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
 import com.theermite.hoso.services.StreamerBotService
-import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.logger.ILogger
 import io.github.thibaultbee.streampack.core.logger.Logger
-import io.github.thibaultbee.streampack.core.interfaces.startStream
-import io.github.thibaultbee.streampack.core.streamers.single.AudioConfig
-import io.github.thibaultbee.streampack.core.streamers.single.IAudioSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
-import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
-import io.github.thibaultbee.streampack.core.streamers.utils.MediaProjectionUtils
-import io.github.thibaultbee.streampack.services.MediaProjectionService
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var config: StreamConfig
-    private var connection: ServiceConnection? = null
-    private var streamer: ISingleStreamer? = null
     private var isStreaming = false
+    /**
+     * Polish pass — single START/STOP button. true once the overlay has
+     * been launched from this activity, flipped back on
+     * BROADCAST_STOPPED or an explicit stop tap. The activity itself
+     * never runs the actual stream — it's the floating overlay that
+     * does — but this flag is enough to drive the button's two states.
+     */
+    private var overlayLaunched = false
 
     private val stoppedReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
             runOnUiThread {
                 // The service self-stopped (notification Stop tapped, or
-                // streamer error). Release our bind BEFORE clearing the
-                // connection reference, otherwise the binding leaks and a
-                // subsequent start fails (stale ServiceConnection inside the
-                // ActivityManager) — observable as "service not started" on
-                // the next start attempt.
-                stopOverlay()
-                connection?.let {
-                    try { unbindService(it) } catch (_: Exception) {}
-                }
-                streamer = null
-                connection = null
+                // streamer error). G6.2 — overlay no longer dies with the
+                // stream; user can re-start from the floating bubble. We
+                // only restore portrait orientation lock and refresh the
+                // settings UI (button reset, status).
                 requestedOrientation =
                     ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                overlayLaunched = false
+                showStatus(getString(R.string.status_idle))
                 updateUI(streaming = false)
             }
-        }
-    }
-
-    private val requestAudioPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            screenCaptureLauncher.launch(
-                MediaProjectionUtils.createScreenCaptureIntent(this)
-            )
-        } else {
-            showStatus(getString(R.string.error_mic_denied))
         }
     }
 
@@ -94,34 +70,6 @@ class MainActivity : AppCompatActivity() {
     private val overlayPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { /* checked when starting stream */ }
-
-    private val screenCaptureLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode != RESULT_OK || result.data == null) {
-            showStatus(getString(R.string.error_capture_denied))
-            return@registerForActivityResult
-        }
-
-        saveConfigFromUI()
-
-        connection = MediaProjectionService.bindService(
-            context = this,
-            serviceClass = ScreenRecordService::class.java,
-            resultCode = result.resultCode,
-            resultData = result.data!!,
-            onServiceCreated = { boundStreamer ->
-                streamer = boundStreamer as ISingleStreamer
-                lifecycleScope.launch {
-                    configureAndStart(boundStreamer as ISingleStreamer)
-                }
-            },
-            onServiceDisconnected = {
-                streamer = null
-                runOnUiThread { updateUI(streaming = false) }
-            }
-        )
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -212,8 +160,77 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        binding.btnStart.setOnClickListener { startStreaming() }
-        binding.btnStop.setOnClickListener { stopStreaming() }
+        binding.btnAction.setOnClickListener {
+            if (overlayLaunched) stopStreaming() else startStreaming()
+        }
+
+        setupCollapsibleCards()
+    }
+
+    /**
+     * Polish pass — make each of the 4 Material cards collapsible. Each
+     * header row drives a body LinearLayout: tap toggles visibility,
+     * chevron flips 180°, state persists in StreamConfig so the next
+     * launch restores the same folded/unfolded layout. Cards stay
+     * pliable while streaming so the user can free up screen real estate
+     * mid-broadcast without affecting the running stream.
+     */
+    private fun setupCollapsibleCards() {
+        bindCollapsible(
+            binding.headerDestination,
+            binding.bodyDestination,
+            binding.chevronDestination,
+            getInitial = { config.cardDestinationCollapsed },
+            setState = { config.cardDestinationCollapsed = it }
+        )
+        bindCollapsible(
+            binding.headerStream,
+            binding.bodyStream,
+            binding.chevronStream,
+            getInitial = { config.cardStreamCollapsed },
+            setState = { config.cardStreamCollapsed = it }
+        )
+        bindCollapsible(
+            binding.headerAudio,
+            binding.bodyAudio,
+            binding.chevronAudio,
+            getInitial = { config.cardAudioCollapsed },
+            setState = { config.cardAudioCollapsed = it }
+        )
+        bindCollapsible(
+            binding.headerSb,
+            binding.bodySb,
+            binding.chevronSb,
+            getInitial = { config.cardSbCollapsed },
+            setState = { config.cardSbCollapsed = it }
+        )
+    }
+
+    private fun bindCollapsible(
+        header: View,
+        body: View,
+        chevron: ImageView,
+        getInitial: () -> Boolean,
+        setState: (Boolean) -> Unit,
+    ) {
+        // Apply persisted state without animation on first bind so the
+        // screen opens straight to the user's last layout (no flash of
+        // expanded content on a card that was left folded).
+        val collapsed = getInitial()
+        body.visibility = if (collapsed) View.GONE else View.VISIBLE
+        chevron.rotation = if (collapsed) 180f else 0f
+
+        header.setOnClickListener {
+            val nowCollapsing = body.visibility == View.VISIBLE
+            if (nowCollapsing) {
+                body.visibility = View.GONE
+                chevron.animate().rotation(180f).setDuration(200L).start()
+            } else {
+                body.visibility = View.VISIBLE
+                chevron.animate().rotation(0f).setDuration(200L).start()
+            }
+            setState(nowCollapsing)
+        }
     }
 
     // G7.1 Phase B.2 — order matches AudioSource enum declaration so
@@ -548,85 +565,39 @@ class MainActivity : AppCompatActivity() {
         persistStreamerBotFields()
     }
 
+    /**
+     * G6.2 — MainActivity no longer starts the stream itself. It saves the
+     * current settings snapshot and brings up the floating overlay; the
+     * user then starts the stream from the overlay (which routes through
+     * [StreamPermissionActivity] to acquire MediaProjection). This matches
+     * the "open Hoso → tweak settings → launch overlay → switch to game →
+     * start streaming when ready" flow that the activity's screen is too
+     * heavy for.
+     */
     private fun startStreaming() {
         val key = binding.editStreamKey.text.toString().trim()
         if (key.isEmpty()) {
             showStatus(getString(R.string.error_no_key))
             return
         }
-        requestedOrientation =
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        showStatus(getString(R.string.status_connecting))
-        requestAudioPermission.launch(Manifest.permission.RECORD_AUDIO)
-    }
-
-    private suspend fun configureAndStart(streamer: ISingleStreamer) {
-        try {
-            val raw = config.resolution
-            val res = Size(
-                maxOf(raw.width, raw.height),
-                minOf(raw.width, raw.height)
-            )
-            val bitrate = config.videoBitrate * 1000
-
-            val videoConfig = VideoConfig(
-                mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
-                startBitrate = bitrate,
-                resolution = res,
-                fps = config.fps,
-                gopDurationInS = 2f,
-                customize = {
-                    setInteger(
-                        MediaFormat.KEY_BITRATE_MODE,
-                        MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR
-                    )
-                }
-            )
-
-            val audioConfig = AudioConfig(
-                mimeType = MediaFormat.MIMETYPE_AUDIO_AAC,
-                startBitrate = config.audioBitrate,
-                sampleRate = 44100,
-                channelConfig = AudioConfig.getChannelConfig(1),
-                byteFormat = android.media.AudioFormat.ENCODING_PCM_16BIT
-            )
-
-            (streamer as IVideoSingleStreamer).setVideoConfig(videoConfig)
-            (streamer as IAudioSingleStreamer).setAudioConfig(audioConfig)
-
-            val descriptor = UriMediaDescriptor(
-                config.fullRtmpUrl.toUri()
-            )
-            streamer.startStream(descriptor)
-
-            // Hand the resolved RTMP URL to the foreground service so
-            // it can drive its own auto-reconnect loop (G4.1) without
-            // having to call back into this activity.
-            startService(
-                Intent(this, ScreenRecordService::class.java).apply {
-                    action = ScreenRecordService.ACTION_REMEMBER_URL
-                    putExtra(
-                        ScreenRecordService.EXTRA_RTMP_URL,
-                        config.fullRtmpUrl
-                    )
-                }
-            )
-
-            runOnUiThread {
-                updateUI(streaming = true)
-                startOverlay()
-            }
-        } catch (e: Exception) {
-            runOnUiThread {
-                showStatus(
-                    "${getString(R.string.error_stream_failed)}: " +
-                        "${e.message}"
-                )
-                updateUI(streaming = false)
-            }
+        saveConfigFromUI()
+        if (!Settings.canDrawOverlays(this)) {
+            requestOverlayPermission()
+            return
         }
+        startOverlay()
+        overlayLaunched = true
+        showStatus(getString(R.string.status_overlay_active))
+        updateUI(streaming = true)
     }
 
+    /**
+     * Emergency shutdown from the settings screen. The overlay already
+     * exposes a Start/Stop toggle, so this path is mostly useful when
+     * the overlay is somehow stuck or has been killed by the system.
+     * Idempotent — sending ACTION_STOP to a non-running service is a
+     * no-op, and stopOverlay is safe on an already-stopped service.
+     */
     private fun stopStreaming() {
         stopOverlay()
 
@@ -635,12 +606,7 @@ class MainActivity : AppCompatActivity() {
         ).apply { action = ScreenRecordService.ACTION_STOP }
         startService(stopIntent)
 
-        try {
-            connection?.let { unbindService(it) }
-        } catch (_: Exception) { }
-        connection = null
-        streamer = null
-
+        overlayLaunched = false
         requestedOrientation =
             ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         updateUI(streaming = false)
@@ -660,8 +626,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUI(streaming: Boolean) {
         isStreaming = streaming
-        binding.btnStart.isEnabled = !streaming
-        binding.btnStop.isEnabled = streaming
+
+        // Polish pass — single unified action button. Idle = green
+        // "PASSER EN DIRECT", live/overlay-up = red "ARRÊTER LE STREAM".
+        // Settings inputs lock while the overlay is up to prevent edits
+        // mid-broadcast (the running stream still uses the snapshot taken
+        // at startStreaming()).
+        val actionTextRes =
+            if (streaming) R.string.action_stop_live
+            else R.string.action_go_live
+        val actionColorRes =
+            if (streaming) R.color.stream_stop else R.color.stream_start
+        binding.btnAction.setText(actionTextRes)
+        binding.btnAction.backgroundTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(this, actionColorRes)
+        )
+
         binding.editStreamKey.isEnabled = !streaming
         binding.spinnerResolution.isEnabled = !streaming
         binding.seekbarBitrate.isEnabled = !streaming
