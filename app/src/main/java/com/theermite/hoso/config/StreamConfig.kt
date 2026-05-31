@@ -241,6 +241,34 @@ class StreamConfig(context: Context) {
         get() = prefs.getInt(KEY_CHAT_Y, -1)
         set(value) = prefs.edit().putInt(KEY_CHAT_Y, value).apply()
 
+    // ── Streamer.bot bridge (G6.1) ───────────────────────────────────
+    // App-level settings, intentionally NOT per-destination: the bridge
+    // talks to Jay's PC over Tailscale and is the same regardless of
+    // whether the stream goes to Twitch, YouTube, or Kick.
+
+    var streamerBotEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SB_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_SB_ENABLED, value).apply()
+
+    var streamerBotHost: String
+        get() = prefs.getString(KEY_SB_HOST, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_SB_HOST, value.trim()).apply()
+
+    var streamerBotPort: Int
+        get() = prefs.getInt(KEY_SB_PORT, DEFAULT_SB_PORT)
+        set(value) = prefs.edit()
+            .putInt(KEY_SB_PORT, value.coerceIn(1, 65_535))
+            .apply()
+
+    /**
+     * Optional WebSocket password. Empty string = no auth (server has auth
+     * disabled). Stored in plain SharedPreferences — same trust level as
+     * the Twitch stream key already living in this file.
+     */
+    var streamerBotPassword: String
+        get() = prefs.getString(KEY_SB_PASSWORD, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_SB_PASSWORD, value).apply()
+
     val presets: List<Pair<String, Size>> by lazy {
         buildPresets(nativeScreen)
     }
@@ -275,6 +303,12 @@ class StreamConfig(context: Context) {
         const val CHAT_OPACITY_DEFAULT = 70
         const val CHAT_OPACITY_MIN = 20
         const val CHAT_OPACITY_MAX = 80
+        // Streamer.bot bridge (G6.1)
+        private const val KEY_SB_ENABLED = "sb_enabled"
+        private const val KEY_SB_HOST = "sb_host"
+        private const val KEY_SB_PORT = "sb_port"
+        private const val KEY_SB_PASSWORD = "sb_password"
+        const val DEFAULT_SB_PORT = 8080
 
         const val DEFAULT_TWITCH_URL = "rtmp://live.twitch.tv/app/"
         const val DEFAULT_VIDEO_BITRATE = 3_000

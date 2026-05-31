@@ -97,4 +97,13 @@
     <string name="label_mic_gain">Volume micro</string>
     <string name="label_game_gain">Volume jeu</string>
     <string name="gain_value_format">%1$d %%</string>
+
+    <!-- G6.1 Streamer.bot bridge.
+         Settings app-level (pas par préset) : c'est l'adresse de TON PC
+         sur le LAN / Tailscale, indépendamment de la destination du flux. -->
+    <string name="sb_section_title">Streamer.bot</string>
+    <string name="sb_hint">Pont WebSocket vers ton PC. Hôte = IP Tailscale (ex: 100.x.x.x). Mot de passe vide si l\'auth est désactivée côté serveur.</string>
+    <string name="sb_hint_host">Hôte (IP Tailscale ou LAN)</string>
+    <string name="sb_hint_port">Port (défaut 8080)</string>
+    <string name="sb_hint_password">Mot de passe (optionnel)</string>
 </resources>

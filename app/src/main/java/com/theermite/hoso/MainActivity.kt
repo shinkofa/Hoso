@@ -192,6 +192,7 @@ class MainActivity : AppCompatActivity() {
         setupAudioSourceUI()
         setupMixGainSliders()
         setupPresetUI()
+        setupStreamerBotUI()
 
         val steps = (StreamConfig.BITRATE_MAX - StreamConfig.BITRATE_MIN) /
             StreamConfig.BITRATE_STEP
@@ -293,6 +294,37 @@ class MainActivity : AppCompatActivity() {
                 override fun onStopTrackingTouch(sb: SeekBar?) {}
             }
         )
+    }
+
+    // G6.1 — Streamer.bot bridge settings. App-level config (host/port/
+    // password) only saved on focus loss / start to avoid prefs churn on
+    // every keystroke. The enabled switch toggles the input group's
+    // visibility and persists immediately — it's the actuator the
+    // future StreamerBotService observes to know whether to connect.
+    private fun setupStreamerBotUI() {
+        applyStreamerBotGroupVisibility(config.streamerBotEnabled)
+        binding.switchSbEnabled.setOnCheckedChangeListener { _, checked ->
+            // Persist whatever the user typed BEFORE flipping the
+            // service on, so the connection picks up the latest values.
+            if (checked) persistStreamerBotFields()
+            config.streamerBotEnabled = checked
+            applyStreamerBotGroupVisibility(checked)
+        }
+    }
+
+    private fun applyStreamerBotGroupVisibility(enabled: Boolean) {
+        binding.groupSbSettings.visibility =
+            if (enabled) View.VISIBLE else View.GONE
+    }
+
+    private fun persistStreamerBotFields() {
+        config.streamerBotHost =
+            binding.editSbHost.text?.toString().orEmpty()
+        config.streamerBotPort =
+            binding.editSbPort.text?.toString()?.toIntOrNull()
+                ?: StreamConfig.DEFAULT_SB_PORT
+        config.streamerBotPassword =
+            binding.editSbPassword.text?.toString().orEmpty()
     }
 
     private fun setupPresetUI() {
@@ -481,6 +513,15 @@ class MainActivity : AppCompatActivity() {
         // but no write-back to prefs (avoids the load→save→load loop).
         binding.seekbarMicGain.progress = config.micGainPermil
         binding.seekbarGameGain.progress = config.gameGainPermil
+
+        // Streamer.bot bridge fields are app-level, not preset-scoped,
+        // but we still re-bind them on every loadConfigToUI() so the
+        // initial hydration after onCreate populates them once.
+        binding.editSbHost.setText(config.streamerBotHost)
+        binding.editSbPort.setText(config.streamerBotPort.toString())
+        binding.editSbPassword.setText(config.streamerBotPassword)
+        binding.switchSbEnabled.isChecked = config.streamerBotEnabled
+        applyStreamerBotGroupVisibility(config.streamerBotEnabled)
     }
 
     private fun saveConfigFromUI() {
@@ -490,6 +531,9 @@ class MainActivity : AppCompatActivity() {
             binding.spinnerResolution.selectedItemPosition
         config.videoBitrate = StreamConfig.BITRATE_MIN +
             binding.seekbarBitrate.progress * StreamConfig.BITRATE_STEP
+        // Streamer.bot fields are app-level — persist alongside the
+        // preset-scoped ones whenever the UI snapshot is committed.
+        persistStreamerBotFields()
     }
 
     private fun startStreaming() {
