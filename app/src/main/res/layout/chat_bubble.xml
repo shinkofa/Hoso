@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Chat bubble overlay window. Sized in code by ChatBubbleService based
-  on the user's chosen size preset (S/M/L). Touch-passthrough is OFF —
-  the bubble is interactive (drag header, scroll list, long-press for
-  opacity). Only the control overlay needs alpha-capped passthrough.
+  Chat bubble BODY window. This window carries the full visual layout
+  but is added with FLAG_NOT_TOUCHABLE by ChatBubbleService so the game
+  underneath receives all touches in the chat list region. Interaction
+  is handled by two separate transparent overlay windows owned by the
+  same service: one over the top header (drag / close / opacity) and
+  one over the bottom size pill (size cycle S/M/L).
+
+  Polish pass: the header now shows status pill (●  LIVE/OFF/…),
+  a centered drag-grip cue, and a close (×) icon. The bottom carries
+  a labelled "S/M/L" pill that signals (a) where to tap and (b) the
+  current size at a glance.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chat_bubble_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -20,28 +28,60 @@
         <FrameLayout
             android:id="@+id/chat_header"
             android:layout_width="match_parent"
-            android:layout_height="32dp"
+            android:layout_height="34dp"
             android:background="@drawable/chat_header_bg">
 
-            <TextView
-                android:id="@+id/chat_status"
+            <!-- Status zone: colored dot + ALL-CAPS label. -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|center_vertical"
                 android:layout_marginStart="10dp"
-                android:text="@string/chat_status_connecting"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
+                <View
+                    android:id="@+id/chat_status_dot"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chat_resize_dot"
+                    android:backgroundTint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/chat_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.08"
+                    android:text="@string/chat_status_connecting"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <!-- Centered drag-grip cue. Decorative — touches are caught
+                 by the header overlay window above. -->
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:alpha="0.55"
+                android:contentDescription="@string/chat_drag_desc"
+                android:src="@drawable/ic_drag_grip" />
+
+            <!-- Close icon (×). The tap is caught by the header overlay
+                 window via right-edge hit-test; the ImageView itself is
+                 a visual hint only since the body window is
+                 FLAG_NOT_TOUCHABLE. -->
             <ImageView
                 android:id="@+id/chat_close"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_gravity="end|center_vertical"
                 android:layout_marginEnd="4dp"
                 android:contentDescription="@string/chat_close_desc"
                 android:padding="6dp"
-                android:src="@drawable/ic_stop_overlay" />
+                android:src="@drawable/ic_close" />
         </FrameLayout>
 
         <FrameLayout
@@ -71,15 +111,36 @@
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:visibility="gone"
-                tools:ignore="UnusedAttribute"
-                xmlns:tools="http://schemas.android.com/tools" />
+                tools:ignore="UnusedAttribute" />
         </FrameLayout>
 
-        <View
+        <!-- Bottom resize area. The visible "S/M/L" pill shows the
+             current size; the actual tap is caught by the dot overlay
+             window stacked on top of it. -->
+        <FrameLayout
             android:id="@+id/chat_resize"
             android:layout_width="match_parent"
-            android:layout_height="14dp"
-            android:background="#1AFFFFFF" />
+            android:layout_height="24dp"
+            android:background="@android:color/transparent">
+
+            <TextView
+                android:id="@+id/chat_size_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/chat_size_pill_bg"
+                android:contentDescription="@string/chat_size_desc"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.12"
+                android:minWidth="42dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="2dp"
+                android:text="M"
+                android:textAlignment="center"
+                android:textColor="@color/text_primary"
+                android:textSize="10sp" />
+
+        </FrameLayout>
 
     </LinearLayout>
 

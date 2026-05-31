@@ -7,4 +7,17 @@
         <item name="android:statusBarColor">@color/background</item>
         <item name="android:navigationBarColor">@color/background</item>
     </style>
+
+    <!-- G6.2 — Theme used by StreamPermissionActivity. The activity has
+         no UI of its own; it exists only to host the audio +
+         MediaProjection permission dialogs while the user is in their
+         game. Transparent + noTitle + no animation keeps the visual
+         disruption to a flicker. -->
+    <style name="Theme.Hoso.Transparent" parent="Theme.Hoso">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
 </resources>

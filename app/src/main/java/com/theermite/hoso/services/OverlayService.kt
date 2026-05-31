@@ -35,6 +35,7 @@ import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.theermite.hoso.R
+import com.theermite.hoso.StreamPermissionActivity
 import com.theermite.hoso.audio.AudioGains
 import com.theermite.hoso.config.AudioSource
 import com.theermite.hoso.config.StreamConfig
@@ -193,10 +194,29 @@ class OverlayService : Service() {
                     refreshPrivacyIcon(
                         maskMode == ScreenRecordService.MASK_PRIVACY
                     )
+                    refreshStartStopIcon()
                     if (expanded) tickHud()
                 }
                 ScreenRecordService.BROADCAST_RECONNECT_STATE -> {
                     handleReconnect(intent)
+                }
+                ScreenRecordService.BROADCAST_STOPPED -> {
+                    // G6.2 — the stream service was stopped (notification
+                    // tap, MainActivity emergency stop, or auto-give-up
+                    // after reconnect exhaustion). The overlay survives:
+                    // we just flip the start/stop toggle back to play and
+                    // clear the live-only state so the HUD hides.
+                    if (streamStartedAt != 0L) {
+                        streamStartedAt = 0L
+                        isReconnecting = false
+                        reconnectAttempt = 0
+                        hasGivenUp = false
+                        lastTxBytes = -1L
+                        lastSampleAt = 0L
+                        currentKbps = -1
+                    }
+                    refreshStartStopIcon()
+                    if (expanded) tickHud()
                 }
                 StreamerBotService.BROADCAST_STATE_CHANGED -> {
                     val name = intent.getStringExtra(
@@ -381,17 +401,36 @@ class OverlayService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         streamConfig = StreamConfig(this)
 
+        // chatEnabled is RUNTIME state (is the bubble window visible right
+        // now), but it's persisted via prefs. If the previous process died
+        // without ChatBubbleService.onDestroy resetting the flag (OS kill,
+        // ColorOS cleanup, crash), the flag would stay true and the next
+        // tap on btn_chat would hit the stopService branch and silently
+        // no-op. We reset here because chat cannot survive overlay restart:
+        // overlay is the only entry point to chat, so a fresh overlay
+        // means no chat is running.
+        streamConfig?.chatEnabled = false
+
         registerReceiver(
             stateReceiver,
             IntentFilter().apply {
                 addAction(ScreenRecordService.BROADCAST_STATE_CHANGED)
                 addAction(ScreenRecordService.BROADCAST_RECONNECT_STATE)
+                addAction(ScreenRecordService.BROADCAST_STOPPED)
                 addAction(StreamerBotService.BROADCAST_STATE_CHANGED)
                 addAction(StreamerBotService.BROADCAST_ACTIONS_UPDATED)
                 addAction(StreamerBotService.BROADCAST_EVENT)
             },
             RECEIVER_NOT_EXPORTED
         )
+
+        // Bootstrap Streamer.bot state from the bridge service's snapshot.
+        // The broadcast stream only carries deltas, so an overlay started
+        // AFTER the bridge has already connected would otherwise stay on
+        // IDLE forever. The snapshot is updated by StreamerBotService on
+        // every state/actions change, so reading it here is current.
+        sbState = StreamerBotService.latestState
+        sbActions = parseActions(StreamerBotService.latestActionsJson)
 
         // Default: COLLAPSED. The streamer sees one small disc on top-left
         // and has to tap to access controls.
@@ -551,6 +590,11 @@ class OverlayService : Service() {
         btnStop = root.findViewById(R.id.btn_stop)
         hudText = root.findViewById(R.id.hud_text)
         refreshChatButtonState()
+        // G6.2 — paint the toggle to match current stream state so the
+        // expanded overlay opens with the correct glyph (play if no
+        // stream yet, stop if one is running). Subsequent transitions
+        // are driven by BROADCAST_STATE_CHANGED / BROADCAST_STOPPED.
+        refreshStartStopIcon()
         mixGainsGroup = root.findViewById(R.id.overlay_mix_gains)
         seekbarMicGain = root.findViewById(R.id.overlay_seekbar_mic_gain)
         seekbarGameGain = root.findViewById(R.id.overlay_seekbar_game_gain)
@@ -915,7 +959,7 @@ class OverlayService : Service() {
                             )
                             R.id.btn_chat -> toggleChatBubble()
                             R.id.btn_bot -> toggleActionsPanel()
-                            R.id.btn_stop -> stopStream()
+                            R.id.btn_stop -> onStartStopTapped()
                         }
                     }
                     candidate = null
@@ -1246,13 +1290,68 @@ class OverlayService : Service() {
         else -> getString(R.string.hud_state_live)
     }
 
+    /**
+     * G6.2 — single tap target on the floating overlay that flips between
+     * "start a new stream" and "stop the current one" based on whether
+     * [streamStartedAt] reflects an active stream. The icon is refreshed
+     * via [refreshStartStopIcon] on every state delta.
+     *
+     * Stop path: send ACTION_STOP to [ScreenRecordService] and let it
+     * broadcast back BROADCAST_STOPPED, which our receiver consumes to
+     * flip the icon. We DO NOT stopSelf the overlay anymore — the user
+     * can re-start a new stream from the same overlay, which is the
+     * whole point of the Stream Deck flow.
+     *
+     * Start path: launch [StreamPermissionActivity] which acquires audio
+     * + MediaProjection consent. NEW_TASK is required because we're
+     * starting an activity from a Service context.
+     */
+    private fun onStartStopTapped() {
+        if (streamStartedAt > 0L) {
+            stopStream()
+        } else {
+            try {
+                startActivity(
+                    Intent(this, StreamPermissionActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            } catch (_: Exception) {
+                Toast.makeText(
+                    this,
+                    getString(R.string.error_stream_failed),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     private fun stopStream() {
         val intent = Intent(
             this, ScreenRecordService::class.java
         ).apply { action = ScreenRecordService.ACTION_STOP }
         startService(intent)
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+        // G6.2 — overlay persists across stream lifecycles so Jay can
+        // start a new stream without reopening MainActivity. The bubble
+        // is killed via the FGS notification or by MainActivity's
+        // emergency stop, not by the stream stopping.
+    }
+
+    /**
+     * Swap the floating action's icon to reflect stream state:
+     * - stream active     → stop glyph + red background (existing bg)
+     * - stream not active → play glyph + neutral overlay bg
+     */
+    private fun refreshStartStopIcon() {
+        val btn = btnStop ?: return
+        if (streamStartedAt > 0L) {
+            btn.setImageResource(R.drawable.ic_stop_overlay)
+            btn.setBackgroundResource(R.drawable.overlay_btn_stop_bg)
+            btn.contentDescription = getString(R.string.btn_stop)
+        } else {
+            btn.setImageResource(R.drawable.ic_play)
+            btn.setBackgroundResource(R.drawable.overlay_btn_bg)
+            btn.contentDescription = getString(R.string.btn_start_stream)
+        }
     }
 
     override fun onDestroy() {

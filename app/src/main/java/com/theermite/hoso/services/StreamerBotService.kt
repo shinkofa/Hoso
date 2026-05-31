@@ -115,6 +115,7 @@ class StreamerBotService : Service() {
 
     private fun onClientState(state: StreamerBotClient.State) {
         lastState = state
+        latestState = state
         updateNotification(state)
         sendBroadcast(
             Intent(BROADCAST_STATE_CHANGED).apply {
@@ -149,10 +150,12 @@ class StreamerBotService : Service() {
                     .apply { a.group?.let { put("group", it) } }
             )
         }
+        val payload = json.toString()
+        latestActionsJson = payload
         sendBroadcast(
             Intent(BROADCAST_ACTIONS_UPDATED).apply {
                 setPackage(packageName)
-                putExtra(EXTRA_ACTIONS_JSON, json.toString())
+                putExtra(EXTRA_ACTIONS_JSON, payload)
             }
         )
     }
@@ -215,6 +218,20 @@ class StreamerBotService : Service() {
 
         private const val CHANNEL_ID = "hoso_streamerbot_bridge"
         private const val NOTIFICATION_ID = 4203
+
+        // Snapshot of the latest known client state and action list,
+        // exposed so siblings (OverlayService) can bootstrap their UI
+        // when they spawn AFTER the bridge has already connected — the
+        // BROADCAST_STATE_CHANGED stream only carries deltas, so a late
+        // subscriber would otherwise display IDLE forever.
+        @Volatile
+        var latestState: StreamerBotClient.State =
+            StreamerBotClient.State.IDLE
+            private set
+
+        @Volatile
+        var latestActionsJson: String = "[]"
+            private set
 
         /** Start the service, ensuring the client is running. */
         fun start(context: Context) {
