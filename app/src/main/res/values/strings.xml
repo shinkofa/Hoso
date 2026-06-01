@@ -40,6 +40,8 @@
     <string name="section_streamerbot">STREAMER.BOT</string>
     <string name="action_go_live">PASSER EN DIRECT</string>
     <string name="action_stop_live">ARRÊTER LE STREAM</string>
+    <string name="action_quit">Quitter l\'application</string>
+    <string name="action_quit_desc">Arrête le stream, l\'overlay et ferme Hōsō</string>
     <!-- Polish pass — collapsible cards on the main screen. Single
          description shared by all 4 chevrons. -->
     <string name="card_toggle_desc">Plier ou déplier la section</string>

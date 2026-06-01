@@ -26,6 +26,7 @@ import com.theermite.hoso.config.DestinationPreset
 import com.theermite.hoso.config.StreamConfig
 import com.theermite.hoso.databinding.DialogPresetEditBinding
 import com.theermite.hoso.databinding.ActivityMainBinding
+import com.theermite.hoso.services.ChatBubbleService
 import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
 import com.theermite.hoso.services.StreamerBotService
@@ -164,7 +165,35 @@ class MainActivity : AppCompatActivity() {
             if (overlayLaunched) stopStreaming() else startStreaming()
         }
 
+        binding.btnQuit.setOnClickListener {
+            quitApp()
+        }
+
         setupCollapsibleCards()
+    }
+
+    /**
+     * Clean shutdown: stop every service Hoso owns, then remove the task
+     * so the app no longer lives in recents. The settings page Start/Stop
+     * button only toggles the stream — this is the explicit "I'm done"
+     * gesture that also kills the overlay, chat bubble and Streamer.bot
+     * bridge so nothing keeps a foreground notification alive after exit.
+     * Idempotent on services that aren't running (stopService and
+     * ACTION_STOP are both no-ops on a dead service).
+     */
+    private fun quitApp() {
+        // Stream first so its onStop callback finishes before we tear
+        // down the overlay that may still be listening for its state
+        // broadcasts.
+        startService(
+            Intent(this, ScreenRecordService::class.java).apply {
+                action = ScreenRecordService.ACTION_STOP
+            }
+        )
+        stopService(Intent(this, OverlayService::class.java))
+        stopService(Intent(this, ChatBubbleService::class.java))
+        StreamerBotService.stop(this)
+        finishAndRemoveTask()
     }
 
     /**

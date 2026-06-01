@@ -592,14 +592,19 @@
     <!-- Sticky footer with the unified Start/Stop action.
          backgroundTint is set programmatically by MainActivity between
          stream_start (idle → ready to go live) and stream_stop (live →
-         tap to stop). -->
-    <FrameLayout
+         tap to stop).
+         A secondary discrete "Quitter" text button sits below to fully
+         shut down all services (stream, overlay, chat, streamer.bot)
+         and remove the task. This is the clean session-end gesture —
+         visible but visually subordinate to the primary CTA. -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background"
+        android:orientation="vertical"
         android:paddingHorizontal="20dp"
         android:paddingTop="12dp"
-        android:paddingBottom="16dp">
+        android:paddingBottom="12dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_action"
@@ -611,6 +616,18 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:cornerRadius="14dp" />
-    </FrameLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_quit"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="4dp"
+            android:contentDescription="@string/action_quit_desc"
+            android:text="@string/action_quit"
+            android:textAllCaps="false"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+    </LinearLayout>
 
 </LinearLayout>
