@@ -75,6 +75,27 @@ export JAVA_HOME="/path/to/android-studio/jbr"
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Release builds (signed)
+
+Release APKs are signed with a maintainer-only key kept in [Shinkofa-Vault](https://github.com/theermite/Shinkofa-Vault) (SOPS + age). Public contributors do **not** need it — `assembleDebug` is sufficient for development and PRs.
+
+For the maintainer (or anyone with `age` access to the Vault):
+
+```bash
+# Pulls the keystore + passwords from Vault and writes them locally.
+# Targets:
+#   ~/.android-keystores/hoso-release.jks  (binary, restored from base64)
+#   ./local.properties                     (signing.* keys appended)
+# Both are gitignored.
+./scripts/fetch-signing.sh
+
+# Then build the signed release APK.
+./gradlew assembleRelease
+# -> app/build/outputs/apk/release/app-release.apk
+```
+
+Requirements: SSH alias `vps` configured, Shinkofa-Vault present on the VPS at `/home/ubuntu/Shinkofa-Vault`, and `sops` + `age` keys provisioned there. If `local.properties` has no `signing.*` keys, the release build falls back to the debug signing key (so dev builds keep working without the Vault).
+
 ## Roadmap
 
 See [docs/Roadmap.md](docs/Roadmap.md) for the full feature plan.
