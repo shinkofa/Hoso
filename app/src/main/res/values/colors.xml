@@ -27,4 +27,7 @@
 
     <color name="ermite_accent">#FFE08F34</color>
     <color name="ermite_accent_light">#FFF5CD3E</color>
+
+    <!-- Launcher icon background (adaptive icon) — Ermite navy. -->
+    <color name="ic_launcher_background">#FF0F1729</color>
 </resources>

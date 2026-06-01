@@ -20,7 +20,7 @@
         android:layout_height="48dp"
         android:padding="12dp"
         android:background="@drawable/overlay_trigger_bg"
-        android:src="@drawable/ic_overlay_trigger"
+        android:src="@drawable/ic_overlay_trigger_logo"
         android:scaleType="fitCenter"
         android:contentDescription="@string/overlay_trigger_label" />
 
