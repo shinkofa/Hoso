@@ -439,11 +439,21 @@ class OverlayService : Service() {
         // Ask the streamer service for the current state so we paint the
         // icons correctly on initial show (covers any race where the
         // overlay starts after a prior toggle, e.g. restart).
-        startService(
-            Intent(this, ScreenRecordService::class.java).apply {
-                action = ScreenRecordService.ACTION_QUERY_STATE
-            }
-        )
+        //
+        // Guard: only query if ScreenRecordService is already alive.
+        // startService() instantiates the service if not running, and its
+        // onCreate() calls startForeground(FGS_TYPE_MEDIA_PROJECTION) —
+        // which Android 14+ refuses without a MediaProjection consent
+        // token, crashing the app with SecurityException. If no stream is
+        // running, there's no state to query anyway; icons stay on
+        // defaults until the next broadcast.
+        if (ScreenRecordService.isRunning) {
+            startService(
+                Intent(this, ScreenRecordService::class.java).apply {
+                    action = ScreenRecordService.ACTION_QUERY_STATE
+                }
+            )
+        }
     }
 
     private fun createNotificationChannel() {

@@ -73,6 +73,10 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
                 fgsType
             )
         }
+        // Mark alive only after startForeground succeeded. OverlayService
+        // reads this before sending ACTION_QUERY_STATE to avoid spawning
+        // this service without a MediaProjection consent token.
+        isRunning = true
     }
 
     override fun createDefaultAudioSource(
@@ -371,7 +375,26 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
             .build()
     }
 
+    override fun onDestroy() {
+        isRunning = false
+        super.onDestroy()
+    }
+
     companion object {
+        /**
+         * Set to true once onCreate() has successfully promoted the service
+         * to foreground with the mediaProjection FGS type — meaning a
+         * MediaProjection consent token is present and the service is fully
+         * alive. Cleared in onDestroy().
+         *
+         * OverlayService reads this before sending ACTION_QUERY_STATE so it
+         * never instantiates this service when no projection token exists
+         * (which would crash with SecurityException on Android 14+).
+         */
+        @Volatile
+        var isRunning: Boolean = false
+            private set
+
         const val NOTIFICATION_ID = 0x484F534F
         const val CHANNEL_ID = "com.theermite.hoso.stream"
         const val ACTION_STOP =
