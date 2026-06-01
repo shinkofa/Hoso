@@ -1,0 +1,14 @@
+Hoso (放送)
+Copyright 2026 The Ermite
+
+This product includes software developed by:
+
+  StreamPack
+  Copyright 2021-2026 Thibault Beyou
+  https://github.com/ThibaultBee/StreamPack
+  Licensed under the Apache License, Version 2.0
+
+  This project ships a local fork of StreamPack (streampack-fork/)
+  with a patch for a Twitch audio race condition observed during
+  initial stream connection. The fork is built from sources and
+  published as part of this binary distribution.

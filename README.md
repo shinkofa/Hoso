@@ -79,6 +79,14 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 See [docs/Roadmap.md](docs/Roadmap.md) for the full feature plan.
 
+## Contributing
+
+Issues and pull requests are welcome. Hoso is built around a small, opinionated stack — please open an issue to discuss substantial changes before sending a PR. Atomic commits, conventional commit messages, and tests on critical paths (auth, streaming pipeline, IRC client).
+
+## License
+
+Hoso is released under the [Apache License 2.0](LICENSE). Third-party attributions are listed in [NOTICE](NOTICE).
+
 ## Author
 
 [The Ermite](https://solo.to/theermite)
