@@ -1,113 +1,270 @@
-# Hoso (放送)
+<div align="center">
 
-> Personal mobile streaming app — Android screen + mic to RTMP (Twitch, YouTube Live, Kick, custom).
+<img src="Logo-Hoso-fnl.png" alt="Hōsō" width="110"/>
 
-## What it does
+# Hōsō · 放送
 
-Hoso captures your Android screen and microphone, encodes to H.264/AAC, and streams via RTMP to any destination. Built for personal IRL/mobile streaming with minimal UI and maximum reliability.
+**Streame ton jeu mobile vers Twitch. Directement depuis ton téléphone. Sans ordinateur.**
 
-## Features
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Platform: Android](https://img.shields.io/badge/Platform-Android%2010%2B-green.svg)](https://developer.android.com)
+[![Status: Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg)](../../releases)
 
-- **Multi-destination presets** — Twitch / YouTube Live / Kick / custom RTMP. Switch in one tap.
-- **Resolution presets** — Native-fit 1080p/720p, crop modes, 480p fallback.
-- **Configurable bitrate** — 1000-8000 kbps with CBR encoding.
-- **Audio source selection** — Mic-only or Mix mode (mic + game audio with independent gain sliders).
-- **Floating overlay** — Draggable start/stop toggle with auto-fade. Stream control stays on screen while gaming.
-- **Twitch chat overlay** — Live IRC chat in a floating bubble with 3 size presets (S/M/L), adjustable opacity, free drag positioning, and status indicators (LIVE / OFF / connecting). Uses a 3-window click-through architecture so the game underneath receives all touches in the chat list region.
-- **Streamer.bot bridge** — WebSocket client connecting to Streamer.bot on your PC (LAN / Tailscale). Browse and trigger published actions from the overlay. Auto-reconnect with exponential backoff.
-- **Collapsible settings cards** — Each configuration section (Destination, Stream, Audio, Streamer.bot) folds/unfolds with a single tap. State persisted between sessions.
-- **Unified Start/Stop CTA** — Single action button that toggles between "PASSER EN DIRECT" and "ARRETER LE STREAM" with color feedback.
-- **Auto-reconnect** — Automatic stream reconnection with configurable retry count.
-- **HUD live stats** — Duration, bitrate, connection state, mic status in the expanded overlay.
-- **Privacy mode** — One-tap screen mask for sensitive content during stream.
-- **Foreground service** — Stable capture via MediaProjection + notification controls.
+</div>
 
-## Stack
+---
 
-| Component | Technology |
-|-----------|-----------|
-| Language | Kotlin |
-| Min SDK | 29 (Android 10) |
-| Target SDK | 35 |
-| Streaming | [StreamPack 3.1.2](https://github.com/ThibaultBee/StreamPack) (local fork with Twitch audio race fix) |
-| Build | Gradle 8.13, AGP 8.13.1 |
+## 📱 À quoi ça ressemble
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/png/screen-main.png" width="200" alt="Écran de configuration"/>
+      <br/><sub><b>Configuration</b><br/>4 sections repliables</sub>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/png/screen-stream-config.png" width="200" alt="Réglages stream"/>
+      <br/><sub><b>Réglages stream</b><br/>Résolution, bitrate, clé de stream</sub>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/png/screen-audio-mix.png" width="200" alt="Mode Mix audio"/>
+      <br/><sub><b>Mode Mix audio</b><br/>Micro + son du jeu, balance indépendante</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/png/screen-overlay-collapsed.png" width="200" alt="Overlay discret pendant le jeu"/>
+      <br/><sub><b>En jeu — discret</b><br/>Bulle draggable, toujours accessible</sub>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/png/screen-overlay-expanded.png" width="200" alt="Contrôles live ouverts"/>
+      <br/><sub><b>Contrôles live</b><br/>HUD + actions en un tap</sub>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/png/screen-chat.png" width="200" alt="Chat Twitch flottant"/>
+      <br/><sub><b>Chat Twitch</b><br/>Flottant, redimensionnable, sans bloquer le jeu</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+## C'est quoi Hōsō ?
+
+Hōsō (放送 — « diffusion » en japonais) est une app Android qui fait **une chose et la fait bien** : capturer ton écran de jeu et le diffuser en direct sur Twitch, YouTube Live, Kick ou n'importe quel serveur RTMP.
+
+**Pourquoi Hōsō plutôt que Streamlabs Mobile ou Prism Live Studio ?**
+
+Ces apps plantent sur certains téléphones Android 10+ parce qu'elles gèrent mal les services en arrière-plan. Hōsō s'appuie sur un `foreground service` natif — c'est exactement ce qui manque aux concurrents, et c'est le cœur de l'app.
+
+**Ce que tu gardes pendant que tu joues :**
+- Une petite **bulle draggable** reste visible sur ton jeu
+- Depuis cette bulle : arrêter le stream, couper le micro, afficher le chat Twitch — sans jamais quitter le jeu
+
+---
+
+## 📥 Installer l'app (sans passer par le code)
+
+> Hōsō n'est pas sur le Play Store. Elle se télécharge comme un fichier APK — c'est simple, 4 étapes.
+
+<div align="center"><img src="docs/screenshots/png/install-flow.png" width="100%" alt="Guide d'installation en 4 étapes"/></div>
+
+### Étape 1 — Télécharge l'APK
+
+Va sur la page **[Releases ↗](../../releases)** et télécharge le fichier `hoso-release.apk` (dernière version).
+
+### Étape 2 — Autorise les sources inconnues
+
+Android bloque les apps hors Play Store par défaut. Pour lever ce blocage :
+
+1. Ouvre **Paramètres** → **Sécurité** (ou **Applications** selon ton téléphone)
+2. Active **"Installer des sources inconnues"** pour ton navigateur ou gestionnaire de fichiers
+3. Sur certains modèles (Xiaomi, Samsung), la demande d'autorisation s'affiche automatiquement quand tu tappes sur l'APK
+
+### Étape 3 — Installe et lance
+
+Ouvre le fichier APK téléchargé → **Installer** → **Ouvrir**.
+
+### ⚠️ Étape 4 — Optimisation batterie (important)
+
+Sans cette étape, Android peut couper le stream au bout de quelques minutes.
+
+**Procédure générale :**
+1. **Paramètres** → **Batterie** → **Optimisation de la batterie**
+2. Cherche « Hōsō » → sélectionne **Ne pas optimiser**
+
+> 📖 Certains constructeurs (Xiaomi, Oppo, Samsung) ont des menus spécifiques.
+> Guide complet par marque : [docs/Battery-Optimization-Guide.md](docs/Battery-Optimization-Guide.md)
+
+---
+
+## ❓ Questions fréquentes
+
+**C'est gratuit ?**  
+Oui, complètement. Hōsō est open source (Apache 2.0) — le code est entièrement visible sur ce dépôt.
+
+**Pourquoi ce n'est pas sur le Play Store ?**  
+Le Play Store impose des règles strictes sur les apps de capture d'écran. Hōsō est publiée directement par le développeur — l'installation APK prend 4 étapes (guide ci-dessus) et ne présente aucun risque particulier.
+
+**L'APK est sûr ?**  
+Le code source complet est visible ici. Hōsō ne collecte aucune donnée et ne fait aucun appel réseau sauf vers la destination de stream que tu configures toi-même. La signature de chaque release est vérifiable via `apksigner`.
+
+**Ça marche sur mon téléphone ?**  
+Android 10 et supérieur (la grande majorité des téléphones depuis 2019). Testé sur Samsung, Xiaomi, OnePlus et Pixel. Note : certains jeux bloquent la capture audio système — dans ce cas Hōsō fonctionne quand même en mode Micro seul.
+
+**Le stream s'arrête si je change d'app ou reçois un appel ?**  
+Non. Hōsō tourne en arrière-plan via un service natif Android — il n'est pas coupé quand tu changes d'app. Si ton réseau coupe (4G/5G instable), l'auto-reconnexion tente jusqu'à 20 fois sur ~8 minutes sans que tu aies à intervenir.
+
+---
+
+## ✨ Fonctionnalités
+
+### 🎯 Destinations configurables
+Crée autant de profils de destination que tu veux : **Twitch**, **YouTube Live**, **Kick**, ou n'importe quelle URL RTMP custom. Change de cible en un seul tap depuis l'écran principal — utile si tu streames sur plusieurs plateformes ou avec plusieurs comptes.
+
+### 📡 Stream robuste
+- **Résolution** : 1080p natif, 720p, 480p, modes recadrage portrait/paysage
+- **Bitrate** : de 1 000 à 8 000 kbps, réglable précisément (Twitch recommande 3 000–6 000 kbps)
+- **Encodage CBR H.264** via le codec hardware du téléphone — léger sur la batterie
+- **Auto-reconnexion** : si le réseau coupe (4G/5G fluctuant), Hōsō se reconnecte automatiquement jusqu'à 20 fois sur ~8 minutes, sans que tu aies à toucher quoi que ce soit
+
+### 🎙 Audio flexible
+
+**Mode Micro** — capture uniquement ta voix pour commenter la partie.
+
+**Mode Mix** — capture le micro ET le son du jeu en simultané, avec deux curseurs de volume indépendants. Tu règles la balance micro/jeu depuis l'écran de config ou depuis la bulle overlay pendant le stream.
+
+> Note : certains jeux bloquent la capture audio système (`AudioPlaybackCapture`). Si le tien est concerné, Hōsō fonctionne quand même en mode Micro seul.
+
+### 🫧 Overlay flottant
+
+Une bulle discrète reste en permanence sur ton écran pendant que tu joues. Elle est **draggable** — mets-la là où elle ne gêne pas.
+
+**Un tap** sur la bulle ouvre le panneau de contrôles :
+
+| Bouton | Action |
+|--------|--------|
+| **×** | Referme le panneau (le stream continue) |
+| **Mic** | Mute/unmute le micro en direct |
+| **Œil** | Mode confidentialité — masque l'écran et coupe le son |
+| **Pause** | Pause le stream (masque + son coupé) |
+| **Chat** | Affiche/masque la bulle de chat Twitch |
+| **■ Stop** | Arrête le stream définitivement |
+
+Un **HUD** s'affiche au-dessus des boutons quand le stream est actif : durée, bitrate sortant, état de connexion, état du micro.
+
+Le panneau se referme automatiquement après 5 secondes d'inactivité pour ne pas gêner le jeu.
+
+### 💬 Chat Twitch intégré
+
+Le chat de ta chaîne s'affiche dans une **fenêtre flottante** positionnable n'importe où sur l'écran. Trois tailles disponibles (S/M/L, tap en bas de la bulle pour changer). Le jeu en dessous reste entièrement jouable — les touches du chat ne bloquent pas tes inputs.
+
+Status visible dans l'en-tête : `LIVE` (connecté), `…` (connexion en cours), `OFF` (arrêté).
+
+### 🤖 Streamer.bot (pont PC)
+
+Si tu utilises [Streamer.bot](https://streamer.bot) sur ton PC pour gérer tes alertes et automatisations, Hōsō peut s'y connecter via **WebSocket** (LAN local ou Tailscale pour les réseaux distants). Tu peux déclencher tes actions Streamer.bot depuis la bulle overlay sans jamais quitter le jeu.
+
+---
+
+## 🛠 Pour les développeurs
+
+### Stack
+
+| Composant | Technologie |
+|-----------|-------------|
+| Langage | Kotlin |
+| SDK minimum | Android 10 (API 29) |
+| SDK cible | Android 15 (API 35) |
+| Streaming | [StreamPack 3.1.2](https://github.com/ThibaultBee/StreamPack) — fork local (fix race condition audio Twitch) |
+| Build | Gradle 8.13 · AGP 8.13.1 |
 | UI | Material Components 2 + ViewBinding |
-| Chat | Custom Twitch IRC client (no external deps) |
+| Chat | Client Twitch IRC maison (zéro dépendance externe) |
 | Bot bridge | OkHttp WebSocket |
 
-## Architecture
+### Architecture
 
 ```
-MainActivity (settings screen)
-  -> OverlayService (foreground, floating controls)
-     -> StreamPermissionActivity (MediaProjection grant)
-        -> ScreenRecordService (foreground, capture + RTMP)
-     -> ChatBubbleService (foreground, 3-window overlay)
-        - Body window (FLAG_NOT_TOUCHABLE — visual only)
-        - Header overlay (drag, close, opacity controls)
-        - Dot overlay (size cycle S/M/L)
-     -> StreamerBotService (foreground, WebSocket bridge)
+MainActivity (écran de configuration)
+  └── OverlayService (foreground — bulle flottante draggable)
+       ├── StreamPermissionActivity (demande MediaProjection, transparent)
+       │    └── ScreenRecordService (foreground — capture écran + RTMP)
+       ├── ChatBubbleService (foreground — IRC Twitch, 3 fenêtres overlay)
+       │    ├── Body window   (FLAG_NOT_TOUCHABLE — visuel seul)
+       │    ├── Header overlay (drag, fermeture, opacité)
+       │    └── Dot overlay   (cycle taille S/M/L)
+       └── StreamerBotService (foreground — WebSocket bridge)
 ```
 
-## StreamPack fork
+### Fork StreamPack
 
-Hoso uses a local composite build of StreamPack with a fix for a race condition where the AAC sequence header (csd-0) was emitted before the RTMP publish handshake completed, causing Twitch to never receive audio codec info. The patch moves `endpointInternal.startStream()` before encoder coroutine launch.
+Hōsō utilise un composite build local de StreamPack avec un correctif pour une race condition où le header AAC (`csd-0`) était émis avant que le handshake RTMP soit terminé — ce qui faisait que Twitch ne recevait jamais les infos du codec audio.
 
-- Fork: `streampack-fork/` (gitignored, lives in its own repo)
-- Upstream PR: [ThibaultBee/StreamPack#294](https://github.com/ThibaultBee/StreamPack/pull/294)
+- Fork : `streampack-fork/` (gitignored, dépôt séparé)
+- Upstream PR : [ThibaultBee/StreamPack#294](https://github.com/ThibaultBee/StreamPack/pull/294)
 
-## Build
+### Build (debug)
 
 ```bash
-# Requires Android Studio JBR or JDK 17+
+# Requiert Android Studio JBR ou JDK 17+
 export JAVA_HOME="/path/to/android-studio/jbr"
 
-# The StreamPack fork must be cloned alongside:
-# git clone https://github.com/theermite/StreamPack streampack-fork
-# cd streampack-fork && git checkout fix/twitch-audio-race-hoso
+# Cloner le fork StreamPack à côté :
+git clone https://github.com/theermite/StreamPack streampack-fork
+cd streampack-fork && git checkout fix/twitch-audio-race-hoso && cd ..
 
 ./gradlew assembleDebug
 ```
 
-## Install
-
 ```bash
+# Installer sur le device connecté en USB :
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## Release builds (signed)
+### Build signé (release)
 
-Release APKs are signed with a maintainer-only key kept in [Shinkofa-Vault](https://github.com/theermite/Shinkofa-Vault) (SOPS + age). Public contributors do **not** need it — `assembleDebug` is sufficient for development and PRs.
+Les APKs de release sont signés avec une clé stockée dans [Shinkofa-Vault](https://github.com/theermite/Shinkofa-Vault) (SOPS + age). Les contributeurs externes n'en ont pas besoin — `assembleDebug` est suffisant pour le développement et les PRs.
 
-For the maintainer (or anyone with `age` access to the Vault):
+Pour le mainteneur (avec accès `age` au Vault) :
 
 ```bash
-# Pulls the keystore + passwords from Vault and writes them locally.
-# Targets:
-#   ~/.android-keystores/hoso-release.jks  (binary, restored from base64)
-#   ./local.properties                     (signing.* keys appended)
-# Both are gitignored.
+# Récupère le keystore + mots de passe depuis le Vault VPS.
+# Cible : ~/.android-keystores/hoso-release.jks + ./local.properties
 ./scripts/fetch-signing.sh
 
-# Then build the signed release APK.
+# Build APK de release signé :
 ./gradlew assembleRelease
-# -> app/build/outputs/apk/release/app-release.apk
+# → app/build/outputs/apk/release/app-release.apk
 ```
 
-Requirements: SSH alias `vps` configured, Shinkofa-Vault present on the VPS at `/home/ubuntu/Shinkofa-Vault`, and `sops` + `age` keys provisioned there. If `local.properties` has no `signing.*` keys, the release build falls back to the debug signing key (so dev builds keep working without the Vault).
+---
 
-## Roadmap
+## 🗺 Roadmap
 
-See [docs/Roadmap.md](docs/Roadmap.md) for the full feature plan.
+Voir [docs/Roadmap.md](docs/Roadmap.md) pour le plan de features complet avec statuts.
 
-## Contributing
+**Prochaines features :** Emotes et badges dans le chat Twitch, CI GitHub Actions, distribution IzzyOnDroid / F-Droid.
 
-Issues and pull requests are welcome. Hoso is built around a small, opinionated stack — please open an issue to discuss substantial changes before sending a PR. Atomic commits, conventional commit messages, and tests on critical paths (auth, streaming pipeline, IRC client).
+---
 
-## License
+## 🤝 Contribuer
 
-Hoso is released under the [Apache License 2.0](LICENSE). Third-party attributions are listed in [NOTICE](NOTICE).
+Issues et pull requests bienvenus. Hōsō est construit autour d'un stack volontairement réduit — ouvre une issue pour discuter des changements substantiels avant d'envoyer une PR.
 
-## Author
+Conventions :
+- Commits atomiques, messages en anglais (style conventionnel)
+- Tests sur les chemins critiques côté JVM (`StreamConfig`, parsers, état overlay)
+- Un commit par feature minimum
 
-[The Ermite](https://solo.to/theermite)
+---
+
+## 📄 Licence
+
+Hōsō est distribué sous la [licence Apache 2.0](LICENSE).
+Les attributions de composants tiers sont listées dans [NOTICE](NOTICE).
+
+---
+
+## Auteur
+
+**[The Ermite](https://solo.to/theermite)** — streamer, builder, IRL gaming.
