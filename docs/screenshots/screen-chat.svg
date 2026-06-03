@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="280" height="600" viewBox="0 0 280 600" xmlns="http://www.w3.org/2000/svg"
+     font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <clipPath id="ch-screen">
+      <rect x="8" y="8" width="264" height="584" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <!-- Phone shell -->
+  <rect width="280" height="600" rx="32" fill="#0D0D22"/>
+  <rect x="1.5" y="1.5" width="277" height="597" rx="30.5" fill="none" stroke="#22224A" stroke-width="1"/>
+
+  <g clip-path="url(#ch-screen)">
+    <!-- Game background -->
+    <rect x="8" y="8" width="264" height="584" fill="#0C1914"/>
+
+    <!-- Game top HUD bar -->
+    <rect x="8" y="8" width="264" height="46" fill="#060E0B" opacity="0.95"/>
+    <rect x="113" y="8" width="54" height="20" rx="10" fill="#0D0D22"/>
+    <text x="22" y="28" fill="#405060" font-size="10">9:41</text>
+    <text x="257" y="28" fill="#405060" font-size="10" text-anchor="end">●●●</text>
+    <!-- HP bar -->
+    <rect x="18" y="34" width="74" height="8" rx="4" fill="#0E2210"/>
+    <rect x="18" y="34" width="56" height="8" rx="4" fill="#22C55E"/>
+    <text x="96" y="42" fill="#22C55E" font-size="9">HP 76%</text>
+    <!-- MP bar -->
+    <rect x="136" y="34" width="64" height="8" rx="4" fill="#0E1022"/>
+    <rect x="136" y="34" width="40" height="8" rx="4" fill="#3B82F6"/>
+    <text x="204" y="42" fill="#3B82F6" font-size="9">MP 63%</text>
+
+    <!-- Game terrain (right side, less obstructed by chat) -->
+    <rect x="178" y="80" width="80" height="60" rx="10" fill="#0A1610" opacity="0.75"/>
+    <rect x="168" y="200" width="90" height="70" rx="10" fill="#0A1610" opacity="0.70"/>
+    <circle cx="210" cy="380" r="14" fill="#1E3050" stroke="#3DC3FF" stroke-width="1.5" opacity="0.80"/>
+    <circle cx="210" cy="380" r="7" fill="#3DC3FF" opacity="0.60"/>
+
+    <!-- Game bottom skill bar -->
+    <rect x="8" y="514" width="264" height="78" fill="#060E0B" opacity="0.96"/>
+    <line x1="8" y1="515" x2="272" y2="515" stroke="#183028" stroke-width="1"/>
+    <rect x="16" y="524" width="44" height="54" rx="9" fill="#0D1E14" stroke="#1C3022" stroke-width="1"/>
+    <rect x="66" y="524" width="44" height="54" rx="9" fill="#0D1E14" stroke="#1C3022" stroke-width="1"/>
+    <rect x="116" y="524" width="44" height="54" rx="9" fill="#0D1E14" stroke="#1C3022" stroke-width="1"/>
+    <rect x="166" y="524" width="44" height="54" rx="9" fill="#0D1E14" stroke="#1C3022" stroke-width="1"/>
+    <rect x="216" y="524" width="44" height="54" rx="9" fill="#0D1E14" stroke="#1C3022" stroke-width="1"/>
+
+    <!-- ── Chat bubble window ── -->
+    <!-- Background panel -->
+    <rect x="12" y="60" width="156" height="444" rx="12" fill="#0C1B2C" opacity="0.96"/>
+    <rect x="12" y="60" width="156" height="444" rx="12" fill="none" stroke="#1E3050" stroke-width="1"/>
+
+    <!-- Chat header -->
+    <rect x="12" y="60" width="156" height="36" rx="12" fill="#091524" opacity="0.98"/>
+    <!-- Cover bottom corners of header -->
+    <rect x="12" y="78" width="156" height="18" fill="#091524" opacity="0.98"/>
+    <line x1="12" y1="96" x2="168" y2="96" stroke="#1E3050" stroke-width="0.8"/>
+    <!-- Status dot (LIVE = green) -->
+    <circle cx="27" cy="78" r="5" fill="#22C55E"/>
+    <!-- LIVE text -->
+    <text x="36" y="82" fill="#22C55E" font-size="10" font-weight="600" letter-spacing="0.8">LIVE</text>
+    <!-- Drag grip (3 horizontal dots centered) -->
+    <circle cx="82" cy="78" r="2" fill="#405070"/>
+    <circle cx="90" cy="78" r="2" fill="#405070"/>
+    <circle cx="98" cy="78" r="2" fill="#405070"/>
+    <!-- Close × -->
+    <line x1="154" y1="72" x2="162" y2="80" stroke="#A0A8C4" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="162" y1="72" x2="154" y2="80" stroke="#A0A8C4" stroke-width="1.8" stroke-linecap="round"/>
+
+    <!-- Chat messages -->
+    <!-- Message 1 -->
+    <text x="20" y="118" fill="#E08F34" font-size="10" font-weight="600">ZephyrMage</text>
+    <text x="20" y="131" fill="#D0D8E8" font-size="10">PogChamp belle escarmouche !!</text>
+
+    <!-- Message 2 -->
+    <text x="20" y="152" fill="#3DC3FF" font-size="10" font-weight="600">MightyThorn</text>
+    <text x="20" y="165" fill="#D0D8E8" font-size="10">haha t'as trop bien joue</text>
+
+    <!-- Message 3 -->
+    <text x="20" y="186" fill="#A78BFA" font-size="10" font-weight="600">CosmicAlly</text>
+    <text x="20" y="199" fill="#D0D8E8" font-size="10">les streams de Jay sont top</text>
+
+    <!-- Message 4 -->
+    <text x="20" y="220" fill="#34D399" font-size="10" font-weight="600">StarDrifter</text>
+    <text x="20" y="233" fill="#D0D8E8" font-size="10">GG GG</text>
+
+    <!-- Message 5 -->
+    <text x="20" y="254" fill="#E08F34" font-size="10" font-weight="600">ZephyrMage</text>
+    <text x="20" y="267" fill="#D0D8E8" font-size="10">on y retourne !</text>
+
+    <!-- Message 6 -->
+    <text x="20" y="288" fill="#F87171" font-size="10" font-weight="600">NovaBurst</text>
+    <text x="20" y="301" fill="#D0D8E8" font-size="10">le stream marche super bien</text>
+
+    <!-- Message 7 -->
+    <text x="20" y="322" fill="#3DC3FF" font-size="10" font-weight="600">MightyThorn</text>
+    <text x="20" y="335" fill="#D0D8E8" font-size="10">aucun lag non plus</text>
+
+    <!-- "X nouveaux" badge (suggère de nouveaux msgs) -->
+    <rect x="42" y="450" width="76" height="20" rx="10" fill="#3DC3FF"/>
+    <text x="80" y="464" fill="#0D1629" font-size="10" font-weight="700" text-anchor="middle">3 nouveaux ↓</text>
+
+    <!-- Chat bottom resize area -->
+    <rect x="12" y="480" width="156" height="24" fill="#091524" opacity="0.95"/>
+    <!-- Cover top corners -->
+    <rect x="12" y="480" width="156" height="12" fill="#091524" opacity="0.95"/>
+    <line x1="12" y1="480" x2="168" y2="480" stroke="#1E3050" stroke-width="0.8"/>
+    <!-- S/M/L pill -->
+    <rect x="68" y="484" width="32" height="16" rx="8" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="84" y="496" fill="#E8EAF0" font-size="10" font-weight="600" text-anchor="middle">M</text>
+
+    <!-- Home bar -->
+    <rect x="110" y="580" width="60" height="4" rx="2" fill="#1A2244"/>
+  </g>
+</svg>

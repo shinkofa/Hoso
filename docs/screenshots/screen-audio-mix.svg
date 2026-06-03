@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="280" height="600" viewBox="0 0 280 600" xmlns="http://www.w3.org/2000/svg"
+     font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <clipPath id="am-screen">
+      <rect x="8" y="8" width="264" height="584" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <!-- Phone shell -->
+  <rect width="280" height="600" rx="32" fill="#0D0D22"/>
+  <rect x="1.5" y="1.5" width="277" height="597" rx="30.5" fill="none" stroke="#22224A" stroke-width="1"/>
+
+  <g clip-path="url(#am-screen)">
+    <!-- App background -->
+    <rect x="8" y="8" width="264" height="584" fill="#0F1729"/>
+
+    <!-- Status bar -->
+    <rect x="8" y="8" width="264" height="32" fill="#0C1020"/>
+    <rect x="113" y="8" width="54" height="20" rx="10" fill="#0D0D22"/>
+    <text x="22" y="27" fill="#50607A" font-size="10">9:41</text>
+    <text x="257" y="27" fill="#50607A" font-size="10" text-anchor="end">100 %</text>
+
+    <!-- App title + status pill -->
+    <text x="20" y="70" fill="#E8EAF0" font-size="24" font-weight="700">Hōsō</text>
+    <rect x="198" y="52" width="58" height="26" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="227" y="70" fill="#A0A8C4" font-size="11" text-anchor="middle">Prêt</text>
+
+    <!-- Subtitle -->
+    <text x="20" y="90" fill="#A0A8C4" font-size="12">Stream mobile → Twitch</text>
+
+    <!-- ── DESTINATION card (collapsed) ── -->
+    <rect x="12" y="106" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="24" y="133" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">DESTINATION</text>
+    <text x="253" y="131" fill="#50607A" font-size="13" text-anchor="end">▼</text>
+
+    <!-- ── STREAM card (collapsed) ── -->
+    <rect x="12" y="158" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="24" y="185" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">STREAM</text>
+    <text x="253" y="183" fill="#50607A" font-size="13" text-anchor="end">▼</text>
+
+    <!-- ── AUDIO card (EXPANDED — mode Mix) ── -->
+    <rect x="12" y="210" width="256" height="178" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <!-- Header -->
+    <text x="24" y="236" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">AUDIO</text>
+    <text x="253" y="235" fill="#50607A" font-size="13" text-anchor="end">▲</text>
+    <line x1="24" y1="244" x2="256" y2="244" stroke="#222F50" stroke-width="0.8"/>
+
+    <!-- Source audio label + dropdown (Mix selected) -->
+    <text x="20" y="260" fill="#A0A8C4" font-size="11">Source audio</text>
+    <rect x="20" y="266" width="240" height="34" rx="8" fill="#0F1729" stroke="#2A3660" stroke-width="1"/>
+    <text x="34" y="288" fill="#E8EAF0" font-size="12">Micro + Jeu (Mix)</text>
+    <text x="248" y="288" fill="#50607A" font-size="14" text-anchor="end">▾</text>
+
+    <!-- Mix section sub-header -->
+    <text x="20" y="314" fill="#3DC3FF" font-size="10" font-weight="600" letter-spacing="0.8">BALANCE MIX</text>
+
+    <!-- Volume micro row -->
+    <text x="20" y="330" fill="#A0A8C4" font-size="11">Volume micro</text>
+    <text x="253" y="330" fill="#E8EAF0" font-size="11" font-weight="700" text-anchor="end">80 %</text>
+    <!-- Mic seekbar track -->
+    <rect x="20" y="336" width="240" height="8" rx="4" fill="#0C1424" stroke="#2A3660" stroke-width="0.8"/>
+    <!-- Mic fill at 80% → width=192 -->
+    <rect x="20" y="336" width="192" height="8" rx="4" fill="#3DC3FF"/>
+    <!-- Mic thumb at cx=212 -->
+    <circle cx="212" cy="340" r="7" fill="#3DC3FF" stroke="#0F1729" stroke-width="2"/>
+
+    <!-- Volume jeu row -->
+    <text x="20" y="362" fill="#A0A8C4" font-size="11">Volume jeu</text>
+    <text x="253" y="362" fill="#E8EAF0" font-size="11" font-weight="700" text-anchor="end">60 %</text>
+    <!-- Game seekbar track -->
+    <rect x="20" y="368" width="240" height="8" rx="4" fill="#0C1424" stroke="#2A3660" stroke-width="0.8"/>
+    <!-- Game fill at 60% → width=144 -->
+    <rect x="20" y="368" width="144" height="8" rx="4" fill="#3DC3FF"/>
+    <!-- Game thumb at cx=164 -->
+    <circle cx="164" cy="372" r="7" fill="#3DC3FF" stroke="#0F1729" stroke-width="2"/>
+
+    <!-- ── STREAMER.BOT card (collapsed) ── -->
+    <rect x="12" y="396" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="24" y="423" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">STREAMER.BOT</text>
+    <rect x="186" y="407" width="30" height="16" rx="8" fill="#1A2840"/>
+    <circle cx="196" cy="415" r="6" fill="#405070"/>
+    <text x="253" y="421" fill="#50607A" font-size="13" text-anchor="end">▼</text>
+
+    <!-- ── FOOTER ── -->
+    <rect x="8" y="462" width="264" height="130" fill="#0F1729"/>
+    <line x1="8" y1="465" x2="272" y2="465" stroke="#1A2040" stroke-width="1"/>
+    <rect x="16" y="474" width="248" height="56" rx="15" fill="#3DC3FF"/>
+    <text x="140" y="509" fill="#0D1629" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="0.5">PASSER EN DIRECT</text>
+    <text x="140" y="548" fill="#50607A" font-size="12" text-anchor="middle">Quitter l'application</text>
+
+    <!-- Home bar -->
+    <rect x="110" y="580" width="60" height="4" rx="2" fill="#1A2244"/>
+  </g>
+</svg>

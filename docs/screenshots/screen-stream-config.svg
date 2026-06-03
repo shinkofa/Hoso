@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="280" height="600" viewBox="0 0 280 600" xmlns="http://www.w3.org/2000/svg"
+     font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <clipPath id="sc-screen">
+      <rect x="8" y="8" width="264" height="584" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <!-- Phone shell -->
+  <rect width="280" height="600" rx="32" fill="#0D0D22"/>
+  <rect x="1.5" y="1.5" width="277" height="597" rx="30.5" fill="none" stroke="#22224A" stroke-width="1"/>
+
+  <g clip-path="url(#sc-screen)">
+    <!-- App background -->
+    <rect x="8" y="8" width="264" height="584" fill="#0F1729"/>
+
+    <!-- Status bar -->
+    <rect x="8" y="8" width="264" height="32" fill="#0C1020"/>
+    <rect x="113" y="8" width="54" height="20" rx="10" fill="#0D0D22"/>
+    <text x="22" y="27" fill="#50607A" font-size="10">9:41</text>
+    <text x="257" y="27" fill="#50607A" font-size="10" text-anchor="end">100 %</text>
+
+    <!-- App title + status pill -->
+    <text x="20" y="70" fill="#E8EAF0" font-size="24" font-weight="700">Hōsō</text>
+    <rect x="198" y="52" width="58" height="26" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="227" y="70" fill="#A0A8C4" font-size="11" text-anchor="middle">Prêt</text>
+
+    <!-- Subtitle -->
+    <text x="20" y="90" fill="#A0A8C4" font-size="12">Stream mobile → Twitch</text>
+
+    <!-- ── DESTINATION card (collapsed) ── -->
+    <rect x="12" y="106" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="24" y="133" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">DESTINATION</text>
+    <text x="253" y="131" fill="#50607A" font-size="13" text-anchor="end">▼</text>
+
+    <!-- ── STREAM card (EXPANDED) ── -->
+    <rect x="12" y="158" width="256" height="190" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <!-- Header -->
+    <text x="24" y="184" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">STREAM</text>
+    <text x="253" y="183" fill="#50607A" font-size="13" text-anchor="end">▲</text>
+    <line x1="24" y1="192" x2="256" y2="192" stroke="#222F50" stroke-width="0.8"/>
+
+    <!-- Stream key field -->
+    <rect x="20" y="200" width="240" height="36" rx="8" fill="#0F1729" stroke="#2A3660" stroke-width="1"/>
+    <text x="32" y="213" fill="#50607A" font-size="9">Clé de stream</text>
+    <circle cx="108" cy="222" r="2.5" fill="#50607A"/>
+    <circle cx="118" cy="222" r="2.5" fill="#50607A"/>
+    <circle cx="128" cy="222" r="2.5" fill="#50607A"/>
+    <circle cx="138" cy="222" r="2.5" fill="#50607A"/>
+    <circle cx="148" cy="222" r="2.5" fill="#50607A"/>
+    <circle cx="158" cy="222" r="2.5" fill="#50607A"/>
+    <!-- Eye toggle icon -->
+    <ellipse cx="246" cy="222" rx="7" ry="4.5" fill="none" stroke="#50607A" stroke-width="1.5"/>
+    <circle cx="246" cy="222" r="2" fill="#50607A"/>
+
+    <!-- Resolution label + dropdown -->
+    <text x="20" y="248" fill="#A0A8C4" font-size="11">Résolution</text>
+    <rect x="20" y="254" width="240" height="34" rx="8" fill="#0F1729" stroke="#2A3660" stroke-width="1"/>
+    <text x="34" y="276" fill="#E8EAF0" font-size="12">1080p · Paysage</text>
+    <text x="248" y="276" fill="#50607A" font-size="14" text-anchor="end">▾</text>
+
+    <!-- Bitrate label -->
+    <text x="20" y="302" fill="#A0A8C4" font-size="11">Débit vidéo</text>
+    <!-- Seekbar track (empty) -->
+    <rect x="20" y="308" width="160" height="8" rx="4" fill="#0C1424" stroke="#2A3660" stroke-width="0.8"/>
+    <!-- Seekbar fill at ~56% → 4 200 kbps -->
+    <rect x="20" y="308" width="90" height="8" rx="4" fill="#3DC3FF"/>
+    <!-- Thumb -->
+    <circle cx="110" cy="312" r="7" fill="#3DC3FF" stroke="#0F1729" stroke-width="2"/>
+    <!-- Value -->
+    <text x="253" y="317" fill="#E8EAF0" font-size="12" font-weight="700" text-anchor="end">4 200 kbps</text>
+    <!-- Hint -->
+    <text x="20" y="332" fill="#50607A" font-size="10">Recommandé Twitch : 3 000–6 000 kbps</text>
+
+    <!-- ── AUDIO card (collapsed) ── -->
+    <rect x="12" y="356" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="24" y="383" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">AUDIO</text>
+    <text x="253" y="381" fill="#50607A" font-size="13" text-anchor="end">▼</text>
+
+    <!-- ── STREAMER.BOT card (collapsed) ── -->
+    <rect x="12" y="408" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
+    <text x="24" y="435" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">STREAMER.BOT</text>
+    <rect x="186" y="419" width="30" height="16" rx="8" fill="#1A2840"/>
+    <circle cx="196" cy="427" r="6" fill="#405070"/>
+    <text x="253" y="433" fill="#50607A" font-size="13" text-anchor="end">▼</text>
+
+    <!-- ── FOOTER ── -->
+    <rect x="8" y="462" width="264" height="130" fill="#0F1729"/>
+    <line x1="8" y1="465" x2="272" y2="465" stroke="#1A2040" stroke-width="1"/>
+    <rect x="16" y="474" width="248" height="56" rx="15" fill="#3DC3FF"/>
+    <text x="140" y="509" fill="#0D1629" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="0.5">PASSER EN DIRECT</text>
+    <text x="140" y="548" fill="#50607A" font-size="12" text-anchor="middle">Quitter l'application</text>
+
+    <!-- Home bar -->
+    <rect x="110" y="580" width="60" height="4" rx="2" fill="#1A2244"/>
+  </g>
+</svg>
