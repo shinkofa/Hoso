@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://raw.githubusercontent.com/shinkofa/Hoso/main/Logo-Hoso-fnl.png" width="90" alt="Hōsō"/>
+<img src="https://raw.githubusercontent.com/shinkofa/Hoso/main/docs/screenshots/png/hero.png" width="100%" alt="Hōsō — streame ton jeu mobile vers Twitch, directement depuis ton téléphone"/>
 
 ## Hōsō · 放送 — Streame ton jeu mobile vers Twitch
 

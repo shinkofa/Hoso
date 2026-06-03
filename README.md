@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="Logo-Hoso-fnl.png" alt="Hōsō" width="110"/>
+<img src="docs/screenshots/png/hero.png" alt="Hōsō — streame ton jeu mobile vers Twitch, directement depuis ton téléphone" width="100%"/>
 
 # Hōsō · 放送
 
