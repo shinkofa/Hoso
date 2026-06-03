@@ -71,7 +71,7 @@ Ces apps plantent sur certains téléphones Android 10+ parce qu'elles gèrent m
 
 ### Étape 1 — Télécharge l'APK
 
-Va sur la page **[Releases ↗](../../releases)** et télécharge le fichier `hoso-release.apk` (dernière version).
+Va sur la page **[Releases ↗](../../releases)** et télécharge le fichier qui se termine par **`.apk`** (par ex. `hoso-v0.1.0.apk`).
 
 ### Étape 2 — Autorise les sources inconnues
 
