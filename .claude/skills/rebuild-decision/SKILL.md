@@ -59,18 +59,21 @@ Recommend one option with reasoning. Reference historical evidence: Kakusei (4 d
 
 ## Step 6: Document Decision
 
-Write decision in project Blueprint (`docs/Blueprint.md`) under "Architecture Decisions":
-- Decision: Rebuild or Fix
+Write decision in `docs/PET.md` §12 (Décisions architecturales — ADR-light) as a new ADR entry:
+- ADR-XXX title
 - Date and rationale
-- Metrics at time of decision
-- Expected outcome and timeline
-- Review checkpoint (when to re-evaluate)
+- Metrics at time of decision (from Step 1)
+- Options envisagées (Rebuild / Fix)
+- Décision retenue
+- Conséquences (timeline, risques, review checkpoint)
+
+If the rebuild changes the project's **intention** itself (scope, stack, public, features) → also update `docs/CDC.md` and log the change in CDC §Historique de l'intention. A pure technical rewrite at iso-scope stays PET-only.
 
 ## Output
 
 - Decision: **REBUILD** or **FIX** with documented rationale
 - Action plan (next steps)
-- Updated Blueprint
+- New ADR entry in `docs/PET.md` §12 (and CDC update if intention changed)
 
 ## Rules
 

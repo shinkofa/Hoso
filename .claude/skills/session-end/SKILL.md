@@ -20,6 +20,7 @@ Execute these steps IN ORDER. Gate 8 must pass.
    - Decisions made
    - Pending items for next session
    - Context Awareness status: was the 60% threshold reached? Was a handoff brief written? Note any context degradation detected.
+   - Objective metrics: include unpushed commits, TODO/FIXME added, veille markers — read `.claude/state/last-session-metrics.md` (auto-written by `session-end-metrics.py` hook) or compute via `git log origin/main..HEAD` + `git diff origin/main..HEAD`.
 3. **OBSIDIAN SYNC**: Update only the files touched by this session — not all project files:
    - `01-Projets/[current-project].md` — always (merge decisions, bugs, next steps)
    - `01-Projets/_Cross-Project.md` — only if decisions impact multiple projects
@@ -31,7 +32,7 @@ Execute these steps IN ORDER. Gate 8 must pass.
    2. Superseded decisions → remove from file. Git history preserves them. Keep only ACTIVE decisions.
    3. Resolved bugs → remove or keep as 1-liner max (`- ~~Bug X~~ done date`).
    4. Out-of-scope sections → move to the correct project file.
-5. **DOCS UPDATE**: Ensure Blueprint, CDC, PET reflect current state. Update if changed.
+5. **DOCS UPDATE**: Ensure CDC and PET reflect current state. Update if changed. (Blueprint is archived to `mnk/10-Blueprints.md` since v5.0.0 — no per-project Blueprint document.)
 6. **PENDING**: List remaining items explicitly.
 7. **SCORING V2**: Score three dimensions independently, then compute weighted total:
    - **Value (40%)**: Did the session produce something deployable, publishable, or usable?

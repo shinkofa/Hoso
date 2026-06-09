@@ -510,4 +510,5 @@ Every Shinkofa project MUST have from day one:
 - [ ] Touch targets ≥ 44x44px on mobile
 - [ ] Feedback Widget integrated in main layout (WF-035)
 - [ ] Morphic adaptation: sensory defaults (theme + motion + font size)
+- [ ] Onboarding adaptatif : choix sensoriel (theme/motion/density) AVANT identite. Indications fonctionnalites visibles des le premier ecran. Cf. `rules/Dignity.md` §a L'ACCUEIL.
 

@@ -26,6 +26,11 @@ git branch --show-current
 
 # 4. Docker daemon is running
 docker info > /dev/null 2>&1 && echo "OK" || echo "DOCKER NOT RUNNING"
+
+# 5. Registry drift check (infra-affecting deploys: containers, ports, domains, nginx)
+python ~/apps/Shinkofa-Infra/registry/scripts/check-drift.py
+# Exit 0 = registry matches VPS. Exit 1 = drift → resolve (update registry/ YAML) BEFORE deploy.
+# Skip ONLY for pure code deploys that touch no container/port/domain.
 ```
 
 If ANY pre-flight fails → STOP. Do not proceed. Fix the issue first.
