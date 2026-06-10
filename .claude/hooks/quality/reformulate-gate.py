@@ -56,36 +56,80 @@ REFORMULATION_PATTERNS = (
 )
 
 
+def _is_real_user_message(msg: dict) -> bool:
+    """True for a human-typed user turn; False for tool_result deliveries.
+
+    Tool results are delivered as role=user messages carrying tool_result
+    blocks. They must NOT be treated as a turn boundary, otherwise a blocked
+    attempt (which produces an error tool_result) would cut the window short.
+    """
+    if not isinstance(msg, dict) or msg.get("role") != "user":
+        return False
+    content = msg.get("content")
+    if isinstance(content, str):
+        return True
+    if isinstance(content, list):
+        for blk in content:
+            if isinstance(blk, dict) and blk.get("type") == "tool_result":
+                return False
+        return True
+    return False
+
+
 def count_writes_this_turn(transcript_path: str) -> int:
-    """Count Write|Edit calls since last user message."""
+    """Count COMPLETED, non-error Write|Edit calls since the last real user turn.
+
+    Only writes whose tool_result is present AND not an error count. This
+    excludes (a) the current in-flight attempt (no result yet) and (b) blocked
+    attempts (is_error result). Without this, the gate counted its own and other
+    hooks blocked attempts and falsely fired on legitimate single-file edits.
+    """
     if not transcript_path:
         return 0
-    count = 0
+    write_ids: list[str] = []
+    result_error: dict[str, bool] = {}
     for entry in iter_entries(transcript_path):
         msg = entry.get("message") or entry
         if not isinstance(msg, dict):
             continue
         role = msg.get("role")
         if role == "user":
-            return count
+            if _is_real_user_message(msg):
+                break
+            content = msg.get("content")
+            if isinstance(content, list):
+                for blk in content:
+                    if isinstance(blk, dict) and blk.get("type") == "tool_result":
+                        tid = blk.get("tool_use_id")
+                        if tid is not None:
+                            result_error[tid] = bool(blk.get("is_error"))
+            continue
         if role != "assistant":
             continue
         content = msg.get("content")
         if not isinstance(content, list):
             continue
         for blk in content:
-            if not isinstance(blk, dict):
-                continue
-            if blk.get("type") == "tool_use" and blk.get("name") in ("Write", "Edit"):
-                count += 1
-    return count
+            if (
+                isinstance(blk, dict)
+                and blk.get("type") == "tool_use"
+                and blk.get("name") in ("Write", "Edit")
+            ):
+                tid = blk.get("id")
+                if tid is not None:
+                    write_ids.append(tid)
+    return sum(1 for tid in write_ids if result_error.get(tid) is False)
 
 
 def has_reformulation_marker(transcript_path: str) -> bool:
-    """Check recent assistant text for reformulation pattern (current turn only)."""
+    """Check assistant text since the last real user turn for a reformulation.
+
+    Boundary is the last REAL user message; tool_result deliveries (role=user)
+    do not cut the window short, so a reformulation emitted before a blocked
+    attempt is still honored on retry.
+    """
     if not transcript_path:
         return False
-    # Scan back to last user message
     texts: list[str] = []
     for entry in iter_entries(transcript_path):
         msg = entry.get("message") or entry
@@ -93,7 +137,9 @@ def has_reformulation_marker(transcript_path: str) -> bool:
             continue
         role = msg.get("role")
         if role == "user":
-            break
+            if _is_real_user_message(msg):
+                break
+            continue
         if role != "assistant":
             continue
         content = msg.get("content")

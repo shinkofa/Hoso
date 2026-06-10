@@ -3,9 +3,15 @@
 
 Companion to session-start-obsidian.py reminder. Workflows.md declares
 Obsidian sync BLOCKING at session start: project notes MUST be loaded
-via mcp__obsidian-vault__get_note before any state-mutating tool.
+via the Obsidian MCP read tool before any state-mutating tool.
 
-This hook scans the transcript for vault_read tool calls in this session
+The Obsidian MCP server has exposed this read tool under more than one
+name across versions (`vault_read`, `get_note`). To stay robust to that
+drift, this hook matches ANY known alias instead of a single hardcoded
+name — per the cross-project lesson (2026-06-08): a gate that depends on
+an external tool name must match several aliases, never a single literal.
+
+This hook scans the transcript for those read tool calls in this session
 and verifies the 3 MANDATORY files have been read (by name substring):
   1. _Cross-Project        (cross-project blockers + decisions)
   2. _Index                (vault index)
@@ -46,7 +52,13 @@ from transcript_reader import iter_tool_calls  # noqa: E402
 
 
 MUTATING_TOOLS = {"Edit", "Write", "Bash", "NotebookEdit"}
-OBSIDIAN_TOOL_NAME = "mcp__obsidian-vault__get_note"
+# The Obsidian MCP read tool has shipped under several names across versions.
+# Match ANY of these aliases so the gate is satisfiable whichever one the
+# active MCP server exposes. Add new aliases here, never replace.
+OBSIDIAN_TOOL_NAMES = (
+    "mcp__obsidian-vault__vault_read",
+    "mcp__obsidian-vault__get_note",
+)
 
 # Read-only Bash prefixes that don't need the Obsidian gate
 READ_ONLY_BASH = (
@@ -57,12 +69,17 @@ READ_ONLY_BASH = (
 
 
 def _collect_vault_read_paths(transcript_path: str) -> list[str]:
-    """Return list of paths read via mcp__obsidian-vault__get_note."""
+    """Return paths read via any known Obsidian MCP read-tool alias."""
     if not transcript_path:
         return []
     paths: list[str] = []
+    aliases = set(OBSIDIAN_TOOL_NAMES)
     try:
-        for call in iter_tool_calls(transcript_path, tool_name=OBSIDIAN_TOOL_NAME):
+        # No tool_name filter: scan all tool_use blocks and keep those whose
+        # name matches any alias. Robust to the MCP server renaming the tool.
+        for call in iter_tool_calls(transcript_path):
+            if call.get("name") not in aliases:
+                continue
             input_data = call.get("input") or {}
             path = input_data.get("path") or input_data.get("file_path") or ""
             if path:
@@ -123,7 +140,7 @@ def main() -> None:
         loaded = len(required) - len(missing)
         block(format_block(
             f"OBSIDIAN SYNC not satisfied — {loaded}/{len(required)} mandatory notes loaded",
-            "Call mcp__obsidian-vault__get_note for the mandatory files "
+            "Call the Obsidian MCP read tool (vault_read / get_note) for the mandatory files "
             f"before any Edit/Write/Bash:{listing}\n"
             f"Missing patterns: {', '.join(missing)}\n"
             "These are Takumi's context for the current project. Without them, "
