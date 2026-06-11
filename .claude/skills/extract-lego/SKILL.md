@@ -19,7 +19,7 @@ Extract a component from the current project into `@shinkofa/ui` in Shinkofa-Sha
 
 2. **CHECK INVENTORY**: Search `@shinkofa/ui` for existing similar components. Check:
    - `Shinkofa-Shared/packages/ui/src/` for the component name
-   - The Lego component list in `.claude/hooks/write-guard.py`
+   - The Lego component list in `.claude/hooks/guards/write-guard.py`
    - If it already exists: STOP. Tell Jay and suggest importing instead.
 
 3. **ANALYZE DEPENDENCIES**: List everything the component needs:

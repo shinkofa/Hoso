@@ -81,6 +81,11 @@
           },
           {
             "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/guards/pre-infra-drift-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "D3-infra — Block deploy when Shinkofa-Infra registry drifts from live VPS (check-drift.py)"
+          },
+          {
+            "type": "command",
             "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/deploy/maintenance-pages-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "Warn if deploy proceeds without nginx 502/503/504 maintenance pages"
           },

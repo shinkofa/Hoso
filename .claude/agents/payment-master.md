@@ -72,7 +72,7 @@ Payment code = **critical path** absolu per `rules/Quality.md`. Toutes les exige
 | `rules/Confidentiality.md` | PII : ne jamais loguer email, nom, carte | Read |
 | `rules/Security.md` (workspace) | PCI DSS, secrets management | Read |
 | Stripe API docs (versionnée) | Source primaire — vérifier version API en cours | WebSearch + dashboard |
-| `mnk/13-Monetisation.md` (si existe) | Stratégie pricing Shinkofa | Read |
+| SKB Refonte `Veille-A4-Pricing-Founder-2026.md` (Obsidian) | Stratégie pricing Shinkofa (en cours d'établissement) | SKB / Obsidian MCP |
 | SKB | Patterns Shinkofa, voice & tone, tarification éthique | Read |
 | **Kobo Memory L2** | Décisions pricing antérieures, incidents historiques, patterns dunning testés | curl POST/GET |
 

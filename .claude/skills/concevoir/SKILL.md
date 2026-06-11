@@ -90,11 +90,28 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
    - [ ] Cross-check against `mnk/improvements/004-QE-V2-Composition-Brief.md` (25 decisions)
    - If any gap found: fix CDC or PET, then re-verify. Do not proceed with gaps.
 
-9. **PRESENT**: Generate HTML presentation (standalone file in docs/).
-   - Slide "Intention" : POUR QUOI + Architecture + Stack (from CDC)
-   - Slide "Quality Framework" : Risk Classification table + Human Quality Gates summary (from CDC §7 §9)
-   - Slide "Roadmap" : bricks ordered (from PET §6)
-   - Slide "Documented Deviations" if any exist (from CDC §10/§13)
+9. **PRESENT** (BLOCKING): Generate a standalone HTML presentation in `docs/` (ex: `docs/Presentation-<Projet>.html`). This presentation is a **magnetic pitch shareable to ANYONE** — not an internal tech sheet. The reader (non-technical) must UNDERSTAND the project AND want to adhere to it.
+
+   **Base obligatoire** : partir du template `.claude/skills/concevoir/presentation-template.html`. Ne pas réinventer le design. Remplir les `{{JETONS}}`, supprimer les sections optionnelles non pertinentes.
+
+   **5 règles BLOCKING du rendu** :
+   | # | Règle | Pourquoi |
+   |---|-------|----------|
+   | 1 | **Langage 100% non-tech** | Partageable à n'importe qui. Zéro jargon, zéro nom de stack, zéro fonction. Terme technique inévitable = glosé en parenthèse simple. |
+   | 2 | **Bénéfices, pas features** | On dit ce que ça CHANGE pour la personne, pas comment c'est codé. |
+   | 3 | **Thème sombre + back-to-top** | Déjà câblés dans le template. Ne pas les retirer. |
+   | 4 | **Visuel, intuitif, ergonomique** | Cartes, étapes numérotées, hero, ancres de navigation. Le lecteur scanne, ne lit pas un mur. |
+   | 5 | **Le tech interne reste dans CDC/PET** | Risk Classification, FMEA, stack, Quality Gates → JAMAIS dans la présentation. Ils vivent dans le CDC/PET. |
+
+   **Sections du pitch** (mapping depuis les docs) :
+   - Hero : nom + promesse en une ligne (depuis CDC §1 POUR QUOI, traduit non-tech)
+   - Pourquoi / le besoin : le problème vécu par la personne (depuis CDC §2 Utilisateurs)
+   - Ce que ça change : 3-6 bénéfices concrets (depuis CDC §3 Features, traduit en bénéfices)
+   - Comment ça marche : 3 étapes intuitives
+   - La vision : la phrase L3 motivante (depuis CDC §1)
+   - La suite : roadmap en GRANDES étapes non-tech (depuis PET §6, traduit — pas de "bricks")
+
+   **Test avant de présenter** : « Si je partage ce fichier à quelqu'un qui ne connaît rien au projet ni à la tech, est-ce qu'il comprend et a envie ? » Si non → reformuler en plus simple, plus visuel.
 
 10. **OBSIDIAN SYNC**: Create `01-Projets/[project].md` in Obsidian (flat structure post 2026-04-11, one file per project) with sections: Notes, Décisions, Bugs, Prochaines étapes, Connexions. Add an entry to `_Index.md`. Reference CDC + PET. The old nested `02-Projets/[project]/*.md` structure is LEGACY — never create there.
 
