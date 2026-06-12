@@ -51,6 +51,7 @@ sys.path.insert(0, str(LIB_DIR))
 
 from common import find_repo_root  # noqa: E402
 from session_state import read_state, write_state  # noqa: E402
+from transcript_reader import iter_tool_calls  # noqa: E402
 
 
 # --- Configuration -----------------------------------------------------------
@@ -152,6 +153,16 @@ SKIP_COUNT_THRESHOLD = 3
 # for markers (otherwise the hook re-matches its own template strings and
 # produces cascading false blocks). Jay 2026-05-31 bug report.
 RECOVERY_LINE_HINTS = ("BLOCKED:", "RECOVERY:")
+
+# Chantier D — proof of web veille. A [VEILLE] marker on a SENSITIVE change
+# must be backed by a REAL web tool call in the session, not just the text.
+# Match known web tools by exact name + substring (alias-tolerant per the
+# 2026-06-08 cross-project lesson: never bind to a single literal tool name).
+WEB_TOOL_NAMES_EXACT = {"WebSearch", "WebFetch"}
+WEB_TOOL_SUBSTRINGS = (
+    "websearch", "web_search", "webfetch", "web_fetch",
+    "searxng", "tavily", "brave",
+)
 
 
 # --- Input -------------------------------------------------------------------
@@ -352,6 +363,29 @@ def save_counter(session_id: str | None, repo_root: Path, skip_count: int, marke
 # --- Main --------------------------------------------------------------------
 
 
+def has_web_veille_call(transcript_path: str) -> bool:
+    """True if a real web tool call (WebSearch/WebFetch/MCP web) happened.
+
+    Scope is session-wide on purpose: under plan mode (Chantier B) the veille
+    is performed in the plan phase and the code is written in a later turn, so
+    a per-turn scan would false-block legitimate plan execution. A real tool
+    call cannot be fabricated by writing marker text — that is the proof.
+    """
+    if not transcript_path:
+        return False
+    try:
+        for call in iter_tool_calls(transcript_path):
+            name = call.get("name") or ""
+            if name in WEB_TOOL_NAMES_EXACT:
+                return True
+            low = name.lower()
+            if any(sub in low for sub in WEB_TOOL_SUBSTRINGS):
+                return True
+    except Exception:
+        return False
+    return False
+
+
 def block(msg: str) -> None:
     print(msg, file=sys.stderr)
     sys.exit(2)
@@ -403,6 +437,21 @@ def main() -> None:
             "RECOVERY: Output a real veille marker BEFORE retrying:\n"
             "  [VEILLE] <techno>@<version> verifie <YYYY-MM-DD> via <source>\n"
             "Layer B refuses [SKB] and [VEILLE-SKIP] on sensitive content."
+        )
+        block(msg)
+
+    # Chantier D: a [VEILLE] marker on a sensitive change must be backed by a
+    # REAL web tool call this session — proof, not just text.
+    if sensitive_reason and marker_type == "VEILLE" and not has_web_veille_call(transcript_path):
+        msg = (
+            "BLOCKED: [VEILLE] marker present but no web veille was actually performed.\n"
+            f"Target: {file_path}\n"
+            f"Trigger: {sensitive_reason}\n"
+            "No WebSearch / WebFetch (or MCP web) tool call found in this session.\n"
+            "RECOVERY: actually run the veille — WebSearch/WebFetch the registry "
+            "(hex.pm, npmjs, pypi, crates.io...) to confirm the current version, "
+            "THEN re-emit [VEILLE] <techno>@<version> verifie <YYYY-MM-DD> via <source>.\n"
+            "The marker text alone is not proof; the tool call is."
         )
         block(msg)
 

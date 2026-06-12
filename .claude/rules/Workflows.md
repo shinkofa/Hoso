@@ -128,6 +128,27 @@ It is the operational floor of the Monozukuri principle "la preuve, jamais l'aff
 - **Feedback Widget = architectural necessity** — every public platform MUST include a Feedback Widget (2 clicks max, automatic context capture, zero PII). Promoted from checklist item (WF-035) to architectural requirement. With fault isolation, bugs don't cascade but remain invisible without user reporting.
 - **Dignity-first (BLOCKING)** — chaque écran de collecte, chaque copy, chaque CTA, chaque message d'erreur, chaque notification, chaque flow de vente et de départ passe le test : "Est-ce qu'on respecte l'intelligence de cette personne ?" Voir `rules/Dignity.md`.
 
+## Plan Mode par brique (BLOCKING quand un PET existe)
+
+Quand un PET existe avec des briques non démarrées, l'implémentation passe par le mode plan natif de Claude Code. Le plan approuvé remplace la reformulation par-action : il EST la reformulation ET l'autorisation (voir `Interpretation-Protocol.md` → « Approved plan »).
+
+**Déclencheur** : session validée par Jay ET un `docs/PET.md` (ou Obsidian `02-<Projet>/PET`) contient au moins une brique non terminée. Sur un projet sans PET (LITE_MODE, méthodologie) : ne s'applique pas, la reformulation par-action reste la règle.
+
+**Flux** :
+
+| Étape | Action |
+|-------|--------|
+| 1 | Lire le PET §6 Roadmap, identifier la/les prochaine(s) brique(s) non démarrée(s) |
+| 2 | Entrer en mode plan (EnterPlanMode) |
+| 3 | Présenter le plan : quelles briques, fichiers, tests, ordre. Plusieurs briques liées peuvent être planifiées ensemble. |
+| 4 | Jay approuve (ExitPlanMode) — c'est le mot de validation |
+| 5 | Implémenter en suivant les 8 gates. **Un commit atomique par brique**, jamais un commit géant pour N briques. |
+| 6 | À la fin : mettre à jour le PET (briques cochées) + docs + Obsidian au `/session-end` |
+
+**Garde-fou atomicité** : planifier N briques d'un coup est permis ; les implémenter dans un seul commit ne l'est pas. La granularité du plan (large) et celle du commit (atomique) sont indépendantes.
+
+**Ce que le plan NE waive PAS** : TDG, veille, tests, lint, sécurité, anti-quick-fix s'appliquent à chaque action. Le plan autorise le périmètre, jamais la qualité. Le hook `reformulate-gate.py` reconnaît un plan approuvé comme satisfaisant la reformulation.
+
 ## Compaction & Context Reset
 
 Claude Code v2.0.64+ (February 2026) handles automatic compaction natively and instantly. Preservation of identity rules and recent context is reliable. The methodology adds ONE valuable layer on top: a handoff brief written to disk on PreCompact, surfaced on PostCompact, so Takumi can recall files modified, decisions, and in-progress work after compression.

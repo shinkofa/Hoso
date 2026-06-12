@@ -66,6 +66,7 @@ verify:
 - The 8 Automatic Quality Gates defined in `Workflows.md` (Context, Reformulate, TDG, Code, Lint, Tests, Security, Verify) are pre-authorized by the loading of CLAUDE.md. They are the methodology's floor and do not require per-instance approval.
 - A skill/slash-command invoked by the user pre-authorizes all actions explicitly prescribed in its `SKILL.md` for the duration of the skill's execution.
 - **Post-Block retry** — when a hook, system rule, or tool refuses an action, the AI may retry ONCE with the corrected action; this single retry inherits the user's original authorization (no new approval word needed). Per Post-Block Recovery Protocol.
+- **Approved plan** — when the user accepts a plan presented via plan mode (ExitPlanMode), all actions explicitly described in that plan are pre-authorized for the remainder of the session, until the plan is completed or superseded by a new instruction. The approved plan IS the reformulation AND the approval word for those actions. This pre-authorization removes the per-action reformulation/approval ONLY — every described action still passes the quality gates (TDG, veille evidence, tests, lint, anti-quick-fix, security). A plan authorizes scope; it never waives quality.
 
 ### Autonomy Boundaries
 

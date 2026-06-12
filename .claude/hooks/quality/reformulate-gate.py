@@ -154,6 +154,51 @@ def has_reformulation_marker(transcript_path: str) -> bool:
     return any(p.search(blob) for p in REFORMULATION_PATTERNS)
 
 
+def has_approved_plan(transcript_path: str) -> bool:
+    """True if an approved plan exists anywhere in the session.
+
+    A plan presented via Claude Code's plan mode (ExitPlanMode tool_use) is
+    "approved" when its tool_result is present and not an error. Once approved,
+    the plan IS the reformulation + authorization for the actions it describes
+    (Interpretation-Protocol 'Approved plan'). Scope is session-wide, not the
+    current turn, because a plan approved earlier pre-authorizes later writes.
+
+    A rejected plan (is_error=True) or an in-flight plan (no result yet) does
+    NOT count. Detection is intentionally lenient on the approval signal
+    (is_error=False) — the quality gates still fire on every write, so a false
+    positive here only removes a redundant reformulation prompt, never a gate.
+    """
+    if not transcript_path:
+        return False
+    plan_ids: list[str] = []
+    result_error: dict[str, bool] = {}
+    for entry in iter_entries(transcript_path):
+        msg = entry.get("message") or entry
+        if not isinstance(msg, dict):
+            continue
+        role = msg.get("role")
+        content = msg.get("content")
+        if not isinstance(content, list):
+            continue
+        if role == "user":
+            for blk in content:
+                if isinstance(blk, dict) and blk.get("type") == "tool_result":
+                    tid = blk.get("tool_use_id")
+                    if tid is not None:
+                        result_error[tid] = bool(blk.get("is_error"))
+        elif role == "assistant":
+            for blk in content:
+                if (
+                    isinstance(blk, dict)
+                    and blk.get("type") == "tool_use"
+                    and blk.get("name") == "ExitPlanMode"
+                ):
+                    tid = blk.get("id")
+                    if tid is not None:
+                        plan_ids.append(tid)
+    return any(result_error.get(tid) is False for tid in plan_ids)
+
+
 def should_skip(file_path: str) -> bool:
     if not file_path:
         return True
@@ -180,6 +225,11 @@ def main() -> None:
         pass_through()
 
     if has_reformulation_marker(transcript_path):
+        pass_through()
+
+    # An approved plan (plan mode) IS the reformulation for the actions it
+    # describes — see Interpretation-Protocol 'Approved plan'.
+    if has_approved_plan(transcript_path):
         pass_through()
 
     block(

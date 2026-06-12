@@ -23,6 +23,21 @@ from pathlib import Path
 
 HOOK = Path(__file__).resolve().parents[1] / "guards" / "pre-session-end-readme-check.py"
 
+import pytest  # noqa: E402
+
+# Linux-only integration suite. These tests stub `git` via a PATH stub to drive
+# the hook's diff logic. On Windows, subprocess cannot intercept a bare `git`
+# call through a PATH stub (no PATHEXT match, CreateProcess won't run .cmd/.bat
+# for a list-form call), so the hook falls back to the real `git` in an empty
+# tmp repo: no commits, no criteria, silent pass — the assertions then fail for
+# an environment reason, not a logic bug. The hook itself is cross-platform
+# Python. Proven green on Linux (VPS) 2026-06-12: 19 passed.
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="POSIX `git` stub not interceptable via PATH on Windows; "
+    "Linux-only integration suite. Hook is cross-platform; proven green on Linux VPS.",
+)
+
 
 def _make_git_stub(stub_dir: Path, *, since_commit: str = "abc123",
                    changed_files: str = "", commit_log: str = "") -> None:

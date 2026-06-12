@@ -33,6 +33,7 @@ Execute these steps IN ORDER. No skipping (unless LITE_MODE applies — see Step
 8. **VEILLE CHECK** *(SKIP in LITE_MODE)*: Verify stack versions via npm/pypi/web. Training data is ALWAYS months stale. One wrong version = cascading failures in code, tests, deploys.
 9. **LEGO AUDIT** *(SKIP in LITE_MODE)*: If the project uses UI components, cross-reference project imports against `@shinkofa/ui` inventory in `rules/Quality.md` → "Shinkofa Lego Library" section. Flag any locally-defined components that should be imported from the library, and note any new library components available since last session.
 10. **PLAN**: Present today's plan based on pending items + Jay's request. Wait for validation.
+11. **PLAN MODE PAR BRIQUE** *(SKIP in LITE_MODE, or when no PET exists, or no unstarted brick)*: Once Jay validates the day's direction AND a PET exists with at least one unstarted brick, enter plan mode (EnterPlanMode) to plan the next brick(s) from PET §6 Roadmap. Present which bricks, files, tests, and order — related bricks may be planned together. Jay's approval of the plan (ExitPlanMode) IS the reformulation + approval for the implementation that follows; one atomic commit per brick. See `rules/Workflows.md` → "Plan Mode par brique".
 
 ## Rules
 

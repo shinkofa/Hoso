@@ -60,11 +60,12 @@ OBSIDIAN_TOOL_NAMES = (
     "mcp__obsidian-vault__get_note",
 )
 
-# Read-only Bash prefixes that don't need the Obsidian gate
+# Read-only Bash prefixes that don't need the Obsidian gate.
+# git pull/fetch are session-start bootstrap mechanics, not work — never gate them.
 READ_ONLY_BASH = (
     "ls", "cd", "pwd", "cat", "head", "tail", "grep", "find", "echo",
     "which", "wc", "git status", "git log", "git diff", "git branch",
-    "git show", "git remote",
+    "git show", "git remote", "git pull", "git fetch",
 )
 
 

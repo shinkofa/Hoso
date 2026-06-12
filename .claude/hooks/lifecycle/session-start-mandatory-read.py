@@ -62,7 +62,10 @@ def main() -> None:
     # Skip read-only Bash commands (cd, ls, git status, etc.) — only block writes
     if tool_name == "Bash":
         cmd = get_command(data).strip()
+        # git pull/fetch are session-start bootstrap mechanics (sync the repo),
+        # not work — they must never be gated by the mandatory-read check.
         read_only_prefixes = ("ls", "cd", "pwd", "git status", "git log", "git diff", "git branch",
+                              "git pull", "git fetch", "git remote", "git show",
                               "cat", "head", "tail", "grep", "find", "echo", "which", "wc")
         if any(cmd.startswith(p) for p in read_only_prefixes):
             pass_through()
