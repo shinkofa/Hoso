@@ -1,30 +1,46 @@
 #!/usr/bin/env python3
-"""D2 — PreToolUse Bash guard: block deploys with missing Vault secrets.
+"""D2 — PreToolUse Bash guard: block deploys with a missing Vault secret.
+
+Targets the real Shinkofa-Vault (SOPS/age), not HashiCorp Vault.
+
+Model
+-----
+The vault declares, per project/service, which env vars a deploy needs:
+    ~/Shinkofa-Vault/mappings/<stem>.yaml   ->  `ENV_VAR_NAME: secret_key`
+    ~/Shinkofa-Vault/envs/<stem>.env        ->  generated `ENV_VAR_NAME=value`
+`inject.sh` copies the env into the service. If a mapped ENV_VAR_NAME never
+made it into the generated env, the deploy would start with a missing secret.
 
 Trigger
 -------
-PreToolUse on a Bash tool call whose command matches a deploy verb
-(docker compose up, systemctl restart, deploy.sh, vercel --prod, etc.).
+PreToolUse on a Bash command matching a deploy verb (docker compose up,
+systemctl restart, deploy.sh, vercel --prod, ssh host ... systemctl, etc.).
 
 Action
 ------
-1. Locate `docs/architecture/env-vars.md` in the repo root. If absent →
-   pass through (cannot enforce).
-2. Parse env var → vault path mappings (line format `VAR -> path` OR
-   markdown table `| VAR | path |`).
-3. If the `vault` CLI is unavailable → pass through.
-4. For each (VAR, path), run `vault kv get <path>`. If exit != 0 →
-   collect as missing.
-5. If any missing → exit 2 (BLOCK) with recovery instructions.
+1. Locate the vault: $SHINKOFA_VAULT_DIR or ~/Shinkofa-Vault. Absent -> pass
+   (host not vault-enabled / project not opted in).
+2. Resolve project P: $SHINKOFA_PROJECT or the repo-root dir name, lowercased.
+3. Match mappings whose stem == P or starts with `P-` (multi-service repos like
+   michi-niwa-bot / michi-niwa-web). None -> pass.
+4. For each matched mapping that HAS a sibling envs/<stem>.env:
+       required = the ENV_VAR_NAME keys declared in the mapping
+       present  = the KEY names in the env file (names only — never values)
+       missing += required - present
+   A mapping with no generated env is skipped (covered-via-Infra / not built
+   on this host) — we cannot conclude, so we do not block.
+5. Any missing -> exit 2 (BLOCK) with recovery. Else pass.
 
-Reference: Plan Phase D2.
+Confidentiality: only env var NAMES are read from the env file; secret VALUES
+are never parsed, logged, or surfaced (Confidentiality.md).
+
+Reference: VAULT.md workflow (generate-envs.sh -> inject.sh). Plan Phase D2.
 """
 
 from __future__ import annotations
 
+import os
 import re
-import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -34,87 +50,57 @@ from common import (  # noqa: E402
     find_repo_root,
     format_block,
     get_command,
+    looks_like_deploy,
     pass_through,
     read_hook_input,
 )
 
-# --- Deploy detection (mirrors smoke-test-required.py) ----------------------
 
-_DEPLOY_PATTERNS = [
-    re.compile(r"\bdocker\s+(?:compose\s+)?up\b"),
-    re.compile(r"\bdocker\s+stack\s+deploy\b"),
-    re.compile(r"\bdeploy\.sh\b"),
-    re.compile(r"\bvercel\s+(?:--prod|deploy)\b"),
-    re.compile(r"\bfly\s+deploy\b"),
-    re.compile(r"\bnetlify\s+deploy\b"),
-    re.compile(r"\brailway\s+up\b"),
-    re.compile(r"\bgh\s+workflow\s+run\s+deploy\b"),
-    re.compile(r"\bssh\s+\S+\s+.*?(?:docker|deploy|systemctl)\b"),
-    re.compile(r"\bansible-playbook\b"),
-    re.compile(r"\bkubectl\s+apply\b"),
-    re.compile(r"\bhelm\s+upgrade\b"),
-    re.compile(r"\bsystemctl\s+restart\b"),
-    re.compile(r"\bgit\s+pull\b.*\b(?:docker|systemctl|restart)\b"),
-]
+# --- Vault location & project resolution ------------------------------------
 
 
-def _looks_like_deploy(cmd: str) -> bool:
-    return any(p.search(cmd) for p in _DEPLOY_PATTERNS)
+def _vault_dir() -> Path | None:
+    override = os.environ.get("SHINKOFA_VAULT_DIR")
+    root = Path(override) if override else Path.home() / "Shinkofa-Vault"
+    return root if (root / "mappings").is_dir() else None
 
 
-# --- env-vars.md parsing ----------------------------------------------------
-
-_ARROW_RE = re.compile(
-    r"^\s*([A-Z][A-Z0-9_]{2,})\s*-+>\s*([A-Za-z0-9_/\-\.]+?)\s*$",
-    re.MULTILINE,
-)
-_TABLE_ROW_RE = re.compile(
-    r"^\s*\|\s*([A-Z][A-Z0-9_]{2,})\s*\|\s*([A-Za-z0-9_/\-\.]+?)\s*\|",
-    re.MULTILINE,
-)
+def _project_name() -> str:
+    override = os.environ.get("SHINKOFA_PROJECT")
+    if override:
+        return override.strip().lower()
+    return find_repo_root().name.lower()
 
 
-def _parse_env_vars(content: str) -> list[tuple[str, str]]:
-    """Return list of (VAR_NAME, vault_path) tuples in declaration order."""
-    pairs: list[tuple[str, str]] = []
-    seen: set[str] = set()
-
-    for m in _ARROW_RE.finditer(content):
-        name, path = m.group(1), m.group(2)
-        if name not in seen:
-            pairs.append((name, path))
-            seen.add(name)
-
-    for m in _TABLE_ROW_RE.finditer(content):
-        name, path = m.group(1), m.group(2)
-        if "/" not in path:
-            # Filter header row (e.g. "Variable | Vault path") — no slash.
-            continue
-        if name not in seen:
-            pairs.append((name, path))
-            seen.add(name)
-
-    return pairs
+def _matched_stems(vault: Path, project: str) -> list[str]:
+    """Mapping stems that belong to this project (exact or `project-<svc>`)."""
+    stems = []
+    for path in sorted((vault / "mappings").glob("*.yaml")):
+        stem = path.stem
+        if stem == project or stem.startswith(project + "-"):
+            stems.append(stem)
+    return stems
 
 
-# --- Vault probe ------------------------------------------------------------
+# --- Parsing (names only — never values) ------------------------------------
+
+_MAPPING_VAR_RE = re.compile(r"^\s*([A-Z][A-Z0-9_]{2,})\s*:", re.MULTILINE)
+_ENV_KEY_RE = re.compile(r"^\s*(?:export\s+)?([A-Z][A-Z0-9_]{2,})\s*=", re.MULTILINE)
 
 
-def _vault_has(path: str) -> bool:
-    """Return True if `vault kv get <path>` returns 0."""
+def _read(path: Path) -> str:
     try:
-        r = subprocess.run(
-            ["vault", "kv", "get", path],
-            capture_output=True,
-            timeout=10,
-        )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return False
-    return r.returncode == 0
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
 
 
-def _vault_available() -> bool:
-    return shutil.which("vault") is not None
+def _required_vars(mapping: Path) -> list[str]:
+    return _MAPPING_VAR_RE.findall(_read(mapping))
+
+
+def _present_keys(env_file: Path) -> set[str]:
+    return set(_ENV_KEY_RE.findall(_read(env_file)))
 
 
 # --- Main -------------------------------------------------------------------
@@ -123,39 +109,42 @@ def _vault_available() -> bool:
 def main() -> None:
     _, data = read_hook_input()
     cmd = get_command(data)
-    if not cmd or not _looks_like_deploy(cmd):
+    if not cmd or not looks_like_deploy(cmd):
         pass_through()
 
-    repo_root = find_repo_root()
-    env_vars_md = repo_root / "docs" / "architecture" / "env-vars.md"
-    if not env_vars_md.exists():
+    vault = _vault_dir()
+    if vault is None:
         pass_through()
 
-    if not _vault_available():
+    project = _project_name()
+    stems = _matched_stems(vault, project)
+    if not stems:
         pass_through()
 
-    try:
-        content = env_vars_md.read_text(encoding="utf-8")
-    except OSError:
-        pass_through()
+    missing: list[str] = []
+    for stem in stems:
+        env_file = vault / "envs" / f"{stem}.env"
+        if not env_file.is_file():
+            continue  # covered-via-Infra / not generated here → cannot conclude
+        present = _present_keys(env_file)
+        for var in _required_vars(vault / "mappings" / f"{stem}.yaml"):
+            if var not in present:
+                missing.append(var)
 
-    pairs = _parse_env_vars(content)
-    if not pairs:
-        pass_through()
-
-    missing: list[tuple[str, str]] = [(n, p) for n, p in pairs if not _vault_has(p)]
     if not missing:
         pass_through()
 
-    var_list = ", ".join(name for name, _ in missing)
-    first_name, first_path = missing[0]
+    var_list = ", ".join(dict.fromkeys(missing))  # dedup, keep order
     block(format_block(
-        reason=f"deploy aborted — required env var(s) missing from Vault: {var_list}",
+        reason=f"deploy aborted — Vault-mapped secret(s) missing from the "
+               f"generated env: {var_list}",
         recovery=(
-            f"create the missing secrets, e.g. `vault kv put {first_path} "
-            f"{first_name.lower()}=<value>` (repeat for each), then re-run the deploy."
+            f"regenerate and inject for '{project}': "
+            f"`cd ~/Shinkofa-Vault && ./scripts/generate-envs.sh <stem> && "
+            f"./scripts/inject.sh <stem>`, then re-run the deploy. If the var is "
+            f"obsolete, remove it from mappings/<stem>.yaml."
         ),
-        reference="docs/architecture/env-vars.md",
+        reference="VAULT.md (generate-envs.sh -> inject.sh)",
     ))
 
 

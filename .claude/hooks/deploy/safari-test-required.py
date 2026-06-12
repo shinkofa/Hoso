@@ -27,6 +27,7 @@ from common import (  # noqa: E402
     find_repo_root,
     format_warn,
     get_command,
+    looks_like_deploy,
     pass_through,
     read_hook_input,
     warn,
@@ -36,24 +37,11 @@ from transcript_reader import iter_assistant_text  # noqa: E402
 
 STATE_NAME = "deploy-safari"
 
-_DEPLOY_PATTERNS = [
-    re.compile(r"\bdocker\s+(?:compose\s+)?up\b"),
-    re.compile(r"\bdeploy\.sh\b"),
-    re.compile(r"\bvercel\s+(?:--prod|deploy)\b"),
-    re.compile(r"\bnetlify\s+deploy\b"),
-    re.compile(r"\bfly\s+deploy\b"),
-    re.compile(r"\bgh\s+workflow\s+run\s+deploy\b"),
-    re.compile(r"\bssh\s+\S+\s+.*?(?:docker|deploy)\b"),
-]
 
 _PUBLIC_HINTS = re.compile(r"--prod\b|\b(?:production|live|public)\b", re.IGNORECASE)
 
 _SAFARI_OK = re.compile(r"\[SAFARI-OK\]", re.IGNORECASE)
 _SAFARI_SKIP = re.compile(r"\[SAFARI-SKIP\]", re.IGNORECASE)
-
-
-def _looks_like_deploy(cmd: str) -> bool:
-    return any(p.search(cmd) for p in _DEPLOY_PATTERNS)
 
 
 def _has_browserslistrc(root: Path) -> bool:
@@ -85,7 +73,7 @@ def _has_safari_marker(transcript_path: str | None) -> tuple[bool, bool]:
 def main() -> None:
     _, data = read_hook_input()
     cmd = get_command(data)
-    if not cmd or not _looks_like_deploy(cmd):
+    if not cmd or not looks_like_deploy(cmd):
         pass_through()
     if not _PUBLIC_HINTS.search(cmd):
         # Local/staging deploys don't trigger this check.

@@ -26,7 +26,6 @@ Reference: Plan Phase D3.
 
 from __future__ import annotations
 
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -37,31 +36,10 @@ from common import (  # noqa: E402
     find_repo_root,
     format_block,
     get_command,
+    looks_like_deploy,
     pass_through,
     read_hook_input,
 )
-
-# Mirror D2 deploy-detection patterns.
-_DEPLOY_PATTERNS = [
-    re.compile(r"\bdocker\s+(?:compose\s+)?up\b"),
-    re.compile(r"\bdocker\s+stack\s+deploy\b"),
-    re.compile(r"\bdeploy\.sh\b"),
-    re.compile(r"\bvercel\s+(?:--prod|deploy)\b"),
-    re.compile(r"\bfly\s+deploy\b"),
-    re.compile(r"\bnetlify\s+deploy\b"),
-    re.compile(r"\brailway\s+up\b"),
-    re.compile(r"\bgh\s+workflow\s+run\s+deploy\b"),
-    re.compile(r"\bssh\s+\S+\s+.*?(?:docker|deploy|systemctl)\b"),
-    re.compile(r"\bansible-playbook\b"),
-    re.compile(r"\bkubectl\s+apply\b"),
-    re.compile(r"\bhelm\s+upgrade\b"),
-    re.compile(r"\bsystemctl\s+restart\b"),
-    re.compile(r"\bgit\s+pull\b.*\b(?:docker|systemctl|restart)\b"),
-]
-
-
-def _looks_like_deploy(cmd: str) -> bool:
-    return any(p.search(cmd) for p in _DEPLOY_PATTERNS)
 
 
 def _registry_dirty(repo_root: Path) -> str | None:
@@ -84,7 +62,7 @@ def _registry_dirty(repo_root: Path) -> str | None:
 def main() -> None:
     _, data = read_hook_input()
     cmd = get_command(data)
-    if not cmd or not _looks_like_deploy(cmd):
+    if not cmd or not looks_like_deploy(cmd):
         pass_through()
 
     repo_root = find_repo_root()

@@ -32,7 +32,6 @@ Reference: Conception-Globale-Refonte §3 registre infra + CLEANUP-TODO
 
 from __future__ import annotations
 
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -44,34 +43,14 @@ from common import (  # noqa: E402
     format_block,
     format_warn,
     get_command,
+    looks_like_deploy,
     pass_through,
     read_hook_input,
     warn,
 )
 
-# Mirror the deploy-detection family used by the other deploy-gate hooks.
-_DEPLOY_PATTERNS = [
-    re.compile(r"\bdocker\s+(?:compose\s+)?up\b"),
-    re.compile(r"\bdocker\s+stack\s+deploy\b"),
-    re.compile(r"\bdeploy\.sh\b"),
-    re.compile(r"\bvercel\s+(?:--prod|deploy)\b"),
-    re.compile(r"\bfly\s+deploy\b"),
-    re.compile(r"\bnetlify\s+deploy\b"),
-    re.compile(r"\brailway\s+up\b"),
-    re.compile(r"\bgh\s+workflow\s+run\s+deploy\b"),
-    re.compile(r"\bssh\s+\S+\s+.*?(?:docker|deploy|systemctl)\b"),
-    re.compile(r"\bansible-playbook\b"),
-    re.compile(r"\bkubectl\s+apply\b"),
-    re.compile(r"\bhelm\s+upgrade\b"),
-    re.compile(r"\bsystemctl\s+(?:restart|start|stop)\b"),
-    re.compile(r"\bnginx\s+-s\s+reload\b"),
-]
 
 _PROBE_TIMEOUT = 75  # check-drift does one ssh round-trip (its own 60s timeout)
-
-
-def _looks_like_deploy(cmd: str) -> bool:
-    return any(p.search(cmd) for p in _DEPLOY_PATTERNS)
 
 
 def _find_check_drift(repo_root: Path) -> Path | None:
@@ -95,7 +74,7 @@ def _find_check_drift(repo_root: Path) -> Path | None:
 def main() -> None:
     _, data = read_hook_input()
     cmd = get_command(data)
-    if not cmd or not _looks_like_deploy(cmd):
+    if not cmd or not looks_like_deploy(cmd):
         pass_through()
 
     repo_root = find_repo_root()

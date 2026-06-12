@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 from common import (  # noqa: E402
     format_warn,
     get_command,
+    looks_like_deploy,
     pass_through,
     read_hook_input,
     warn,
@@ -33,20 +34,6 @@ from session_state import mark_once, read_state, write_state  # noqa: E402
 
 STATE_NAME = "deploy-smoke"
 
-_DEPLOY_PATTERNS = [
-    re.compile(r"\bdocker\s+(?:compose\s+)?up\b"),
-    re.compile(r"\bdocker\s+stack\s+deploy\b"),
-    re.compile(r"\bdeploy\.sh\b"),
-    re.compile(r"\bvercel\s+(?:--prod|deploy)\b"),
-    re.compile(r"\bfly\s+deploy\b"),
-    re.compile(r"\bnetlify\s+deploy\b"),
-    re.compile(r"\brailway\s+up\b"),
-    re.compile(r"\bgh\s+workflow\s+run\s+deploy\b"),
-    re.compile(r"\bssh\s+\S+\s+.*?(?:docker|deploy|systemctl)\b"),
-    re.compile(r"\bansible-playbook\b"),
-    re.compile(r"\bkubectl\s+apply\b"),
-    re.compile(r"\bhelm\s+upgrade\b"),
-]
 
 _SMOKE_PATTERNS = [
     re.compile(r"\bcurl\b[^\n]*\b(?:health|status|ready|alive|smoke)\b", re.IGNORECASE),
@@ -57,10 +44,6 @@ _SMOKE_PATTERNS = [
     re.compile(r"\bpytest\b[^\n]*\b(?:smoke|post_deploy|postdeploy)\b"),
     re.compile(r"\bplaywright\s+test\b[^\n]*\bsmoke\b"),
 ]
-
-
-def _looks_like_deploy(cmd: str) -> bool:
-    return any(p.search(cmd) for p in _DEPLOY_PATTERNS)
 
 
 def _looks_like_smoke(cmd: str) -> bool:
@@ -88,7 +71,7 @@ def main() -> None:
             write_state(STATE_NAME, state, sid)
         pass_through()
 
-    if _looks_like_deploy(cmd):
+    if looks_like_deploy(cmd):
         state.update({"pending_deploy": True, "smoke_seen": False})
         write_state(STATE_NAME, state, sid)
         pass_through()

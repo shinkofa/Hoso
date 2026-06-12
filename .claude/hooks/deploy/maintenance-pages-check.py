@@ -26,6 +26,7 @@ from common import (  # noqa: E402
     find_repo_root,
     format_warn,
     get_command,
+    looks_like_deploy,
     pass_through,
     read_hook_input,
     warn,
@@ -33,19 +34,6 @@ from common import (  # noqa: E402
 from session_state import mark_once  # noqa: E402
 
 STATE_NAME = "deploy-maintenance"
-
-_DEPLOY_PATTERNS = [
-    re.compile(r"\bdocker\s+(?:compose\s+)?up\b"),
-    re.compile(r"\bdeploy\.sh\b"),
-    re.compile(r"\bssh\s+\S+\s+.*?(?:nginx|docker|systemctl)\b"),
-    re.compile(r"\bvercel\s+(?:--prod|deploy)\b"),
-    re.compile(r"\bnetlify\s+deploy\b"),
-    re.compile(r"\bfly\s+deploy\b"),
-]
-
-
-def _looks_like_deploy(cmd: str) -> bool:
-    return any(p.search(cmd) for p in _DEPLOY_PATTERNS)
 
 
 def _has_nginx_marker(root: Path) -> bool:
@@ -91,7 +79,7 @@ def _has_maintenance_pages(root: Path) -> bool:
 def main() -> None:
     _, data = read_hook_input()
     cmd = get_command(data)
-    if not cmd or not _looks_like_deploy(cmd):
+    if not cmd or not looks_like_deploy(cmd):
         pass_through()
 
     root = find_repo_root()

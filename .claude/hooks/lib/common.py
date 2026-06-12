@@ -22,6 +22,7 @@ Use `format_block(...)` / `format_warn(...)` to keep messages consistent.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -108,6 +109,59 @@ def format_warn(reason: str, action: str, reference: str | None = None) -> str:
     if reference:
         msg += f" See {reference}."
     return msg
+
+
+# --- Deploy detection (shared by every pre-deploy gate) -----------------------
+
+# One source of truth for "is this command a deploy?". Previously copy-pasted
+# into 8 hooks, each with a slightly different ssh sub-pattern that matched the
+# BARE substring docker/deploy/systemctl anywhere after the host — so a grep, an
+# rm, or a filename containing "deploy"/"docker" was misread as a deploy and ran
+# the (slow, network-probing) gates. The patterns below match deploy ACTIONS,
+# never bare tool-name substrings.
+
+_DEPLOY_PATTERNS = [
+    re.compile(r"\bdocker(?:-compose)?\s+(?:compose\s+)?up\b"),
+    re.compile(r"\bdocker\s+stack\s+deploy\b"),
+    re.compile(r"\bdeploy\.sh\b"),
+    re.compile(r"\bvercel\s+(?:--prod|deploy)\b"),
+    re.compile(r"\bfly\s+deploy\b"),
+    re.compile(r"\bnetlify\s+deploy\b"),
+    re.compile(r"\brailway\s+up\b"),
+    re.compile(r"\bgh\s+workflow\s+run\s+deploy"),
+    re.compile(r"\bansible-playbook\b"),
+    re.compile(r"\bkubectl\s+apply\b"),
+    re.compile(r"\bhelm\s+upgrade\b"),
+    re.compile(r"\bsystemctl\s+(?:restart|start|stop)\b"),
+    re.compile(r"\bnginx\s+-s\s+reload\b"),
+    # Remote deploy over ssh: a real deploy ACTION after the host, not the bare
+    # substring docker/deploy/systemctl (which appears in filenames/grep args).
+    re.compile(
+        r"\bssh\s+\S+\s+.*?(?:"
+        r"docker(?:-compose)?\s+(?:compose\s+)?(?:up|restart)|"
+        r"docker\s+stack\s+deploy|"
+        r"systemctl\s+(?:restart|start|stop)|"
+        r"deploy\.sh|"
+        r"nginx\s+-s\s+reload)"
+    ),
+    # git pull chained into a deploy action (not the bare word "restart").
+    re.compile(
+        r"\bgit\s+pull\b.*?(?:"
+        r"docker(?:-compose)?\s+(?:compose\s+)?(?:up|restart)|"
+        r"systemctl\s+(?:restart|start|stop)|"
+        r"deploy\.sh)"
+    ),
+]
+
+
+def looks_like_deploy(cmd: str) -> bool:
+    """True when the bash command is a deploy-class action.
+
+    Matches deploy ACTIONS (docker compose up, systemctl restart, deploy.sh,
+    ssh host <action>, ...), never a bare docker/deploy/systemctl substring, so
+    a grep/rm/filename that merely mentions those words is not a false positive.
+    """
+    return bool(cmd) and any(p.search(cmd) for p in _DEPLOY_PATTERNS)
 
 
 # --- Paths --------------------------------------------------------------------
