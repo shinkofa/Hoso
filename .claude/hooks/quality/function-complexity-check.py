@@ -87,13 +87,19 @@ def _function_length(fn: ast.AST) -> int:
     return end - fn.lineno + 1
 
 
+def _is_tooling(path: Path) -> bool:
+    """Internal automation under scripts/ is exempt — orchestration, not product
+    code (e.g. propagate-methodology.py). Mirrors the test-file exemption."""
+    return "scripts" in {p.lower() for p in path.parts}
+
+
 def _eligible_source(data: dict) -> str | None:
     """Return the source to analyze, or None if the file is out of scope."""
     file_path = common.get_file_path(data)
     if not file_path or not file_path.endswith(".py"):
         return None
     path = Path(file_path)
-    if _is_test_file(path):
+    if _is_test_file(path) or _is_tooling(path):
         return None
     try:
         return path.read_text(encoding="utf-8")

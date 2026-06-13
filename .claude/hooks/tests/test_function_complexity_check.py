@@ -126,6 +126,17 @@ def test_conftest_excluded(tmp_path):
     assert res.returncode == 0
 
 
+def test_scripts_tooling_excluded(tmp_path):
+    # Internal automation under scripts/ is exempt (like tests): orchestration
+    # scripts legitimately have long functions, they are not product code.
+    # (Jay 2026-06-13 — adding a project to propagate-methodology.py must not
+    #  trip the gate on that legacy script's pre-existing long functions.)
+    body = "def big():\n" + "".join(f"    x{i} = {i}\n" for i in range(40))
+    f = _write(tmp_path / "scripts" / "propagate.py", body)
+    res = _run(f)
+    assert res.returncode == 0
+
+
 def test_complexity_is_per_function_not_summed(tmp_path):
     # outer has 6 ifs (CC 7), nested inner has 6 ifs (CC 7). Neither exceeds 10.
     # If nested decisions leaked into outer, outer would be 13 -> false block.
