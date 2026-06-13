@@ -219,6 +219,7 @@ class OverlayService : Service() {
                         maskMode == ScreenRecordService.MASK_PRIVACY
                     )
                     refreshStartStopIcon()
+                    if (!expanded) rootView?.let { refreshCollapsedLiveRing(it) }
                     if (expanded) tickHud()
                 }
                 ScreenRecordService.BROADCAST_RECONNECT_STATE -> {
@@ -244,6 +245,7 @@ class OverlayService : Service() {
                         currentKbps = -1
                     }
                     refreshStartStopIcon()
+                    if (!expanded) rootView?.let { refreshCollapsedLiveRing(it) }
                     if (expanded) tickHud()
                 }
                 StreamerBotService.BROADCAST_STATE_CHANGED -> {
@@ -518,6 +520,7 @@ class OverlayService : Service() {
         attachCollapsedTouch(root, params)
         refreshCollapsedChatPastille(root)
         refreshCollapsedSbPastille(root)
+        refreshCollapsedLiveRing(root)
 
         wm.addView(root, params)
         clearExpandedRefs()
@@ -1177,6 +1180,23 @@ class OverlayService : Service() {
         pastille.visibility =
             if (enabled && connected) View.VISIBLE
             else View.GONE
+    }
+
+    /**
+     * Paint the COLLAPSED trigger's ring red while a stream is live,
+     * dark-grey otherwise. streamStartedAt > 0 means the service has a
+     * running stream (set on BROADCAST_STATE_CHANGED). Gives the
+     * streamer a glanceable "on air" signal without expanding controls.
+     * Called on every collapsed (re)inflate and whenever the stream
+     * start/stop state changes while collapsed.
+     */
+    private fun refreshCollapsedLiveRing(collapsedRoot: View) {
+        val trigger = collapsedRoot.findViewById<View>(R.id.btn_trigger)
+            ?: return
+        trigger.setBackgroundResource(
+            if (streamStartedAt > 0L) R.drawable.overlay_trigger_bg_live
+            else R.drawable.overlay_trigger_bg
+        )
     }
 
     // ---- G5.1 HUD live stats ---------------------------------------
