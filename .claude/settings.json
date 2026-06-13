@@ -108,6 +108,11 @@
             "type": "command",
             "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/time-tracker/estimation-capture.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "Capture time-estimation phrases (e.g. 'ca prendra 10 min') to estimations.jsonl"
+          },
+          {
+            "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/guards/pre-push-drift-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "Warn (never block) on methodology drift vs MNK-GoRin before git push (D1 brick 2)"
           }
         ]
       },
@@ -276,6 +281,11 @@
             "type": "command",
             "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/lifecycle/state-cleanup.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "Archive handoff briefs older than 7 days into .claude/state/_archive/"
+          },
+          {
+            "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/lifecycle/hook-blocks-stats.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "A2 — Count hook blocks/warns per signature to .claude/state/hook-blocks.jsonl (guardrail-fatigue meter, never blocks)"
           }
         ]
       }
