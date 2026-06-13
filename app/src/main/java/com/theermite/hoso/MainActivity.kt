@@ -643,7 +643,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startOverlay() {
         if (Settings.canDrawOverlays(this)) {
-            startForegroundService(
+            startService(
                 Intent(this, OverlayService::class.java)
             )
         }

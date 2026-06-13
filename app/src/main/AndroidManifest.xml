@@ -56,12 +56,7 @@
         <service
             android:name=".services.OverlayService"
             android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Stream overlay stop button" />
-        </service>
+            android:exported="false" />
 
         <service
             android:name=".services.ChatBubbleService"

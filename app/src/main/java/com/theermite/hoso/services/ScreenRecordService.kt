@@ -121,6 +121,7 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
                 val url = intent.getStringExtra(EXTRA_RTMP_URL)
                 if (!url.isNullOrBlank()) {
                     currentRtmpUrl = url
+                    stopRequested = false
                     // G5.1 — first time we get a URL = stream just
                     // started (MainActivity sends this immediately
                     // after streamer.startStream returns). We don't

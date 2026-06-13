@@ -1,13 +1,12 @@
 package com.theermite.hoso.services
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.net.TrafficStats
@@ -31,7 +30,6 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.theermite.hoso.R
@@ -99,6 +97,20 @@ class OverlayService : Service() {
     private var sbState: StreamerBotClient.State =
         StreamerBotClient.State.IDLE
     private var sbActions: List<StreamerBotAction> = emptyList()
+
+    // Bind to ScreenRecordService so Android keeps this service alive
+    // as long as the stream's FGS is running. Without this binding,
+    // the OS kills a plain background service within seconds when the
+    // user switches to a game.
+    private var boundToStream: Boolean = false
+    private val streamConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            boundToStream = true
+        }
+        override fun onServiceDisconnected(name: ComponentName?) {
+            boundToStream = false
+        }
+    }
 
     // G7.1 Phase B.2 — mix gain sliders. Only inflated/visible when the
     // active audio source is MIX. AudioGains receives the value on every
@@ -172,8 +184,20 @@ class OverlayService : Service() {
                     // bitrate doesn't show a fake spike on the first tick.
                     if (startedAt != streamStartedAt) {
                         streamStartedAt = startedAt
-                        if (startedAt == 0L) {
-                            // Stream stopped — clear reconnect state too.
+                        if (startedAt > 0L && !boundToStream) {
+                            // Stream just started — bind to the FGS so
+                            // the OS keeps the overlay alive.
+                            this@OverlayService.bindService(
+                                Intent(this@OverlayService, ScreenRecordService::class.java),
+                                streamConnection,
+                                BIND_ABOVE_CLIENT
+                            )
+                        } else if (startedAt == 0L) {
+                            // Stream stopped — unbind + clear state.
+                            if (boundToStream) {
+                                try { this@OverlayService.unbindService(streamConnection) } catch (_: Exception) {}
+                                boundToStream = false
+                            }
                             isReconnecting = false
                             reconnectAttempt = 0
                             hasGivenUp = false
@@ -206,6 +230,10 @@ class OverlayService : Service() {
                     // after reconnect exhaustion). The overlay survives:
                     // we just flip the start/stop toggle back to play and
                     // clear the live-only state so the HUD hides.
+                    if (boundToStream) {
+                        try { unbindService(streamConnection) } catch (_: Exception) {}
+                        boundToStream = false
+                    }
                     if (streamStartedAt != 0L) {
                         streamStartedAt = 0L
                         isReconnecting = false
@@ -396,8 +424,6 @@ class OverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
-        startForeground(NOTIFICATION_ID, buildNotification())
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         streamConfig = StreamConfig(this)
 
@@ -454,27 +480,11 @@ class OverlayService : Service() {
                 }
             )
         }
-    }
 
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            getString(R.string.overlay_notification_title),
-            NotificationManager.IMPORTANCE_MIN
-        )
-        getSystemService(NotificationManager::class.java)
-            .createNotificationChannel(channel)
-    }
-
-    private fun buildNotification(): Notification {
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stream)
-            .setContentTitle(
-                getString(R.string.overlay_notification_title)
-            )
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setSilent(true)
-            .build()
+        // Binding to ScreenRecordService happens when the stream
+        // starts (BROADCAST_STATE_CHANGED with startedAt > 0), not
+        // here — BIND_AUTO_CREATE would force-create the service
+        // and crash because no MediaProjection consent exists yet.
     }
 
     // ---- State transitions: COLLAPSED <-> EXPANDED -----------------
@@ -1365,6 +1375,10 @@ class OverlayService : Service() {
     }
 
     override fun onDestroy() {
+        if (boundToStream) {
+            try { unbindService(streamConnection) } catch (_: Exception) {}
+            boundToStream = false
+        }
         idleHandler.removeCallbacks(collapseRunnable)
         idleHandler.removeCallbacks(hudTickRunnable)
         try { unregisterReceiver(stateReceiver) } catch (_: Exception) {}
@@ -1381,8 +1395,6 @@ class OverlayService : Service() {
     }
 
     companion object {
-        const val NOTIFICATION_ID = 0x484F5350
-        const val CHANNEL_ID = "com.theermite.hoso.overlay"
         private const val DRAG_THRESHOLD = 15f
         private const val DRAG_THRESHOLD_SQ =
             DRAG_THRESHOLD * DRAG_THRESHOLD

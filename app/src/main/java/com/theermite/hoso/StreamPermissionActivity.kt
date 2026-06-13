@@ -67,6 +67,14 @@ class StreamPermissionActivity : ComponentActivity() {
             return@registerForActivityResult
         }
 
+        // Ensure the service is started via startForegroundService(),
+        // not just created via BIND_AUTO_CREATE. Without this, some
+        // OEMs (ColorOS/OPPO) don't grant full FGS priority and kill
+        // the AudioRecord after ~60 s once this Activity finishes.
+        startForegroundService(
+            Intent(this, ScreenRecordService::class.java)
+        )
+
         connection = MediaProjectionService.bindService(
             context = this,
             serviceClass = ScreenRecordService::class.java,
