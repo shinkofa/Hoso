@@ -160,3 +160,34 @@ def test_summary_on_stderr(tmp_path):
     assert res.returncode == 0
     # a human-readable one-liner is surfaced for the session-end summary
     assert b"veille" in res.stderr.lower() or b"block" in res.stderr.lower()
+
+
+# --- Overcome (friction) detection wired into the journal + summary ----------
+
+
+def _tool_use(tool: str, target: str, tid: str) -> dict:
+    return {"message": {"role": "assistant", "content": [
+        {"type": "tool_use", "id": tid, "name": tool, "input": {"file_path": target}}]}}
+
+
+def _tool_result_id(tid: str, is_error: bool, text: str) -> dict:
+    return {"message": {"role": "user", "content": [
+        {"type": "tool_result", "tool_use_id": tid, "is_error": is_error, "content": text}]}}
+
+
+def test_overcome_block_recorded_and_surfaced(tmp_path):
+    repo = _make_repo(tmp_path)
+    # Block on src/x.py, then a retry on the SAME target succeeds -> overcome.
+    tr = _make_transcript(
+        tmp_path,
+        _tool_use("Edit", "src/x.py", "t1"),
+        _tool_result_id("t1", True, VEILLE_BLOCK),
+        _tool_use("Edit", "src/x.py", "t2"),
+        _tool_result_id("t2", False, "ok"),
+    )
+    res = _run(repo, tr, f"s-{uuid.uuid4()}")
+    assert res.returncode == 0
+    entry = _journal(repo)[0]
+    assert "overcome" in entry
+    assert sum(entry["overcome"].values()) == 1
+    assert b"hook-friction" in res.stderr

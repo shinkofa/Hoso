@@ -42,6 +42,7 @@ LIB_DIR = HOOK_DIR.parent / "lib"
 sys.path.insert(0, str(LIB_DIR))
 
 from common import find_repo_root  # noqa: E402
+from friction import detect_overcome_blocks, signature  # noqa: E402
 from transcript_reader import iter_entries  # noqa: E402
 
 # A real hook message starts a line with BLOCKED: or WARNING: (see common.py
@@ -49,7 +50,6 @@ from transcript_reader import iter_entries  # noqa: E402
 MARKER_RE = re.compile(r"^\s*(BLOCKED|WARNING):\s*(.+?)\s*$", re.MULTILINE)
 
 STATE_REL = ".claude/state/hook-blocks.jsonl"
-MAX_SIG_WORDS = 9  # bound the signature so variable tails (paths) don't fragment it
 
 
 def read_input() -> dict:
@@ -87,16 +87,6 @@ def extract_text(node: object) -> str:
     return "\n".join(chunks)
 
 
-def signature(reason: str) -> str:
-    """Normalize a block/warn reason into a stable grouping key.
-
-    Take the first sentence, lowercase it, drop the variable tail, and bound the
-    word count so two messages differing only by a file path collapse to one key.
-    """
-    head = re.split(r"[.\n]", reason, maxsplit=1)[0].strip().lower()
-    return " ".join(head.split()[:MAX_SIG_WORDS])
-
-
 def scan(transcript_path: str) -> tuple[dict[str, int], dict[str, int]]:
     blocks: dict[str, int] = {}
     warns: dict[str, int] = {}
@@ -119,20 +109,10 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def main() -> None:
-    data = read_input()
-    transcript_path = data.get("transcript_path") or os.environ.get("CLAUDE_TRANSCRIPT_PATH", "")
-    session_id = data.get("session_id") or os.environ.get("CLAUDE_SESSION_ID", "")
-    if not transcript_path:
-        sys.exit(0)
-
-    blocks, warns = scan(transcript_path)
-    if not blocks and not warns:
-        sys.exit(0)
-
-    repo_root = find_repo_root()
-    state_path = repo_root / STATE_REL
-    entry = {"session_id": session_id, "ts": now_iso(), "blocks": blocks, "warns": warns}
+def _append_journal(session_id: str, blocks: dict, warns: dict, overcome: dict) -> None:
+    entry = {"session_id": session_id, "ts": now_iso(),
+             "blocks": blocks, "warns": warns, "overcome": overcome}
+    state_path = find_repo_root() / STATE_REL
     try:
         state_path.parent.mkdir(parents=True, exist_ok=True)
         with state_path.open("a", encoding="utf-8", newline="\n") as f:
@@ -140,16 +120,32 @@ def main() -> None:
     except OSError:
         pass  # observability must never break the session
 
-    total_b = sum(blocks.values())
-    total_w = sum(warns.values())
-    top = max(blocks.items(), key=lambda kv: kv[1], default=None)
-    if top is None:
-        top = max(warns.items(), key=lambda kv: kv[1], default=None)
+
+def _emit_summary(blocks: dict, warns: dict, overcome: dict) -> None:
+    total_b, total_w = sum(blocks.values()), sum(warns.values())
+    top = (max(blocks.items(), key=lambda kv: kv[1], default=None)
+           or max(warns.items(), key=lambda kv: kv[1], default=None))
     top_str = f" — top: {top[0]} (x{top[1]})" if top else ""
-    print(
-        f"hook-blocks: {total_b} block(s), {total_w} warn(s) this session{top_str}",
-        file=sys.stderr,
-    )
+    print(f"hook-blocks: {total_b} block(s), {total_w} warn(s) this session{top_str}", file=sys.stderr)
+    if overcome:
+        cand = ", ".join(sorted(overcome))
+        print(f"hook-friction: {sum(overcome.values())} block(s) overcome by retry "
+              f"(possible parasite): {cand}. If any hindered you, note it under "
+              f"'Hooks Friction' in MNK-GoRin-Notes-Jay.md.", file=sys.stderr)
+
+
+def main() -> None:
+    data = read_input()
+    transcript_path = data.get("transcript_path") or os.environ.get("CLAUDE_TRANSCRIPT_PATH", "")
+    session_id = data.get("session_id") or os.environ.get("CLAUDE_SESSION_ID", "")
+    if not transcript_path:
+        sys.exit(0)
+    blocks, warns = scan(transcript_path)
+    overcome = detect_overcome_blocks(transcript_path)
+    if not blocks and not warns:
+        sys.exit(0)
+    _append_journal(session_id, blocks, warns, overcome)
+    _emit_summary(blocks, warns, overcome)
     sys.exit(0)
 
 

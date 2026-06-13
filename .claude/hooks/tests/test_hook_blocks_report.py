@@ -28,12 +28,15 @@ def _load():
 report = _load()
 
 
-def _entry(session: str, blocks: dict | None = None, warns: dict | None = None) -> dict:
+def _entry(session: str, blocks: dict | None = None, warns: dict | None = None,
+           overcome: dict | None = None) -> dict:
     e = {"session_id": session, "ts": "2026-06-13T10:00:00Z"}
     if blocks is not None:
         e["blocks"] = blocks
     if warns is not None:
         e["warns"] = warns
+    if overcome is not None:
+        e["overcome"] = overcome
     return e
 
 
@@ -95,6 +98,28 @@ def test_aggregate_repeat_counts_combined_kinds_per_session():
 
 def test_aggregate_empty():
     assert report.aggregate([]) == []
+
+
+def test_aggregate_sums_overcome_per_signature():
+    # overcome (block retried-and-passed) accumulates across sessions per signature.
+    entries = [
+        _entry("s1", blocks={"veille missing": 1}, overcome={"veille missing": 1}),
+        _entry("s2", blocks={"veille missing": 1}, overcome={"veille missing": 1}),
+        _entry("s3", blocks={"safari test": 1}),  # no overcome key
+    ]
+    rows = report.aggregate(entries)
+    veille = next(r for r in rows if r["signature"] == "veille missing")
+    safari = next(r for r in rows if r["signature"] == "safari test")
+    assert veille["overcome"] == 2
+    assert safari["overcome"] == 0
+
+
+def test_overcome_rendered_as_parasite_candidate(capsys):
+    rows = report.aggregate([_entry("s1", blocks={"x gate": 1}, overcome={"x gate": 1})])
+    report.render(rows, n_sessions=1, top=0)
+    out = capsys.readouterr().out
+    assert "Parasite candidates" in out
+    assert "x gate" in out
 
 
 # --- load_entries -----------------------------------------------------------
