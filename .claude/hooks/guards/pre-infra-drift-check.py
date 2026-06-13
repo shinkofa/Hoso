@@ -71,58 +71,72 @@ def _find_check_drift(repo_root: Path) -> Path | None:
     return None
 
 
+# A crash of check-drift (exit 1 with a Python traceback, or exit 1 with no drift
+# report at all) is NOT drift — it is inconclusive. Reading a tool crash as drift
+# hard-blocked every deploy when PyYAML was missing (Jay 2026-06-13, session 004).
+_CRASH_MARKERS = (
+    "Traceback (most recent call last)",
+    "ModuleNotFoundError",
+    "ImportError",
+    "SyntaxError",
+)
+
+
+def _is_crash(report: str, stderr: str) -> bool:
+    return (not report) or any(m in stderr for m in _CRASH_MARKERS)
+
+
+def _warn_inconclusive(reason: str) -> None:
+    warn(format_warn(
+        reason=reason,
+        action="verify VPS reachability / fix the check-drift tool, then run "
+               "`python Shinkofa-Infra/registry/scripts/check-drift.py` manually before deploy.",
+        reference="registre infra / check-drift.py",
+    ))
+    pass_through()
+
+
+def _run_check(script: Path):
+    """Run check-drift; on OSError/timeout, warn + pass (never returns there)."""
+    try:
+        return subprocess.run(
+            [sys.executable, str(script)],
+            capture_output=True, text=True, timeout=_PROBE_TIMEOUT, cwd=str(script.parent),
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        _warn_inconclusive(f"infra registry drift check could not run ({exc})")
+
+
+def _interpret(returncode: int, report: str, stderr: str) -> None:
+    if returncode == 0:
+        pass_through()
+    if returncode == 1 and not _is_crash(report, stderr):
+        sample = "; ".join(report.splitlines()[:6]) or "drift detected"
+        block(format_block(
+            reason=f"infra registry drift vs live VPS — deploy aborted ({sample})",
+            recovery="reconcile `Shinkofa-Infra/registry/infra.yaml` (or projects.yaml) "
+                     "with the live VPS, regenerate views (`gen-views.py`), commit, then "
+                     "re-run. If the live change is intended, declare it in the registry first.",
+            reference="registre infra / check-drift.py",
+        ))
+    if returncode == 1:
+        _warn_inconclusive("infra registry drift check crashed (exit 1, no drift report) "
+                           "— inconclusive, not a real drift (likely a missing Python dep)")
+    # exit 2 (probe failed) or any other code → WARN but do not block ops.
+    _warn_inconclusive(f"infra registry drift check inconclusive (exit {returncode}) "
+                       "— VPS may be unreachable")
+
+
 def main() -> None:
     _, data = read_hook_input()
     cmd = get_command(data)
     if not cmd or not looks_like_deploy(cmd):
         pass_through()
-
-    repo_root = find_repo_root()
-    script = _find_check_drift(repo_root)
+    script = _find_check_drift(find_repo_root())
     if script is None:
         pass_through()
-
-    try:
-        r = subprocess.run(
-            [sys.executable, str(script)],
-            capture_output=True,
-            text=True,
-            timeout=_PROBE_TIMEOUT,
-            cwd=str(script.parent),
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        warn(format_warn(
-            reason=f"infra registry drift check could not run ({exc})",
-            action="run `python Shinkofa-Infra/registry/scripts/check-drift.py` "
-                   "manually before deploying; verify VPS reachability.",
-            reference="registre infra / check-drift.py",
-        ))
-        pass_through()
-
-    report = (r.stdout or "").strip()
-
-    if r.returncode == 0:
-        pass_through()
-
-    if r.returncode == 1:
-        sample = "; ".join(report.splitlines()[:6]) or "drift detected"
-        block(format_block(
-            reason=f"infra registry drift vs live VPS — deploy aborted ({sample})",
-            recovery="reconcile `Shinkofa-Infra/registry/infra.yaml` (or projects.yaml) "
-                     "with the live VPS, regenerate views (`gen-views.py`), commit, "
-                     "then re-run. If the live change is intended, declare it in the "
-                     "registry first.",
-            reference="registre infra / check-drift.py",
-        ))
-
-    # exit 2 (probe failed) or any other code → WARN but do not block ops.
-    warn(format_warn(
-        reason=f"infra registry drift check inconclusive (exit {r.returncode}) — "
-               f"VPS may be unreachable",
-        action="verify VPS reachability and run check-drift.py manually before deploy.",
-        reference="registre infra / check-drift.py",
-    ))
-    pass_through()
+    r = _run_check(script)  # exits (warn+pass) on failure; r is set on success
+    _interpret(r.returncode, (r.stdout or "").strip(), r.stderr or "")
 
 
 if __name__ == "__main__":

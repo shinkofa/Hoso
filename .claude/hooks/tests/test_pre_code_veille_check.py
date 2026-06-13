@@ -119,3 +119,137 @@ def test_missing_marker_blocks(tmp_path):
     r = _run(transcript, file_path="lib/app/foo.ex", content="def hello, do: :world\n")
     assert r.returncode == 2
     assert b"BLOCKED" in r.stderr
+
+
+# --- Manifest dependency-diff: rename without dep change is NOT sensitive -----
+# (Jay 2026-06-13 — a package.json rename of name/bin, zero dependency change,
+#  was hard-blocked as a false positive. Such an edit must pass like a refactor.)
+
+
+def _run_edit(transcript: Path | None, *, file_path: str, old_string: str,
+              new_string: str) -> subprocess.CompletedProcess:
+    payload: dict = {
+        "tool_name": "Edit",
+        "tool_input": {"file_path": file_path, "old_string": old_string, "new_string": new_string},
+        "session_id": f"test-{uuid.uuid4().hex[:12]}",
+    }
+    if transcript is not None:
+        payload["transcript_path"] = str(transcript)
+    return subprocess.run(
+        [sys.executable, str(HOOK)],
+        input=json.dumps(payload).encode("utf-8"),
+        capture_output=True,
+        timeout=10,
+    )
+
+
+def test_package_json_name_rename_passes_without_marker(tmp_path):
+    pkg = tmp_path / "package.json"
+    pkg.write_text(json.dumps({
+        "name": "takumi-t",
+        "bin": {"takumi-t": "./cli.js"},
+        "dependencies": {"react": "^19.0.0"},
+    }, indent=2), encoding="utf-8")
+    # No transcript / no marker at all — a no-dep-change manifest edit must PASS.
+    r = _run_edit(None, file_path=str(pkg),
+                  old_string='"name": "takumi-t"',
+                  new_string='"name": "mnk-terminal"')
+    assert r.returncode == 0, f"name rename (no dep change) must pass: {r.stderr!r}"
+
+
+def test_package_json_bin_rename_passes_without_marker(tmp_path):
+    pkg = tmp_path / "package.json"
+    pkg.write_text(json.dumps({
+        "name": "takumi-t",
+        "bin": {"takumi-t": "./cli.js"},
+        "dependencies": {"react": "^19.0.0"},
+    }, indent=2), encoding="utf-8")
+    r = _run_edit(None, file_path=str(pkg),
+                  old_string='"takumi-t": "./cli.js"',
+                  new_string='"mnk-terminal": "./cli.js"')
+    assert r.returncode == 0, f"bin-key rename (no dep change) must pass: {r.stderr!r}"
+
+
+def test_package_json_dependency_add_still_sensitive(tmp_path):
+    pkg = tmp_path / "package.json"
+    pkg.write_text(json.dumps({
+        "name": "app",
+        "dependencies": {"react": "^19.0.0"},
+    }, indent=2), encoding="utf-8")
+    # Adding a real dependency stays sensitive: [SKB]+web is insufficient (Layer B).
+    transcript = _write_transcript(tmp_path, _skb_marker(), _web_call("WebSearch"))
+    r = _run_edit(transcript, file_path=str(pkg),
+                  old_string='"react": "^19.0.0"',
+                  new_string='"react": "^19.0.0",\n    "left-pad": "^1.3.0"')
+    assert r.returncode == 2, f"adding a dependency must stay sensitive: {r.stderr!r}"
+    assert b"VEILLE" in r.stderr
+
+
+def test_pyproject_name_rename_passes_without_marker(tmp_path):
+    pp = tmp_path / "pyproject.toml"
+    pp.write_text(
+        '[project]\n'
+        'name = "takumi-t"\n'
+        'version = "0.1.0"\n'
+        'dependencies = ["httpx>=0.27"]\n',
+        encoding="utf-8",
+    )
+    r = _run_edit(None, file_path=str(pp),
+                  old_string='name = "takumi-t"',
+                  new_string='name = "mnk-terminal"')
+    assert r.returncode == 0, f"pyproject name rename must pass: {r.stderr!r}"
+
+
+def test_requirements_comment_change_passes_without_marker(tmp_path):
+    req = tmp_path / "requirements.txt"
+    req.write_text("# old comment\nhttpx>=0.27\n", encoding="utf-8")
+    r = _run_edit(None, file_path=str(req),
+                  old_string="# old comment",
+                  new_string="# renamed comment")
+    assert r.returncode == 0, f"requirements comment-only change must pass: {r.stderr!r}"
+
+
+# --- Backtick-wrapped marker must be detected (Jay 2026-06-13, session 004) ---
+
+
+def test_veille_skip_in_backticks_is_detected(tmp_path):
+    transcript = _write_transcript(tmp_path, {
+        "role": "assistant",
+        "content": [{"type": "text", "text": "Marker: `[VEILLE-SKIP] motif: typo`"}],
+    })
+    r = _run(transcript, file_path="lib/app/foo.ex", content="def hi, do: :ok\n")
+    assert r.returncode == 0, f"backtick-wrapped VEILLE-SKIP must be detected: {r.stderr!r}"
+
+
+def test_reindenting_existing_import_is_not_sensitive(tmp_path):
+    # Moving an existing `import yaml` into a try/except adds NO new dependency.
+    # The naive line-diff sees a "new" indented import line; the module-aware
+    # check must see that `yaml` was already imported -> not sensitive.
+    transcript = _write_transcript(tmp_path, {
+        "role": "assistant",
+        "content": [{"type": "text", "text": "[VEILLE-SKIP] motif: hotfix-known-root-cause"}],
+    })
+    r = _run_edit(
+        transcript,
+        file_path="scripts/tool.py",
+        old_string="import yaml",
+        new_string="try:\n    import yaml\nexcept ModuleNotFoundError:\n    yaml = None",
+    )
+    assert r.returncode == 0, f"re-indenting an existing import must not be sensitive: {r.stderr!r}"
+
+
+def test_genuinely_new_import_stays_sensitive(tmp_path):
+    # A real new external import (not present in old) stays sensitive: a SKIP
+    # marker is refused, only a real [VEILLE] is accepted.
+    transcript = _write_transcript(tmp_path, {
+        "role": "assistant",
+        "content": [{"type": "text", "text": "[VEILLE-SKIP] motif: hotfix-known-root-cause"}],
+    })
+    r = _run_edit(
+        transcript,
+        file_path="scripts/tool.py",
+        old_string="import os",
+        new_string="import os\nimport requests",
+    )
+    assert r.returncode == 2, f"a brand-new import must stay sensitive: {r.stderr!r}"
+    assert b"VEILLE" in r.stderr

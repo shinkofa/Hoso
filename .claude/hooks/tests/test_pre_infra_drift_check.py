@@ -127,3 +127,52 @@ def test_warns_but_passes_on_probe_failure(tmp_path):
     r = _run(payload, cwd=repo)
     assert r.returncode == 0, f"probe failure must not block, got {r.returncode}"
     assert b"WARNING" in r.stderr
+
+
+# --- Crash (exit 1 with traceback, no drift report) = inconclusive -----------
+# (Jay 2026-06-13, session 004 — check-drift crashed on a missing Python dep
+#  such as PyYAML: ImportError -> Python exit 1 -> wrapper read it as DRIFT and
+#  hard-blocked the deploy. A tool crash is not drift; it is inconclusive.)
+
+
+def _make_crashing_infra(tmp_path: Path) -> Path:
+    """Fake check-drift that crashes like an uncaught ImportError: a traceback on
+    stderr, empty stdout, exit 1."""
+    ws = tmp_path / "workspace"
+    repo = ws / "repo"
+    repo.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    scripts = ws / "Shinkofa-Infra" / "registry" / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "check-drift.py").write_text(
+        "import sys\n"
+        "print('Traceback (most recent call last):', file=sys.stderr)\n"
+        "print(\"ModuleNotFoundError: No module named 'yaml'\", file=sys.stderr)\n"
+        "sys.exit(1)\n",
+        encoding="utf-8",
+    )
+    return repo
+
+
+def test_import_crash_exit1_is_inconclusive_not_drift(tmp_path):
+    repo = _make_crashing_infra(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "docker compose up -d"}}
+    r = _run(payload, cwd=repo)
+    assert r.returncode == 0, f"a tool crash must not hard-block the deploy: {r.stderr!r}"
+    assert b"WARNING" in r.stderr
+
+
+def test_empty_stdout_exit1_is_inconclusive(tmp_path):
+    """exit 1 with no drift report on stdout (and no recognizable crash text)
+    is still inconclusive — never fabricate drift from a silent failure."""
+    ws = tmp_path / "workspace"
+    repo = ws / "repo"
+    repo.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    scripts = ws / "Shinkofa-Infra" / "registry" / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "check-drift.py").write_text("import sys\nsys.exit(1)\n", encoding="utf-8")
+    payload = {"tool_name": "Bash", "tool_input": {"command": "docker compose up -d"}}
+    r = _run(payload, cwd=repo)
+    assert r.returncode == 0, f"empty-stdout exit 1 must not block: {r.stderr!r}"
+    assert b"WARNING" in r.stderr
