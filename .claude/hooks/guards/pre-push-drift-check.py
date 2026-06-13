@@ -50,30 +50,27 @@ def _find_source(repo_root: Path) -> Path | None:
     return sibling if (sibling / ".claude").is_dir() else None
 
 
-def main() -> int:
-    _, data = common.read_hook_input()
-    command = common.get_command(data)
+def _drifted_files(data: dict) -> list[str]:
+    """Drifted methodology files for a `git push` from a propagated project.
 
-    if not _GIT_PUSH_RE.search(command):
-        return 0  # not a push — nothing to check
-
+    Returns [] (nothing to warn) for any guard miss: not a push, in the canonical
+    source itself, source unreachable, or no .claude dir.
+    """
+    if not _GIT_PUSH_RE.search(common.get_command(data)):
+        return []
     repo_root = common.find_repo_root()
     if repo_root.name == CANONICAL_NAME:
-        return 0  # editing the canonical source itself is legitimate
-
+        return []
     source = _find_source(repo_root)
     if source is None:
-        return 0  # canonical source unreachable — degrade silently
-
+        return []
     dst_claude = repo_root / ".claude"
     if not dst_claude.is_dir():
-        return 0
+        return []
+    return drift.classify_project(source / ".claude", dst_claude, SYNC_DIRS)["drifted"]
 
-    result = drift.classify_project(source / ".claude", dst_claude, SYNC_DIRS)
-    drifted = result["drifted"]
-    if not drifted:
-        return 0
 
+def _emit_warning(drifted: list[str]) -> None:
     listing = "\n".join(f"  ~ {f}" for f in drifted)
     common.warn(
         common.format_warn(
@@ -86,6 +83,13 @@ def main() -> int:
             reference="rules/Workflows.md (methodology is canonical in MNK-GoRin)",
         )
     )
+
+
+def main() -> int:
+    _, data = common.read_hook_input()
+    drifted = _drifted_files(data)
+    if drifted:
+        _emit_warning(drifted)
     return 0  # WARN never blocks the push
 
 

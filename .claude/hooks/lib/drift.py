@@ -72,6 +72,23 @@ def _rel_files(root: Path, exclude: Callable[[Path], bool]) -> set[Path]:
     return out
 
 
+def _compare_present(
+    src_dir: Path, dst_dir: Path, src_files: set[Path], dst_files: set[Path]
+) -> tuple[int, list[str], list[str]]:
+    """For files present in source: split into identical / drifted / missing."""
+    identical = 0
+    drifted: list[str] = []
+    missing: list[str] = []
+    for rel in src_files:
+        if rel not in dst_files:
+            missing.append(rel.as_posix())
+        elif file_sha256(src_dir / rel) == file_sha256(dst_dir / rel):
+            identical += 1
+        else:
+            drifted.append(rel.as_posix())
+    return identical, drifted, missing
+
+
 def classify_dir(
     src_dir: Path,
     dst_dir: Path,
@@ -84,28 +101,34 @@ def classify_dir(
     """
     src_files = _rel_files(src_dir, exclude)
     dst_files = _rel_files(dst_dir, exclude)
-
-    identical = 0
-    drifted: list[str] = []
-    missing: list[str] = []
-
-    for rel in src_files:
-        if rel not in dst_files:
-            missing.append(rel.as_posix())
-            continue
-        if file_sha256(src_dir / rel) == file_sha256(dst_dir / rel):
-            identical += 1
-        else:
-            drifted.append(rel.as_posix())
-
+    identical, drifted, missing = _compare_present(src_dir, dst_dir, src_files, dst_files)
     extra = [rel.as_posix() for rel in (dst_files - src_files)]
-
     return {
         "identical": identical,
         "drifted": sorted(drifted),
         "missing": sorted(missing),
         "extra": sorted(extra),
     }
+
+
+def _aggregate_dirs(
+    src_claude: Path,
+    dst_claude: Path,
+    sync_dirs: tuple[str, ...],
+    exclude: Callable[[Path], bool],
+) -> tuple[int, list[str], list[str], list[str]]:
+    """Sum drift across the propagated dirs; prefix each path with its dir."""
+    identical = 0
+    drifted: list[str] = []
+    missing: list[str] = []
+    extra: list[str] = []
+    for d in sync_dirs:
+        sub = classify_dir(src_claude / d, dst_claude / d, exclude)
+        identical += sub["identical"]
+        drifted += [f"{d}/{p}" for p in sub["drifted"]]
+        missing += [f"{d}/{p}" for p in sub["missing"]]
+        extra += [f"{d}/{p}" for p in sub["extra"]]
+    return identical, drifted, missing, extra
 
 
 def classify_project(
@@ -116,22 +139,11 @@ def classify_project(
 ) -> dict:
     """Aggregate drift across the propagated dirs of one project.
 
-    Paths in the result lists are prefixed with their dir, e.g. "rules/Quality.md".
-    Returns {"identical": int, "drifted": [...], "missing": [...], "extra": [...],
-             "has_drift": bool}.
+    Paths are prefixed with their dir, e.g. "rules/Quality.md".
     """
-    identical = 0
-    drifted: list[str] = []
-    missing: list[str] = []
-    extra: list[str] = []
-
-    for d in sync_dirs:
-        sub = classify_dir(src_claude / d, dst_claude / d, exclude)
-        identical += sub["identical"]
-        drifted += [f"{d}/{p}" for p in sub["drifted"]]
-        missing += [f"{d}/{p}" for p in sub["missing"]]
-        extra += [f"{d}/{p}" for p in sub["extra"]]
-
+    identical, drifted, missing, extra = _aggregate_dirs(
+        src_claude, dst_claude, sync_dirs, exclude
+    )
     return {
         "identical": identical,
         "drifted": sorted(drifted),

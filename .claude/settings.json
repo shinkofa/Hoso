@@ -200,6 +200,11 @@
             "type": "command",
             "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/quality/utf8-french-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "Warn on French .md content with unaccented words (UTF-8 regression)"
+          },
+          {
+            "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/quality/function-complexity-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "Maintainability: block Python functions > 30 lines or cyclomatic complexity > 10 (F1)"
           }
         ]
       },
