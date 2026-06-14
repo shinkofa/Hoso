@@ -89,17 +89,6 @@ class OverlayServiceManifestTest {
     }
 
     @Test
-    fun should_still_declare_specialUse_for_StreamerBotService() {
-        val manifest = manifestText()
-        val block = serviceBlock(manifest, "StreamerBotService")
-
-        assertTrue(
-            "StreamerBotService must still declare specialUse",
-            block != null && block.contains("specialUse")
-        )
-    }
-
-    @Test
     fun should_still_declare_mediaProjection_for_ScreenRecordService() {
         val manifest = manifestText()
         val block = serviceBlock(manifest, "ScreenRecordService")

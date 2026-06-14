@@ -77,8 +77,6 @@ dependencies {
     implementation(libs.streampack.services)
     implementation(libs.streampack.rtmp)
 
-    implementation(libs.okhttp)
-
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
 }

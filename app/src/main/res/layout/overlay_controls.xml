@@ -97,22 +97,6 @@
             android:scaleType="fitCenter"
             android:contentDescription="@string/btn_chat" />
 
-        <!-- G6.1 Phase E.1 — Streamer.bot bridge button. Hidden by
-             default; OverlayService toggles visibility based on
-             StreamConfig.streamerBotEnabled. Tap → toggle the actions
-             panel below the controls pill. -->
-        <ImageView
-            android:id="@+id/btn_bot"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginEnd="6dp"
-            android:padding="12dp"
-            android:background="@drawable/overlay_btn_bg"
-            android:src="@drawable/ic_bot"
-            android:scaleType="fitCenter"
-            android:contentDescription="@string/btn_bot"
-            android:visibility="gone" />
-
         <ImageView
             android:id="@+id/btn_stop"
             android:layout_width="52dp"
@@ -124,42 +108,6 @@
             android:contentDescription="@string/btn_stop" />
 
     </LinearLayout>
-
-    <!--
-      G6.1 Phase E.1 — panneau actions Streamer.bot. Visible quand le
-      streamer tape btn_bot. Liste des actions publiées par le PC
-      (via GetActions WebSocket). Tap = DoAction côté Streamer.bot.
-      Hauteur max ~280 dp (~5 lignes visibles, scroll au-delà).
-    -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/overlay_actions_panel"
-        android:layout_width="240dp"
-        android:layout_height="wrap_content"
-        android:maxHeight="280dp"
-        android:layout_marginTop="6dp"
-        android:padding="8dp"
-        android:background="@drawable/overlay_mix_panel_bg"
-        android:visibility="gone"
-        android:clipToPadding="false"
-        android:overScrollMode="ifContentScrolls" />
-
-    <!--
-      État vide ou hors-ligne du panneau actions Streamer.bot. Pilule
-      identique pour homogénéité visuelle. Texte injecté depuis le
-      service (sb_actions_empty / sb_actions_disconnected).
-    -->
-    <TextView
-        android:id="@+id/overlay_actions_empty"
-        android:layout_width="240dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:paddingHorizontal="14dp"
-        android:paddingVertical="14dp"
-        android:gravity="center"
-        android:background="@drawable/overlay_mix_panel_bg"
-        android:textColor="@color/text_secondary"
-        android:textSize="12sp"
-        android:visibility="gone" />
 
     <!--
       G7.1 Phase B.2 — sliders de mix live (micro + jeu). Visibles

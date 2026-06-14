@@ -454,138 +454,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ── Streamer.bot card ──────────────────────────── -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <!-- Streamer.bot header keeps its inline switch (the
-                         enabled toggle). The chevron sits to the right of
-                         the switch and toggles the body (hint + host/port/
-                         password inputs). Tap target is the row itself
-                         minus the switch (the switch consumes its own
-                         clicks, so the rest of the row still folds). -->
-                    <LinearLayout
-                        android:id="@+id/header_sb"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="14dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:fontFamily="sans-serif-medium"
-                            android:letterSpacing="0.10"
-                            android:text="@string/section_streamerbot"
-                            android:textColor="@color/purple_primary"
-                            android:textSize="11sp" />
-
-                        <!-- SwitchMaterial (Material 2) — see G6.1 note in
-                             the previous layout: MaterialSwitch (M3)
-                             renders as nothing under the Material 2 theme
-                             this app is rooted on. -->
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_sb_enabled"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="10dp"
-                            app:showText="false" />
-
-                        <ImageView
-                            android:id="@+id/chevron_sb"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="@string/card_toggle_desc"
-                            android:src="@drawable/ic_chevron_down" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/body_sb"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingHorizontal="16dp"
-                        android:paddingBottom="16dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/sb_hint"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp" />
-
-                    <LinearLayout
-                        android:id="@+id/group_sb_settings"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="vertical"
-                        android:visibility="gone">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="8dp"
-                            android:hint="@string/sb_hint_host">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/edit_sb_host"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="text"
-                                android:singleLine="true" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="8dp"
-                            android:hint="@string/sb_hint_port">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/edit_sb_port"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:singleLine="true" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/sb_hint_password"
-                            app:endIconMode="password_toggle">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/edit_sb_password"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="textPassword"
-                                android:singleLine="true" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
         </LinearLayout>
     </ScrollView>
 
@@ -594,8 +462,8 @@
          stream_start (idle → ready to go live) and stream_stop (live →
          tap to stop).
          A secondary discrete "Quitter" text button sits below to fully
-         shut down all services (stream, overlay, chat, streamer.bot)
-         and remove the task. This is the clean session-end gesture —
+         shut down all services (stream, overlay, chat) and remove the
+         task. This is the clean session-end gesture —
          visible but visually subordinate to the primary CTA. -->
     <LinearLayout
         android:layout_width="match_parent"

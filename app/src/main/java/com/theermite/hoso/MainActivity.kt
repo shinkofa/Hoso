@@ -29,7 +29,6 @@ import com.theermite.hoso.databinding.ActivityMainBinding
 import com.theermite.hoso.services.ChatBubbleService
 import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
-import com.theermite.hoso.services.StreamerBotService
 import io.github.thibaultbee.streampack.core.logger.ILogger
 import io.github.thibaultbee.streampack.core.logger.Logger
 
@@ -142,7 +141,6 @@ class MainActivity : AppCompatActivity() {
         setupAudioSourceUI()
         setupMixGainSliders()
         setupPresetUI()
-        setupStreamerBotUI()
 
         val steps = (StreamConfig.BITRATE_MAX - StreamConfig.BITRATE_MIN) /
             StreamConfig.BITRATE_STEP
@@ -176,8 +174,8 @@ class MainActivity : AppCompatActivity() {
      * Clean shutdown: stop every service Hoso owns, then remove the task
      * so the app no longer lives in recents. The settings page Start/Stop
      * button only toggles the stream — this is the explicit "I'm done"
-     * gesture that also kills the overlay, chat bubble and Streamer.bot
-     * bridge so nothing keeps a foreground notification alive after exit.
+     * gesture that also kills the overlay and chat bubble so nothing
+     * keeps a foreground notification alive after exit.
      * Idempotent on services that aren't running (stopService and
      * ACTION_STOP are both no-ops on a dead service).
      */
@@ -192,7 +190,6 @@ class MainActivity : AppCompatActivity() {
         )
         stopService(Intent(this, OverlayService::class.java))
         stopService(Intent(this, ChatBubbleService::class.java))
-        StreamerBotService.stop(this)
         finishAndRemoveTask()
     }
 
@@ -225,13 +222,6 @@ class MainActivity : AppCompatActivity() {
             binding.chevronAudio,
             getInitial = { config.cardAudioCollapsed },
             setState = { config.cardAudioCollapsed = it }
-        )
-        bindCollapsible(
-            binding.headerSb,
-            binding.bodySb,
-            binding.chevronSb,
-            getInitial = { config.cardSbCollapsed },
-            setState = { config.cardSbCollapsed = it }
         )
     }
 
@@ -341,48 +331,6 @@ class MainActivity : AppCompatActivity() {
                 override fun onStopTrackingTouch(sb: SeekBar?) {}
             }
         )
-    }
-
-    // G6.1 — Streamer.bot bridge settings. App-level config (host/port/
-    // password) only saved on focus loss / start to avoid prefs churn on
-    // every keystroke. The enabled switch toggles the input group's
-    // visibility and persists immediately — it's the actuator the
-    // future StreamerBotService observes to know whether to connect.
-    private fun setupStreamerBotUI() {
-        applyStreamerBotGroupVisibility(config.streamerBotEnabled)
-        binding.switchSbEnabled.setOnCheckedChangeListener { _, checked ->
-            // Persist whatever the user typed BEFORE flipping the
-            // service on, so the connection picks up the latest values.
-            if (checked) persistStreamerBotFields()
-            config.streamerBotEnabled = checked
-            applyStreamerBotGroupVisibility(checked)
-            if (checked) {
-                StreamerBotService.start(this)
-            } else {
-                StreamerBotService.stop(this)
-            }
-        }
-        // If the user had the bridge enabled in a previous session, auto-
-        // start the service on app open so the connection is up before
-        // they go live.
-        if (config.streamerBotEnabled && config.streamerBotHost.isNotBlank()) {
-            StreamerBotService.start(this)
-        }
-    }
-
-    private fun applyStreamerBotGroupVisibility(enabled: Boolean) {
-        binding.groupSbSettings.visibility =
-            if (enabled) View.VISIBLE else View.GONE
-    }
-
-    private fun persistStreamerBotFields() {
-        config.streamerBotHost =
-            binding.editSbHost.text?.toString().orEmpty()
-        config.streamerBotPort =
-            binding.editSbPort.text?.toString()?.toIntOrNull()
-                ?: StreamConfig.DEFAULT_SB_PORT
-        config.streamerBotPassword =
-            binding.editSbPassword.text?.toString().orEmpty()
     }
 
     private fun setupPresetUI() {
@@ -571,15 +519,6 @@ class MainActivity : AppCompatActivity() {
         // but no write-back to prefs (avoids the load→save→load loop).
         binding.seekbarMicGain.progress = config.micGainPermil
         binding.seekbarGameGain.progress = config.gameGainPermil
-
-        // Streamer.bot bridge fields are app-level, not preset-scoped,
-        // but we still re-bind them on every loadConfigToUI() so the
-        // initial hydration after onCreate populates them once.
-        binding.editSbHost.setText(config.streamerBotHost)
-        binding.editSbPort.setText(config.streamerBotPort.toString())
-        binding.editSbPassword.setText(config.streamerBotPassword)
-        binding.switchSbEnabled.isChecked = config.streamerBotEnabled
-        applyStreamerBotGroupVisibility(config.streamerBotEnabled)
     }
 
     private fun saveConfigFromUI() {
@@ -589,9 +528,6 @@ class MainActivity : AppCompatActivity() {
             binding.spinnerResolution.selectedItemPosition
         config.videoBitrate = StreamConfig.BITRATE_MIN +
             binding.seekbarBitrate.progress * StreamConfig.BITRATE_STEP
-        // Streamer.bot fields are app-level — persist alongside the
-        // preset-scoped ones whenever the UI snapshot is committed.
-        persistStreamerBotFields()
     }
 
     /**

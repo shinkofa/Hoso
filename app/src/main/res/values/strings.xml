@@ -37,7 +37,6 @@
     <string name="section_destination">DESTINATION</string>
     <string name="section_stream">STREAM</string>
     <string name="section_audio">AUDIO</string>
-    <string name="section_streamerbot">STREAMER.BOT</string>
     <string name="action_go_live">PASSER EN DIRECT</string>
     <string name="action_stop_live">ARRÊTER LE STREAM</string>
     <string name="action_quit">Quitter l\'application</string>
@@ -123,26 +122,4 @@
     <string name="label_mic_gain">Volume micro</string>
     <string name="label_game_gain">Volume jeu</string>
     <string name="gain_value_format">%1$d %%</string>
-
-    <!-- G6.1 Streamer.bot bridge.
-         Settings app-level (pas par préset) : c'est l'adresse de TON PC
-         sur le LAN / Tailscale, indépendamment de la destination du flux. -->
-    <string name="sb_section_title">Streamer.bot</string>
-    <string name="sb_hint">Pont WebSocket vers ton PC. Hôte = IP Tailscale (ex: 100.x.x.x). Mot de passe vide si l\'auth est désactivée côté serveur.</string>
-    <string name="sb_hint_host">Hôte (IP Tailscale ou LAN)</string>
-    <string name="sb_hint_port">Port (défaut 8080)</string>
-    <string name="sb_hint_password">Mot de passe (optionnel)</string>
-
-    <!-- G6.1 — Streamer.bot foreground service notification. -->
-    <string name="sb_notif_channel">Pont Streamer.bot</string>
-    <string name="sb_notif_title">Hōsō — Streamer.bot</string>
-    <string name="sb_notif_text_idle">En attente</string>
-    <string name="sb_notif_text_connecting">Connexion…</string>
-    <string name="sb_notif_text_connected">Connecté</string>
-    <string name="sb_notif_text_reconnecting">Reconnexion…</string>
-
-    <!-- G6.1 Phase E.1 — overlay bot button + actions panel. -->
-    <string name="btn_bot">Actions Streamer.bot</string>
-    <string name="sb_actions_empty">Aucune action publiée</string>
-    <string name="sb_actions_disconnected">Pont hors-ligne</string>
 </resources>
