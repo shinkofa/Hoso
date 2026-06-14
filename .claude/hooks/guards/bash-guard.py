@@ -9,6 +9,8 @@ import json
 import re
 import subprocess
 import sys
+from datetime import datetime
+from pathlib import Path
 
 
 def read_input():
@@ -50,18 +52,79 @@ def check_secrets(raw):
     return None
 
 
-def check_destructive(raw):
-    if re.search(r"rm -rf|rm -fr|rmdir /s", raw):
-        safe = re.search(
-            r"(node_modules|\.next|__pycache__|\.cache|\.pytest_cache|dist/\.)",
-            raw,
+# rm -rf detection + the RM-OK token (Jay 2026-06-14).
+# Cache dirs are always safe to delete. The token lifts the block for ONE
+# command after Jay's explicit authorization — but NEVER on a catastrophic
+# target (root, home, project/.git, system root). A non-empty reason is required.
+_SAFE_CACHE = r"(node_modules|\.next|__pycache__|\.cache|\.pytest_cache|dist/\.)"
+_RM = r"(?:rm -rf|rm -fr)"
+_CATASTROPHIC_RM = [
+    _RM + r"\s+/(?:\s|$|\*)",                       # root  /  or  /*
+    _RM + r"\s+/[a-zA-Z]/(?:\s|$|\*)",              # drive root  /c/
+    _RM + r"\s+[A-Za-z]:[\\/](?:\s|$|\*)",          # Windows  C:\
+    _RM + r"\s+~(?:/(?:\s|$|\*)|\s|$)",             # home  ~  or  ~/
+    _RM + r"\s+\$\{?HOME\}?",                        # $HOME / ${HOME}
+    _RM + r"\s+\.\.?/?(?:\s|$)",                     # cwd  .  or  ..
+    _RM + r"\s+\*",                                  # glob everything  *
+    _RM + r"\s+[^\s]*\.git(?:/|\s|$)",              # a repo's  .git
+    _RM + r"\s+/(etc|usr|bin|boot|lib|sbin|root|var|opt|srv|home)"
+          r"(?:\s|$|/\s|/$|/\*)",                    # bare system root (not a subdir)
+]
+
+
+def _rm_override_reason(raw):
+    """Return the non-empty reason from a '# RM-OK: <reason>' token, else None.
+
+    The reason stops at the first double-quote so the JSON envelope ("...")
+    does not leak into the audit log. An empty reason is rejected (None).
+    """
+    m = re.search(r"#\s*RM-OK:\s*([^\s\"][^\"\n]*)", raw, re.IGNORECASE)
+    return m.group(1).strip() if m else None
+
+
+def _is_catastrophic_rm(raw):
+    """True if the rm target is catastrophic — token can NEVER override it."""
+    target = re.sub(r"#\s*RM-OK:.*", "", raw, flags=re.DOTALL)  # ignore the reason text
+    return any(re.search(p, target, re.IGNORECASE) for p in _CATASTROPHIC_RM)
+
+
+def _log_rm_override(raw, reason):
+    """Append an auditable trace of each token-granted deletion. Best-effort."""
+    try:
+        log = Path(__file__).resolve().parents[3] / ".claude" / "state" / "rm-overrides.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log, "a", encoding="utf-8") as f:
+            f.write(f"{ts} | reason={reason} | cmd={' '.join(raw.split())[:300]}\n")
+    except Exception:
+        pass
+
+
+def _check_rm(raw):
+    if not re.search(r"rm -rf|rm -fr|rmdir /s", raw):
+        return None
+    if re.search(_SAFE_CACHE, raw):
+        return None  # cache cleanup is always allowed
+    if _is_catastrophic_rm(raw):
+        return (
+            "BLOCKED: rm -rf on a catastrophic target (root /, home, project "
+            "root, .git, or a system directory). RECOVERY: the '# RM-OK' token "
+            "CANNOT override this. Delete a specific sub-directory instead, or "
+            "ask Jay to run it manually."
         )
-        if not safe:
-            return (
-                "BLOCKED: rm -rf on non-cache directory. "
-                "RECOVERY: Use 'mv <target> <target>-backup' instead. "
-                "If deletion is truly needed, ask Jay for explicit confirmation."
-            )
+    reason = _rm_override_reason(raw)
+    if reason:
+        _log_rm_override(raw, reason)
+        return None  # Jay-authorized deletion, one token = one deletion
+    return (
+        "BLOCKED: rm -rf on non-cache directory. RECOVERY: Use "
+        "'mv <target> <target>-backup' instead. If Jay explicitly authorized "
+        "this deletion, append '# RM-OK: <reason>' to the command "
+        "(one deletion per token, never on root/home/.git)."
+    )
+
+
+def _check_destructive_sql(raw):
     if re.search(
         r"DROP (TABLE|DATABASE|SCHEMA)|TRUNCATE |DELETE FROM .* WHERE 1|DELETE FROM [a-z]+ *;",
         raw,
@@ -73,6 +136,10 @@ def check_destructive(raw):
             "Never execute destructive SQL without a verified backup."
         )
     return None
+
+
+def check_destructive(raw):
+    return _check_rm(raw) or _check_destructive_sql(raw)
 
 
 def check_no_verify(command):
