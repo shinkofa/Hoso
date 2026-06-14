@@ -56,6 +56,35 @@ STATE_NAME = "simple-language-violations"
 MAX_VIOLATIONS_INJECTED = 8
 
 
+def _clear(session_id: str) -> None:
+    """Mark the violations state consumed so the next turn doesn't re-inject."""
+    write_state(
+        STATE_NAME,
+        {"pending": False, "violations": []},
+        session_id=session_id or None,
+    )
+
+
+def _inject(violations: list[str]) -> None:
+    """Write the pending violations into Takumi's next context (stdout)."""
+    sys.stdout.write(
+        "[SIMPLE LANGUAGE — REPONSE PRECEDENTE VIOLAIT Honesty.md]\n"
+    )
+    for v in violations[:MAX_VIOLATIONS_INJECTED]:
+        sys.stdout.write(f"  - {v}\n")
+    if len(violations) > MAX_VIOLATIONS_INJECTED:
+        sys.stdout.write(
+            f"  (+{len(violations) - MAX_VIOLATIONS_INJECTED} autres)\n"
+        )
+    sys.stdout.write(
+        "Honesty.md langue claire (client <-> maitre expert): conclusion "
+        "d'abord (BLUF), phrase <= 25 mots, paragraphe <= 3 phrases, max 1 "
+        "jargon/phrase glose, <= 3 paragraphes prose, zero condescendance, "
+        "tableau si comparaison, POURQUOI obligatoire. Reformuler MAINTENANT.\n"
+    )
+    sys.stdout.flush()
+
+
 def main() -> None:
     try:
         _, data = read_hook_input()
@@ -66,39 +95,9 @@ def main() -> None:
             sys.exit(0)
 
         violations = state.get("violations") or []
-        if not violations:
-            # pending=true but no violations — clear and exit
-            write_state(
-                STATE_NAME,
-                {"pending": False, "violations": []},
-                session_id=session_id or None,
-            )
-            sys.exit(0)
-
-        # Inject into Takumi's next context
-        sys.stdout.write(
-            "[SIMPLE LANGUAGE — REPONSE PRECEDENTE VIOLAIT Honesty.md]\n"
-        )
-        for v in violations[:MAX_VIOLATIONS_INJECTED]:
-            sys.stdout.write(f"  - {v}\n")
-        if len(violations) > MAX_VIOLATIONS_INJECTED:
-            sys.stdout.write(
-                f"  (+{len(violations) - MAX_VIOLATIONS_INJECTED} autres)\n"
-            )
-        sys.stdout.write(
-            "Honesty.md contraintes 1-8: phrase <= 25 mots, paragraphe "
-            "<= 3 phrases, max 1 acronyme/phrase, max 6 paragraphes "
-            "prose, tableau si comparaison, analogie si concept abstrait, "
-            "POURQUOI obligatoire. Reformuler MAINTENANT, pas la prochaine fois.\n"
-        )
-        sys.stdout.flush()
-
-        # Mark consumed so the next turn doesn't re-inject
-        write_state(
-            STATE_NAME,
-            {"pending": False, "violations": []},
-            session_id=session_id or None,
-        )
+        if violations:
+            _inject(violations)
+        _clear(session_id)
         sys.exit(0)
     except Exception:
         # Never break the user's prompt
