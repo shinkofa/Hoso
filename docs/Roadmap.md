@@ -50,7 +50,7 @@
 
 | # | Feature | Notes techniques | Effort | Statut |
 |---|---------|------------------|--------|--------|
-| G6.1 | Streamer.bot bridge | WebSocket client vers Streamer.bot (port local PC ou exposé). Permet alerts / commandes depuis mobile. Auth + reconnexion. | Moyen | ⬜ |
+| G6.1 | Streamer.bot bridge | WebSocket client vers Streamer.bot (port local PC ou exposé). Permet alerts / commandes depuis mobile. Auth + reconnexion. | Moyen | ❌ Retiré 2026-06-14 (`32ae79a`) — pas prioritaire + 2e service `specialUse` (risque Play Store) |
 | G6.2 | Chat overlay (Twitch IRC) | TwitchIrcClient maison (SSL justinfan, IRCv3 tags, exp backoff). ChatBubbleService FGS specialUse. Bulle overlay libre (drag sans edge-snap), 3 tailles, cycle opacité, auto-fade, badge unread, PRIVACY/PAUSE hide. Bouton chat dans EXPANDED + pastille COLLAPSED. | Gros | ✅ 5c42bea → a151be7 |
 
 ## Groupe 7 — Audio avancé (R&D)
@@ -69,7 +69,7 @@
 6. **G7.1 Phase B.2** — mix audio mic + jeu — ✅ livré 2026-05-30 (9b15518 + 4fe55a5 + ff30e35 + 6e5392b)
 7. **G6.2** — chat overlay Twitch IRC — ✅ livré 2026-05-31 (5c42bea → a151be7)
 8. **Design pass** — Material Symbols Rounded, pill containers, state backgrounds — ✅ livré 2026-05-31 (1cfb792)
-9. **G6.1** — Streamer.bot bridge
+9. ~~**G6.1** — Streamer.bot bridge~~ — ❌ retiré 2026-06-14 (réduction risque Play Store `specialUse`)
 
 ## Méthodologie pour chaque feature
 
