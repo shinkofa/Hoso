@@ -116,4 +116,23 @@ class OverlayServiceManifestTest {
             block != null && block.contains("mediaProjection")
         )
     }
+
+    /**
+     * Phase B — the app must not enable global cleartext traffic.
+     *
+     * StreamPack pushes RTMP over a raw TCP socket, which is NOT governed
+     * by android:usesCleartextTraffic nor network_security_config (those
+     * only apply to the platform HTTP stack — HttpsURLConnection, OkHttp,
+     * WebView). So dropping the flag does not break the RTMP stream, and
+     * it removes a needless Play Store cleartext warning.
+     */
+    @Test
+    fun should_not_enable_global_cleartext_traffic() {
+        val manifest = manifestText()
+
+        assertFalse(
+            "Manifest must not enable usesCleartextTraffic globally",
+            manifest.contains(Regex("""usesCleartextTraffic\s*=\s*"true""""))
+        )
+    }
 }
