@@ -277,6 +277,22 @@ Every public-facing feature ships with its visibility pipeline. Building the too
 
 This is not about marketing as a task — it is about marketing as infrastructure. Build the pipes now, so content flows forever. A platform without distribution is invisible, and invisible contradicts L2 (visibility).
 
+## Deploy Layout Convention (BLOCKING on VPS-deployed services)
+
+> One project = one directory under the deploy root. Source IS the deployment. Adopted by Jay 2026-06-14 after the VPS cleanup that emptied `/opt` and consolidated scattered `~/<x>-deploy` directories.
+
+| Rule | Value |
+|------|-------|
+| Deploy root | `~/apps/<Project>/` — every deployed service lives here, one directory per project |
+| Source = deployment | The deployed directory is a git clone of the project. No separate non-git copy, no build-elsewhere-copy-here. |
+| Central compose | Reserved for SHARED infrastructure only (PostgreSQL, Redis) under `~/apps/Shinkofa-Infra/compose`. Never an app's own service. |
+| `/opt` | System packages only. Zero Shinkofa code. |
+| Volume preservation | When relocating a service, preserve the live named volume (pin the compose project name with `-p <name>`). A renamed volume = silent data loss. Back up the DB before recreating the container. |
+
+**Enforcement (code, not discipline)**: `Shinkofa-Infra/registry/infra.yaml` declares `deploy_root` + `deploy_location_exceptions`. `check-drift.py` flags any running container whose compose `working_dir` is outside `deploy_root`. The hook `pre-infra-drift-check.py` blocks a deploy when drift is detected.
+
+**Why**: scattered deploy locations (`/opt`, ad-hoc `~/<x>-deploy`) hid which directory was authoritative, caused compose↔runtime drift, and made backups unreliable. One predictable home per project = Seiton (5S): each thing has one place, known to all. Volume preservation is mandatory because a project-name change silently creates a fresh empty volume (lessons: Michi-Niwa + Boken relocations, 2026-06-14).
+
 ## Post-Deploy Smoke Test (BLOCKING on live apps)
 
 Every deployment MUST include a smoke test that verifies:
