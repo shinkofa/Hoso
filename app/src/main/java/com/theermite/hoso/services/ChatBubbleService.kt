@@ -1,13 +1,12 @@
 package com.theermite.hoso.services
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.os.Handler
@@ -22,7 +21,6 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.theermite.hoso.R
@@ -124,12 +122,32 @@ class ChatBubbleService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    // Bind to ScreenRecordService so this service inherits the stream's
+    // foreground priority and is never an FGS itself — that lets us drop
+    // the foregroundServiceType=specialUse declaration (the most heavily
+    // reviewed FGS type on Google Play). The chat is a live companion:
+    // it only ever runs while a stream is up, so the binding always has
+    // a running FGS to attach to. Same pattern as OverlayService.
+    private var boundToStream: Boolean = false
+    private val streamConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            boundToStream = true
+        }
+        override fun onServiceDisconnected(name: ComponentName?) {
+            boundToStream = false
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         streamConfig = StreamConfig(this)
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        createNotificationChannel()
-        startForeground(NOTIFICATION_ID, buildNotification())
+
+        bindService(
+            Intent(this, ScreenRecordService::class.java),
+            streamConnection,
+            BIND_ABOVE_CLIENT,
+        )
 
         registerReceiver(
             stateReceiver,
@@ -149,11 +167,22 @@ class ChatBubbleService : Service() {
                 return START_NOT_STICKY
             }
         }
-        return START_STICKY
+        // NOT_STICKY: the chat is tied to a live stream. If the process is
+        // ever killed, we don't want a chat bubble resurrecting without a
+        // stream behind it — OverlayService restarts it on the next live.
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
-        streamConfig.chatEnabled = false
+        // Do NOT reset streamConfig.chatEnabled here: it is a user
+        // preference ("show chat when I'm live"), not a running-state
+        // flag. Clearing it would lose the choice every time the stream
+        // stops. OverlayService starts/stops this service per stream
+        // state based on that preference.
+        if (boundToStream) {
+            runCatching { unbindService(streamConnection) }
+            boundToStream = false
+        }
         ircClient.stop()
         mainHandler.removeCallbacks(fadeRunnable)
         runCatching { unregisterReceiver(stateReceiver) }
@@ -517,27 +546,6 @@ class ChatBubbleService : Service() {
         newBadge?.visibility = View.GONE
     }
 
-    // ── Notification ────────────────────────────────────────────────
-
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            getString(R.string.chat_notif_channel),
-            NotificationManager.IMPORTANCE_MIN,
-        )
-        getSystemService(NotificationManager::class.java)
-            .createNotificationChannel(channel)
-    }
-
-    private fun buildNotification(): Notification =
-        NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stream)
-            .setContentTitle(getString(R.string.chat_notif_title))
-            .setContentText(getString(R.string.chat_notif_text))
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setSilent(true)
-            .build()
-
     // ── Helpers ──────────────────────────────────────────────────────
 
     private fun readScreenBounds() {
@@ -553,8 +561,6 @@ class ChatBubbleService : Service() {
     companion object {
         const val ACTION_STOP = "com.theermite.hoso.chat.STOP"
 
-        private const val CHANNEL_ID = "hoso_chat_overlay"
-        private const val NOTIFICATION_ID = 4202
         private const val TOUCH_SLOP_PX = 8f
         private const val IDLE_FADE_MS = 5_000L
         private const val LONG_PRESS_MS = 500L

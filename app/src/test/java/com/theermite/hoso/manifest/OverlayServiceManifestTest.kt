@@ -78,13 +78,31 @@ class OverlayServiceManifestTest {
     }
 
     @Test
-    fun should_still_declare_specialUse_for_ChatBubbleService() {
+    fun should_not_declare_specialUse_for_ChatBubbleService() {
         val manifest = manifestText()
         val block = serviceBlock(manifest, "ChatBubbleService")
 
+        // P-A2 — chat binds to the stream FGS instead of being its own
+        // specialUse FGS, so Google Play has no specialUse to review.
         assertTrue(
-            "ChatBubbleService must still declare specialUse",
-            block != null && block.contains("specialUse")
+            "ChatBubbleService must be declared in the manifest",
+            block != null
+        )
+        assertFalse(
+            "ChatBubbleService must not declare foregroundServiceType=\"specialUse\"",
+            block!!.contains("specialUse")
+        )
+    }
+
+    @Test
+    fun should_not_request_special_use_permission_anywhere() {
+        val manifest = manifestText()
+
+        // No service uses specialUse anymore → the permission must be gone.
+        // Keeping it would draw needless Play Store review scrutiny.
+        assertFalse(
+            "Manifest must not request FOREGROUND_SERVICE_SPECIAL_USE",
+            manifest.contains("FOREGROUND_SERVICE_SPECIAL_USE")
         )
     }
 

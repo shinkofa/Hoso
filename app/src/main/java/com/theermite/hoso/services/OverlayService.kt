@@ -168,12 +168,21 @@ class OverlayService : Service() {
                                 streamConnection,
                                 BIND_ABOVE_CLIENT
                             )
+                            // Chat is a live companion: bring it up now if
+                            // the user has it enabled (Option 1 — chat only
+                            // runs during a live).
+                            if (streamConfig?.chatEnabled == true) {
+                                startChatBubble()
+                            }
                         } else if (startedAt == 0L) {
                             // Stream stopped — unbind + clear state.
                             if (boundToStream) {
                                 try { this@OverlayService.unbindService(streamConnection) } catch (_: Exception) {}
                                 boundToStream = false
                             }
+                            // Tear the chat down with the stream — it has no
+                            // FGS of its own to keep it alive.
+                            stopChatBubble()
                             isReconnecting = false
                             reconnectAttempt = 0
                             hasGivenUp = false
@@ -211,6 +220,8 @@ class OverlayService : Service() {
                         try { unbindService(streamConnection) } catch (_: Exception) {}
                         boundToStream = false
                     }
+                    // Stream gone → chat goes with it (no FGS of its own).
+                    stopChatBubble()
                     if (streamStartedAt != 0L) {
                         streamStartedAt = 0L
                         isReconnecting = false
@@ -290,15 +301,10 @@ class OverlayService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         streamConfig = StreamConfig(this)
 
-        // chatEnabled is RUNTIME state (is the bubble window visible right
-        // now), but it's persisted via prefs. If the previous process died
-        // without ChatBubbleService.onDestroy resetting the flag (OS kill,
-        // ColorOS cleanup, crash), the flag would stay true and the next
-        // tap on btn_chat would hit the stopService branch and silently
-        // no-op. We reset here because chat cannot survive overlay restart:
-        // overlay is the only entry point to chat, so a fresh overlay
-        // means no chat is running.
-        streamConfig?.chatEnabled = false
+        // chatEnabled is a persisted PREFERENCE ("show chat while I'm
+        // live"), not a runtime flag. We don't reset it here: the chat is
+        // started/stopped per stream state below, so the preference must
+        // survive an overlay restart to re-show chat on the next live.
 
         registerReceiver(
             stateReceiver,
@@ -898,24 +904,36 @@ class OverlayService : Service() {
     // ---- G6.2 chat bubble toggle -----------------------------------
 
     /**
-     * Start or stop the chat bubble service depending on its current
-     * [StreamConfig.chatEnabled] flag. Idempotent — calling twice while
-     * enabling is a no-op (Android coalesces startForegroundService).
-     * The flag is the single source of truth: ChatBubbleService.onDestroy
-     * resets it, so kill-from-recents leaves us in a coherent state.
+     * Flip the chat preference. [StreamConfig.chatEnabled] means "show the
+     * chat bubble while I'm live" — it persists across sessions. The bubble
+     * itself only runs during a stream (Option 1): enabling it off-air just
+     * records the preference; the bubble appears when the stream starts.
      */
     private fun toggleChatBubble() {
         val cfg = streamConfig ?: return
-        val intent = Intent(this, ChatBubbleService::class.java)
+        cfg.chatEnabled = !cfg.chatEnabled
         if (cfg.chatEnabled) {
-            // Disable: stop the service (its onDestroy resets the flag).
-            stopService(intent)
+            if (streamStartedAt > 0L) startChatBubble()
         } else {
-            cfg.chatEnabled = true
-            startForegroundService(intent)
+            stopChatBubble()
         }
         // Optimistic UI — the icon updates instantly, the service catches up.
         refreshChatButtonState()
+    }
+
+    /**
+     * Start the chat bubble. Plain startService (not startForegroundService):
+     * the chat is no longer an FGS — it binds to the stream's FGS for
+     * background priority. We only ever call this while a stream is live, so
+     * the running media-projection FGS exempts us from the background
+     * service-start restriction.
+     */
+    private fun startChatBubble() {
+        startService(Intent(this, ChatBubbleService::class.java))
+    }
+
+    private fun stopChatBubble() {
+        stopService(Intent(this, ChatBubbleService::class.java))
     }
 
     private fun refreshChatButtonState() {
