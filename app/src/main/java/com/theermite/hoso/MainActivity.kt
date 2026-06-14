@@ -23,6 +23,7 @@ import android.util.Log
 import com.theermite.hoso.audio.AudioGains
 import com.theermite.hoso.config.AudioSource
 import com.theermite.hoso.config.DestinationPreset
+import com.theermite.hoso.config.LegalLinks
 import com.theermite.hoso.config.StreamConfig
 import com.theermite.hoso.databinding.DialogPresetEditBinding
 import com.theermite.hoso.databinding.ActivityMainBinding
@@ -167,7 +168,21 @@ class MainActivity : AppCompatActivity() {
             quitApp()
         }
 
+        binding.textAbout.text = getString(R.string.footer_about, appVersionName())
+        binding.textAbout.setOnClickListener { openPrivacyPolicy() }
+
         setupCollapsibleCards()
+    }
+
+    /** App versionName from the package manager — avoids depending on a
+     *  generated BuildConfig (buildConfig feature is off in this module). */
+    private fun appVersionName(): String =
+        packageManager.getPackageInfo(packageName, 0).versionName ?: ""
+
+    /** Open the privacy policy in the browser (Play Store requires the
+     *  policy to be reachable from inside the app). */
+    private fun openPrivacyPolicy() {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(LegalLinks.PRIVACY_POLICY_URL)))
     }
 
     /**

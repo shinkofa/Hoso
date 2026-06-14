@@ -11,6 +11,7 @@
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -496,6 +497,19 @@
             android:textAllCaps="false"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
+
+        <!-- Phase C — in-app privacy policy access (Play Store requirement).
+             Filled with the version name at runtime; tap opens the policy. -->
+        <TextView
+            android:id="@+id/text_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            tools:text="Politique de confidentialité · v1.0.0 · Apache 2.0" />
     </LinearLayout>
 
 </LinearLayout>

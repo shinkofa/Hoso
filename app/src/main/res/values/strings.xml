@@ -41,6 +41,9 @@
     <string name="action_stop_live">ARRÊTER LE STREAM</string>
     <string name="action_quit">Quitter l\'application</string>
     <string name="action_quit_desc">Arrête le stream, l\'overlay et ferme Hōsō</string>
+    <!-- Phase C — discrete footer line. Tapping it opens the privacy
+         policy (Play Store requires in-app access to the policy). -->
+    <string name="footer_about">Politique de confidentialité · v%1$s · Apache 2.0</string>
     <!-- Polish pass — collapsible cards on the main screen. Single
          description shared by all 4 chevrons. -->
     <string name="card_toggle_desc">Plier ou déplier la section</string>
