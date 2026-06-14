@@ -68,9 +68,6 @@
     <circle cx="73" cy="288" r="5.5" fill="#3DC3FF"/>
     <circle cx="73" cy="288" r="5.5" fill="none" stroke="#0C1914" stroke-width="1.2"/>
 
-    <!-- Streamer.bot pastille (bottom-right, green = connected) -->
-    <circle cx="73" cy="332" r="5.5" fill="#22C55E"/>
-    <circle cx="73" cy="332" r="5.5" fill="none" stroke="#0C1914" stroke-width="1.2"/>
 
     <!-- Home bar -->
     <rect x="110" y="580" width="60" height="4" rx="2" fill="#1A2244"/>

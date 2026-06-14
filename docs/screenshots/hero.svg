@@ -29,7 +29,6 @@
   <!-- ── Left: branding ── -->
   <image xlink:href="../../Logo-Hoso-fnl.png" x="70" y="64" width="60" height="60"/>
   <text x="146" y="106" fill="#E8EAF0" font-size="30" font-weight="700">Hōsō</text>
-  <text x="240" y="106" fill="#3DC3FF" font-size="22" font-weight="600">放送</text>
 
   <!-- Headline -->
   <text x="70" y="230" fill="#E8EAF0" font-size="42" font-weight="800" letter-spacing="-0.5">Streame ton jeu mobile</text>

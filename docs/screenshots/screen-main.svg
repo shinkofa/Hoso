@@ -37,7 +37,7 @@
     <!-- Preset dropdown -->
     <rect x="20" y="142" width="240" height="34" rx="8" fill="#0F1729" stroke="#2A3660" stroke-width="1"/>
     <text x="34" y="164" fill="#E8EAF0" font-size="12">Twitch perso</text>
-    <text x="248" y="164" fill="#50607A" font-size="14" text-anchor="end">▾</text>
+    <text x="248" y="163" fill="#50607A" font-size="11" text-anchor="end">▼</text>
     <!-- Buttons row -->
     <rect x="20" y="184" width="72" height="30" rx="7" fill="none" stroke="#3DC3FF" stroke-width="1.2"/>
     <text x="56" y="204" fill="#3DC3FF" font-size="10" text-anchor="middle">+ Nouveau</text>
@@ -55,14 +55,6 @@
     <rect x="12" y="294" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
     <text x="24" y="321" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">AUDIO</text>
     <text x="253" y="319" fill="#50607A" font-size="13" text-anchor="end">▼</text>
-
-    <!-- ── STREAMER.BOT card (collapsed) ── -->
-    <rect x="12" y="348" width="256" height="44" rx="13" fill="#192040" stroke="#2A3660" stroke-width="1"/>
-    <text x="24" y="375" fill="#3DC3FF" font-size="11" font-weight="600" letter-spacing="1.2">STREAMER.BOT</text>
-    <!-- Toggle switch (OFF) -->
-    <rect x="188" y="357" width="30" height="16" rx="8" fill="#1A2840"/>
-    <circle cx="198" cy="365" r="6" fill="#405070"/>
-    <text x="253" y="373" fill="#50607A" font-size="13" text-anchor="end">▼</text>
 
     <!-- ── FOOTER ── -->
     <rect x="8" y="462" width="264" height="130" fill="#0F1729"/>
