@@ -161,10 +161,6 @@ Le chat de ta chaîne s'affiche dans une **fenêtre flottante** positionnable n'
 
 Status visible dans l'en-tête : `LIVE` (connecté), `…` (connexion en cours), `OFF` (arrêté).
 
-### 🤖 Streamer.bot (pont PC)
-
-Si tu utilises [Streamer.bot](https://streamer.bot) sur ton PC pour gérer tes alertes et automatisations, Hōsō peut s'y connecter via **WebSocket** (LAN local ou Tailscale pour les réseaux distants). Tu peux déclencher tes actions Streamer.bot depuis la bulle overlay sans jamais quitter le jeu.
-
 ---
 
 ## 🛠 Pour les développeurs
@@ -180,7 +176,6 @@ Si tu utilises [Streamer.bot](https://streamer.bot) sur ton PC pour gérer tes a
 | Build | Gradle 8.13 · AGP 8.13.1 |
 | UI | Material Components 2 + ViewBinding |
 | Chat | Client Twitch IRC maison (zéro dépendance externe) |
-| Bot bridge | OkHttp WebSocket |
 
 ### Architecture
 
@@ -189,11 +184,10 @@ MainActivity (écran de configuration)
   └── OverlayService (foreground — bulle flottante draggable)
        ├── StreamPermissionActivity (demande MediaProjection, transparent)
        │    └── ScreenRecordService (foreground — capture écran + RTMP)
-       ├── ChatBubbleService (foreground — IRC Twitch, 3 fenêtres overlay)
-       │    ├── Body window   (FLAG_NOT_TOUCHABLE — visuel seul)
-       │    ├── Header overlay (drag, fermeture, opacité)
-       │    └── Dot overlay   (cycle taille S/M/L)
-       └── StreamerBotService (foreground — WebSocket bridge)
+       └── ChatBubbleService (foreground — IRC Twitch, 3 fenêtres overlay)
+            ├── Body window   (FLAG_NOT_TOUCHABLE — visuel seul)
+            ├── Header overlay (drag, fermeture, opacité)
+            └── Dot overlay   (cycle taille S/M/L)
 ```
 
 ### Fork StreamPack
