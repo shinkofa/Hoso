@@ -253,3 +253,72 @@ def test_genuinely_new_import_stays_sensitive(tmp_path):
     )
     assert r.returncode == 2, f"a brand-new import must stay sensitive: {r.stderr!r}"
     assert b"VEILLE" in r.stderr
+
+
+# --- Sticky marker: a real veille seen once covers later NON-sensitive writes
+# even if it scrolled out of the scan window (Jay 2026-06-16 friction —
+# long build salvo re-blocked because the [VEILLE] marker fell out of range).
+
+
+def _run_sid(transcript: Path | None, *, file_path: str, content: str,
+             session_id: str) -> subprocess.CompletedProcess:
+    payload: dict = {
+        "tool_name": "Write",
+        "tool_input": {"file_path": file_path, "content": content},
+        "session_id": session_id,
+    }
+    if transcript is not None:
+        payload["transcript_path"] = str(transcript)
+    return subprocess.run(
+        [sys.executable, str(HOOK)],
+        input=json.dumps(payload).encode("utf-8"),
+        capture_output=True,
+        timeout=10,
+    )
+
+
+def test_sticky_veille_covers_nonsensitive_after_scrollout(tmp_path):
+    sid = f"test-{uuid.uuid4().hex[:12]}"
+    # 1) a real [VEILLE] on a non-sensitive write passes AND marks the session.
+    t1 = _write_transcript(tmp_path, _veille_marker())
+    r1 = _run_sid(t1, file_path="lib/app/foo.ex", content="def a, do: :ok\n", session_id=sid)
+    assert r1.returncode == 0, f"setup veille should pass: {r1.stderr!r}"
+    # 2) later non-sensitive write, marker scrolled out (none in transcript),
+    #    SAME session -> sticky pass.
+    t2 = _write_transcript(tmp_path / "later", {"role": "assistant", "content": [{"type": "text", "text": "building..."}]})
+    r2 = _run_sid(t2, file_path="lib/app/bar.ex", content="def b, do: :ok\n", session_id=sid)
+    assert r2.returncode == 0, f"sticky veille should cover non-sensitive: {r2.stderr!r}"
+
+
+def test_sticky_does_not_cover_sensitive(tmp_path):
+    sid = f"test-{uuid.uuid4().hex[:12]}"
+    t1 = _write_transcript(tmp_path, _veille_marker())
+    r1 = _run_sid(t1, file_path="lib/app/foo.ex", content="def a, do: :ok\n", session_id=sid)
+    assert r1.returncode == 0
+    # sensitive write (dep manifest) with NO fresh marker -> must still block.
+    t2 = _write_transcript(tmp_path / "later", {"role": "assistant", "content": [{"type": "text", "text": "x"}]})
+    r2 = _run_sid(t2, file_path="mix.exs", content='{:phoenix, "~> 1.8.8"}', session_id=sid)
+    assert r2.returncode == 2, f"sticky must not cover a sensitive change: {r2.stderr!r}"
+
+
+def test_sticky_survives_a_skip(tmp_path):
+    sid = f"test-{uuid.uuid4().hex[:12]}"
+    r1 = _run_sid(_write_transcript(tmp_path, _veille_marker()),
+                  file_path="lib/app/foo.ex", content="def a, do: :ok\n", session_id=sid)
+    assert r1.returncode == 0
+    # a legitimate SKIP in between must NOT wipe the sticky veille flag.
+    skip_t = _write_transcript(tmp_path / "skip", {"role": "assistant", "content": [{"type": "text", "text": "[VEILLE-SKIP] motif: typo"}]})
+    r2 = _run_sid(skip_t, file_path="lib/app/bar.ex", content="def b, do: :ok\n", session_id=sid)
+    assert r2.returncode == 0
+    # now no marker at all -> still sticky.
+    r3 = _run_sid(_write_transcript(tmp_path / "none", {"role": "assistant", "content": [{"type": "text", "text": "y"}]}),
+                  file_path="lib/app/baz.ex", content="def c, do: :ok\n", session_id=sid)
+    assert r3.returncode == 0, f"veille_seen must survive a skip: {r3.stderr!r}"
+
+
+def test_no_marker_fresh_session_still_blocks(tmp_path):
+    # Control: without a prior real veille this session, a missing marker blocks.
+    sid = f"test-{uuid.uuid4().hex[:12]}"
+    t = _write_transcript(tmp_path, {"role": "assistant", "content": [{"type": "text", "text": "no marker"}]})
+    r = _run_sid(t, file_path="lib/app/foo.ex", content="def a, do: :ok\n", session_id=sid)
+    assert r.returncode == 2, f"fresh session with no veille must block: {r.stderr!r}"

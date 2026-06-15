@@ -20,14 +20,15 @@ from __future__ import annotations
 import os
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 HOOK_DIR = Path(__file__).resolve().parent
 LIB_DIR = HOOK_DIR.parent / "lib"
 sys.path.insert(0, str(LIB_DIR))
 
-from common import block, get_file_path, pass_through, read_hook_input  # type: ignore
-from transcript_reader import iter_assistant_text, iter_entries, iter_tool_calls  # type: ignore
+from common import block, get_file_path, pass_through, read_hook_input  # type: ignore  # noqa: E402
+from transcript_reader import iter_entries  # type: ignore  # noqa: E402
 
 # Files exempt from the gate (methodology, docs, configs)
 SKIP_PATH_PARTS = (
@@ -76,80 +77,135 @@ def _is_real_user_message(msg: dict) -> bool:
     return False
 
 
+# Continuation / approval nudges — a short message that resumes in-progress work
+# WITHOUT carrying a new instruction ("go", "reprends", "gelé ?"). Such a message
+# must NOT reset the reformulation window: the reformulation made before the
+# nudge still covers the writes that follow it, until Jay gives a genuinely new
+# instruction (Jay 2026-06-16, Notes-Jay "Hooks — Friction"). A false positive
+# here only skips a redundant reformulation prompt; the real gates (veille,
+# tests, lint) still fire on every write — same risk profile as has_approved_plan.
+CONTINUATION_WORDS = frozenset({
+    "",  # bare punctuation ("?", "...") normalizes to empty
+    # FR + EN approval words (mirror Interpretation-Protocol "Approval Words")
+    "ok", "okay", "oui", "go", "go go", "go ahead", "valide", "continue",
+    "vas y", "vasy", "approuve", "d accord", "parfait", "nickel", "top", "super",
+    "c est bon", "lance", "lance toi", "fais", "fais le", "execute", "banco",
+    "feu vert", "yes", "proceed", "confirmed", "approved", "approve", "confirm",
+    "validate", "lgtm", "perfect", "do it", "let s go", "lets go", "looks good",
+    "green light", "ship it",
+    # relances / nudges (no new instruction)
+    "reprends", "reprend", "suite", "la suite", "next", "encore", "et apres",
+    "et ensuite", "alors", "gele", "tu es la", "t es la", "tes la", "toujours la",
+    "tu dors", "bloque", "tu es gele", "tu es bloque",
+})
+
+
+def _strip_accents(text: str) -> str:
+    nfkd = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in nfkd if not unicodedata.combining(c))
+
+
+def _normalize(text: str) -> str:
+    """Lowercase, drop accents, strip terminal punctuation, collapse spaces."""
+    t = _strip_accents(text).lower().strip().strip(".?!…,;:")
+    t = t.replace("-", " ").replace("'", " ")
+    return " ".join(t.split())
+
+
+def _user_text(msg: dict) -> str:
+    content = msg.get("content")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = [b.get("text", "") for b in content
+                 if isinstance(b, dict) and b.get("type") == "text"]
+        return " ".join(parts)
+    return ""
+
+
+def _is_continuation_message(msg: dict) -> bool:
+    """A real user message that is purely a relance/approval nudge."""
+    return _normalize(_user_text(msg)) in CONTINUATION_WORDS
+
+
+def _window_entries(transcript_path: str):
+    """Yield message dicts from latest back to (excluding) the last real,
+    instruction-bearing user message. tool_result deliveries AND continuation
+    nudges do NOT close the window."""
+    for entry in iter_entries(transcript_path):
+        msg = entry.get("message") or entry
+        if not isinstance(msg, dict):
+            continue
+        if (
+            msg.get("role") == "user"
+            and _is_real_user_message(msg)
+            and not _is_continuation_message(msg)
+        ):
+            return
+        yield msg
+
+
+def _collect_results(msg: dict, result_error: dict) -> None:
+    content = msg.get("content")
+    if not isinstance(content, list):
+        return
+    for blk in content:
+        if isinstance(blk, dict) and blk.get("type") == "tool_result":
+            tid = blk.get("tool_use_id")
+            if tid is not None:
+                result_error[tid] = bool(blk.get("is_error"))
+
+
+def _collect_tool_ids(msg: dict, names: tuple[str, ...], out: list) -> None:
+    content = msg.get("content")
+    if not isinstance(content, list):
+        return
+    for blk in content:
+        if isinstance(blk, dict) and blk.get("type") == "tool_use" and blk.get("name") in names:
+            tid = blk.get("id")
+            if tid is not None:
+                out.append(tid)
+
+
 def count_writes_this_turn(transcript_path: str) -> int:
     """Count COMPLETED, non-error Write|Edit calls since the last real user turn.
 
     Only writes whose tool_result is present AND not an error count. This
     excludes (a) the current in-flight attempt (no result yet) and (b) blocked
-    attempts (is_error result). Without this, the gate counted its own and other
-    hooks blocked attempts and falsely fired on legitimate single-file edits.
+    attempts (is_error result). A continuation nudge does not close the window
+    (Jay 2026-06-16) — see _window_entries.
     """
     if not transcript_path:
         return 0
     write_ids: list[str] = []
     result_error: dict[str, bool] = {}
-    for entry in iter_entries(transcript_path):
-        msg = entry.get("message") or entry
-        if not isinstance(msg, dict):
-            continue
-        role = msg.get("role")
-        if role == "user":
-            if _is_real_user_message(msg):
-                break
-            content = msg.get("content")
-            if isinstance(content, list):
-                for blk in content:
-                    if isinstance(blk, dict) and blk.get("type") == "tool_result":
-                        tid = blk.get("tool_use_id")
-                        if tid is not None:
-                            result_error[tid] = bool(blk.get("is_error"))
-            continue
-        if role != "assistant":
-            continue
-        content = msg.get("content")
-        if not isinstance(content, list):
-            continue
-        for blk in content:
-            if (
-                isinstance(blk, dict)
-                and blk.get("type") == "tool_use"
-                and blk.get("name") in ("Write", "Edit")
-            ):
-                tid = blk.get("id")
-                if tid is not None:
-                    write_ids.append(tid)
+    for msg in _window_entries(transcript_path):
+        if msg.get("role") == "user":
+            _collect_results(msg, result_error)
+        elif msg.get("role") == "assistant":
+            _collect_tool_ids(msg, ("Write", "Edit"), write_ids)
     return sum(1 for tid in write_ids if result_error.get(tid) is False)
 
 
 def has_reformulation_marker(transcript_path: str) -> bool:
-    """Check assistant text since the last real user turn for a reformulation.
+    """Check assistant text since the last real instruction for a reformulation.
 
-    Boundary is the last REAL user message; tool_result deliveries (role=user)
-    do not cut the window short, so a reformulation emitted before a blocked
-    attempt is still honored on retry.
+    The boundary is the last real, instruction-bearing user message; both
+    tool_result deliveries and continuation nudges keep the window open, so a
+    reformulation emitted before a blocked attempt or a "go" is still honored.
     """
     if not transcript_path:
         return False
     texts: list[str] = []
-    for entry in iter_entries(transcript_path):
-        msg = entry.get("message") or entry
-        if not isinstance(msg, dict):
-            continue
-        role = msg.get("role")
-        if role == "user":
-            if _is_real_user_message(msg):
-                break
-            continue
-        if role != "assistant":
+    for msg in _window_entries(transcript_path):
+        if msg.get("role") != "assistant":
             continue
         content = msg.get("content")
         if not isinstance(content, list):
             continue
         for blk in content:
-            if isinstance(blk, dict) and blk.get("type") == "text":
-                t = blk.get("text", "")
-                if t:
-                    texts.append(t)
+            if isinstance(blk, dict) and blk.get("type") == "text" and blk.get("text"):
+                texts.append(blk["text"])
     blob = "\n".join(texts)
     return any(p.search(blob) for p in REFORMULATION_PATTERNS)
 
@@ -160,13 +216,12 @@ def has_approved_plan(transcript_path: str) -> bool:
     A plan presented via Claude Code's plan mode (ExitPlanMode tool_use) is
     "approved" when its tool_result is present and not an error. Once approved,
     the plan IS the reformulation + authorization for the actions it describes
-    (Interpretation-Protocol 'Approved plan'). Scope is session-wide, not the
-    current turn, because a plan approved earlier pre-authorizes later writes.
+    (Interpretation-Protocol 'Approved plan'). Scope is session-wide.
 
     A rejected plan (is_error=True) or an in-flight plan (no result yet) does
-    NOT count. Detection is intentionally lenient on the approval signal
-    (is_error=False) — the quality gates still fire on every write, so a false
-    positive here only removes a redundant reformulation prompt, never a gate.
+    NOT count. Detection is lenient on the approval signal — the quality gates
+    still fire on every write, so a false positive only removes a redundant
+    reformulation prompt, never a gate.
     """
     if not transcript_path:
         return False
@@ -176,26 +231,10 @@ def has_approved_plan(transcript_path: str) -> bool:
         msg = entry.get("message") or entry
         if not isinstance(msg, dict):
             continue
-        role = msg.get("role")
-        content = msg.get("content")
-        if not isinstance(content, list):
-            continue
-        if role == "user":
-            for blk in content:
-                if isinstance(blk, dict) and blk.get("type") == "tool_result":
-                    tid = blk.get("tool_use_id")
-                    if tid is not None:
-                        result_error[tid] = bool(blk.get("is_error"))
-        elif role == "assistant":
-            for blk in content:
-                if (
-                    isinstance(blk, dict)
-                    and blk.get("type") == "tool_use"
-                    and blk.get("name") == "ExitPlanMode"
-                ):
-                    tid = blk.get("id")
-                    if tid is not None:
-                        plan_ids.append(tid)
+        if msg.get("role") == "user":
+            _collect_results(msg, result_error)
+        elif msg.get("role") == "assistant":
+            _collect_tool_ids(msg, ("ExitPlanMode",), plan_ids)
     return any(result_error.get(tid) is False for tid in plan_ids)
 
 

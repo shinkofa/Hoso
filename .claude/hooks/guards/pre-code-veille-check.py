@@ -458,13 +458,15 @@ def load_counter(session_id: str | None, repo_root: Path) -> dict:
     return {
         "skip_count": int(data.get("skip_count", 0)),
         "last_marker_hash": str(data.get("last_marker_hash", "")),
+        "veille_seen": bool(data.get("veille_seen", False)),
     }
 
 
-def save_counter(session_id: str | None, repo_root: Path, skip_count: int, marker_hash: str) -> None:
+def _persist(session_id: str | None, repo_root: Path, *, skip_count: int,
+             marker_hash: str, veille_seen: bool) -> None:
     write_state(
         STATE_NAME,
-        {"skip_count": skip_count, "last_marker_hash": marker_hash},
+        {"skip_count": skip_count, "last_marker_hash": marker_hash, "veille_seen": veille_seen},
         session_id,
         repo_root,
     )
@@ -540,7 +542,8 @@ def _enforce_sensitive(file_path: str, reason: str, marker_type: str, transcript
 
 def _enforce_skip(file_path: str, marker_line: str, marker_hash: str,
                   counter: dict, session_id: str | None, repo_root: Path) -> None:
-    """Layer A (motif enum) + Layer C (session skip counter)."""
+    """Layer A (motif enum) + Layer C (session skip counter). Preserves the
+    sticky veille_seen flag across SKIPs (Jay 2026-06-16)."""
     m = SKIP_MOTIF_RE.search(marker_line)
     motif = m.group(1).lower() if m else ""
     if motif not in ALLOWED_SKIP_MOTIFS:
@@ -553,8 +556,9 @@ def _enforce_skip(file_path: str, marker_line: str, marker_hash: str,
         )
     if counter["last_marker_hash"] != marker_hash:
         counter["skip_count"] += 1
+    seen = counter.get("veille_seen", False)
     if counter["skip_count"] >= SKIP_COUNT_THRESHOLD:
-        save_counter(session_id, repo_root, counter["skip_count"], marker_hash)
+        _persist(session_id, repo_root, skip_count=counter["skip_count"], marker_hash=marker_hash, veille_seen=seen)
         block(
             "BLOCKED: VEILLE-SKIP threshold reached.\n"
             f"Consecutive SKIPs this session: {counter['skip_count']} "
@@ -563,13 +567,30 @@ def _enforce_skip(file_path: str, marker_line: str, marker_hash: str,
             "RECOVERY: Emit a real [VEILLE] or [SKB] marker — the counter "
             "resets only with verified evidence, not with another SKIP."
         )
-    save_counter(session_id, repo_root, counter["skip_count"], marker_hash)
+    _persist(session_id, repo_root, skip_count=counter["skip_count"], marker_hash=marker_hash, veille_seen=seen)
 
 
 def _session_ctx(data: dict) -> tuple[str, str, Path]:
     transcript = data.get("transcript_path") or os.environ.get("CLAUDE_TRANSCRIPT_PATH", "")
     session_id = data.get("session_id") or os.environ.get("CLAUDE_SESSION_ID", "")
     return transcript, session_id, find_repo_root()
+
+
+def _handle_no_marker(file_path: str, sensitive_reason: str | None, counter: dict) -> None:
+    """No marker in scan range. Sticky: a real [VEILLE]/[SKB] seen earlier this
+    session covers a NON-sensitive write even if the marker scrolled out of the
+    200-line scan window (Jay 2026-06-16). Sensitive changes always need a fresh
+    real [VEILLE] + web call, so the sticky bypass never applies to them."""
+    if not sensitive_reason and counter.get("veille_seen"):
+        sys.exit(0)
+    _block_missing_marker(file_path)
+
+
+def _record_real_marker(session_id: str | None, repo_root: Path, counter: dict, marker_hash: str) -> None:
+    """A real [VEILLE]/[SKB]: reset the skip counter and remember (sticky) that
+    veille was performed this session."""
+    if counter["last_marker_hash"] != marker_hash or not counter.get("veille_seen"):
+        _persist(session_id, repo_root, skip_count=0, marker_hash=marker_hash, veille_seen=True)
 
 
 def main() -> None:
@@ -587,18 +608,17 @@ def main() -> None:
     if is_dep and sensitive_reason is None:
         sys.exit(0)
     transcript_path, session_id, repo_root = _session_ctx(data)
+    counter = load_counter(session_id, repo_root)
     latest = latest_marker(transcript_path)
     if latest is None:
-        _block_missing_marker(file_path)
+        _handle_no_marker(file_path, sensitive_reason, counter)
     marker_type, marker_line, marker_hash = latest
     if sensitive_reason:
         _enforce_sensitive(file_path, sensitive_reason, marker_type, transcript_path)
-    counter = load_counter(session_id, repo_root)
     if marker_type == "VEILLE-SKIP":
         _enforce_skip(file_path, marker_line, marker_hash, counter, session_id, repo_root)
         sys.exit(0)
-    if counter["last_marker_hash"] != marker_hash:
-        save_counter(session_id, repo_root, 0, marker_hash)
+    _record_real_marker(session_id, repo_root, counter, marker_hash)
     sys.exit(0)
 
 

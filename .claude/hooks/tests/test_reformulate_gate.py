@@ -162,6 +162,60 @@ def test_inflight_plan_does_not_count(tmp_path):
     assert r.returncode == 2, "in-flight plan must not satisfy the gate"
 
 
+# --- Continuation nudges must NOT re-arm the window (Jay 2026-06-16) ----------
+# A relance ("go", "reprends", "gelé ?") sent mid-build is a continuation, not
+# a new instruction. It must NOT reset the write counter / reformulation window:
+# the reformulation made before the nudge still covers the writes that follow,
+# until Jay gives a genuinely new instruction.
+
+
+def test_continuation_nudge_does_not_rearm_window(tmp_path):
+    # Real instruction -> reformulation -> nudge "go" -> 1 completed write.
+    # This attempt is the 2nd write AFTER the nudge. Under the old behavior the
+    # nudge was the boundary (marker behind it -> BLOCK). It must now PASS.
+    entries = [
+        _user("corrige le hook reformulate et la veille"),
+        _assistant_text("REFORMULATION: j'ai compris, fichiers touches: a.py b.py"),
+        _user("go"),
+        _assistant_tool("Write", "w1", {"file_path": "/repo/src/a.py", "content": "a"}),
+        _tool_result("w1", is_error=False),
+    ]
+    transcript = _write_transcript(tmp_path, *entries)
+    r = _run(transcript)
+    assert r.returncode == 0, f"a nudge must not re-arm the gate: {r.stderr!r}"
+
+
+def test_jay_relances_are_continuations(tmp_path):
+    for nudge in ("gelé ?", "reprends", "tu es là ?", "continue", "vas-y"):
+        entries = [
+            _user("corrige le hook X"),
+            _assistant_text("REFORMULATION: compris, fichiers touches: a.py"),
+            _user(nudge),
+            _assistant_tool("Write", "w1", {"file_path": "/repo/src/a.py", "content": "a"}),
+            _tool_result("w1", is_error=False),
+        ]
+        transcript = _write_transcript(tmp_path, *entries)
+        r = _run(transcript)
+        assert r.returncode == 0, f"{nudge!r} must be a continuation: {r.stderr!r}"
+
+
+def test_new_instruction_still_resets_window(tmp_path):
+    # A genuinely new instruction (not a nudge) MUST reset the window: the
+    # reformulation made for the previous task does not cover the new one.
+    entries = [
+        _user("corrige le hook X"),
+        _assistant_text("REFORMULATION: compris, fichiers touches: a.py"),
+        _assistant_tool("Write", "w0", {"file_path": "/repo/src/a.py", "content": "a"}),
+        _tool_result("w0", is_error=False),
+        _user("maintenant refais completement la fonction main du module Y"),
+        _assistant_tool("Write", "w1", {"file_path": "/repo/src/y.py", "content": "y"}),
+        _tool_result("w1", is_error=False),
+    ]
+    transcript = _write_transcript(tmp_path, *entries)
+    r = _run(transcript)
+    assert r.returncode == 2, "a new instruction must re-arm the gate"
+
+
 # --- Robustness: empty / malformed input -------------------------------------
 
 
