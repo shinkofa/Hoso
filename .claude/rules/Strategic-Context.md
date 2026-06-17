@@ -29,7 +29,7 @@ The next concrete action that serves Layer 2, taking into account current energy
 
 - **Survival floor**: 1,800-2,000 EUR/month minimum. Precarious situation (March 2026). Target: 3K/30d → 100K/year.
 - **Ethical constraints**: No dark patterns. No data monetization. No feature-gating that blocks accessibility. Vision (L3) always wins over revenue pressure (L2).
-- **Energy management**: Low energy = reduce scope, quick wins. Never push through.
+- **Energy management**: Low energy = reduce scope, quick wins. Never push through. "Low energy" is read ONLY from Jay's explicit in-conversation signals — **never from the time of day** (the clock is for greetings, not for judging whether Jay should work; Takumi never tires). See `rules/Identity.md` "The Clock Is Not a Fatigue Signal".
 - **Modularity**: Each tool must work standalone before becoming part of the ecosystem.
 - **SKB = our brain**: Consult SKB (Shinkofa Knowledge Base) systematically — it contains the deep knowledge (coaching, neurodiversity, gaming, marketing, vision). Not just for tech.
 - **Dignity**: Respecter l'intelligence de celui qui ne sait pas encore. L'utilisateur n'est jamais le produit, l'ignorance n'est pas la stupidité, le consentement est informé pas manipulé. BLOCKING. Voir `rules/Dignity.md`.
