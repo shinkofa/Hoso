@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/screenshots/png/hero.png" alt="Hōsō — streame ton jeu mobile vers Twitch, directement depuis ton téléphone" width="100%"/>
+<img src="docs/screenshots/png/hero.png" alt="Hoso — streame ton jeu mobile vers Twitch, directement depuis ton téléphone" width="100%"/>
 
-# Hōsō · 放送
+# Hoso · 放送
 
 **Streame ton jeu mobile vers Twitch. Directement depuis ton téléphone. Sans ordinateur.**
 
@@ -49,13 +49,13 @@
 
 ---
 
-## C'est quoi Hōsō ?
+## C'est quoi Hoso ?
 
-Hōsō (放送 — « diffusion » en japonais) est une app Android qui fait **une chose et la fait bien** : capturer ton écran de jeu et le diffuser en direct sur Twitch, YouTube Live, Kick ou n'importe quel serveur RTMP.
+Hoso (放送 — « diffusion » en japonais) est une app Android qui fait **une chose et la fait bien** : capturer ton écran de jeu et le diffuser en direct sur Twitch, YouTube Live, Kick ou n'importe quel serveur RTMP.
 
-**Pourquoi Hōsō plutôt que Streamlabs Mobile ou Prism Live Studio ?**
+**Pourquoi Hoso plutôt que Streamlabs Mobile ou Prism Live Studio ?**
 
-Ces apps plantent sur certains téléphones Android 10+ parce qu'elles gèrent mal les services en arrière-plan. Hōsō s'appuie sur un `foreground service` natif — c'est exactement ce qui manque aux concurrents, et c'est le cœur de l'app.
+Ces apps plantent sur certains téléphones Android 10+ parce qu'elles gèrent mal les services en arrière-plan. Hoso s'appuie sur un `foreground service` natif — c'est exactement ce qui manque aux concurrents, et c'est le cœur de l'app.
 
 **Ce que tu gardes pendant que tu joues :**
 - Une petite **bulle draggable** reste visible sur ton jeu
@@ -65,7 +65,7 @@ Ces apps plantent sur certains téléphones Android 10+ parce qu'elles gèrent m
 
 ## 📥 Installer l'app (sans passer par le code)
 
-> Hōsō n'est pas sur le Play Store. Elle se télécharge comme un fichier APK — c'est simple, 4 étapes.
+> Hoso n'est pas sur le Play Store. Elle se télécharge comme un fichier APK — c'est simple, 4 étapes.
 
 <div align="center"><img src="docs/screenshots/png/install-flow.png" width="100%" alt="Guide d'installation en 4 étapes"/></div>
 
@@ -91,7 +91,7 @@ Sans cette étape, Android peut couper le stream au bout de quelques minutes.
 
 **Procédure générale :**
 1. **Paramètres** → **Batterie** → **Optimisation de la batterie**
-2. Cherche « Hōsō » → sélectionne **Ne pas optimiser**
+2. Cherche « Hoso » → sélectionne **Ne pas optimiser**
 
 > 📖 Certains constructeurs (Xiaomi, Oppo, Samsung) ont des menus spécifiques.
 > Guide complet par marque : [docs/Battery-Optimization-Guide.md](docs/Battery-Optimization-Guide.md)
@@ -101,19 +101,19 @@ Sans cette étape, Android peut couper le stream au bout de quelques minutes.
 ## ❓ Questions fréquentes
 
 **C'est gratuit ?**  
-Oui, complètement. Hōsō est open source (Apache 2.0) — le code est entièrement visible sur ce dépôt.
+Oui, complètement. Hoso est open source (Apache 2.0) — le code est entièrement visible sur ce dépôt.
 
 **Pourquoi ce n'est pas sur le Play Store ?**  
-Le Play Store impose des règles strictes sur les apps de capture d'écran. Hōsō est publiée directement par le développeur — l'installation APK prend 4 étapes (guide ci-dessus) et ne présente aucun risque particulier.
+Le Play Store impose des règles strictes sur les apps de capture d'écran. Hoso est publiée directement par le développeur — l'installation APK prend 4 étapes (guide ci-dessus) et ne présente aucun risque particulier.
 
 **L'APK est sûr ?**  
-Le code source complet est visible ici. Hōsō ne collecte aucune donnée et ne fait aucun appel réseau sauf vers la destination de stream que tu configures toi-même. La signature de chaque release est vérifiable via `apksigner`.
+Le code source complet est visible ici. Hoso ne collecte aucune donnée et ne fait aucun appel réseau sauf vers la destination de stream que tu configures toi-même. La signature de chaque release est vérifiable via `apksigner`.
 
 **Ça marche sur mon téléphone ?**  
-Android 10 et supérieur (la grande majorité des téléphones depuis 2019). Testé sur Samsung, Xiaomi, OnePlus et Pixel. Note : certains jeux bloquent la capture audio système — dans ce cas Hōsō fonctionne quand même en mode Micro seul.
+Android 10 et supérieur (la grande majorité des téléphones depuis 2019). Testé sur Samsung, Xiaomi, OnePlus et Pixel. Note : certains jeux bloquent la capture audio système — dans ce cas Hoso fonctionne quand même en mode Micro seul.
 
 **Le stream s'arrête si je change d'app ou reçois un appel ?**  
-Non. Hōsō tourne en arrière-plan via un service natif Android — il n'est pas coupé quand tu changes d'app. Si ton réseau coupe (4G/5G instable), l'auto-reconnexion tente jusqu'à 20 fois sur ~8 minutes sans que tu aies à intervenir.
+Non. Hoso tourne en arrière-plan via un service natif Android — il n'est pas coupé quand tu changes d'app. Si ton réseau coupe (4G/5G instable), l'auto-reconnexion tente jusqu'à 20 fois sur ~8 minutes sans que tu aies à intervenir.
 
 ---
 
@@ -126,7 +126,7 @@ Crée autant de profils de destination que tu veux : **Twitch**, **YouTube Live*
 - **Résolution** : 1080p natif, 720p, 480p, modes recadrage portrait/paysage
 - **Bitrate** : de 1 000 à 8 000 kbps, réglable précisément (Twitch recommande 3 000–6 000 kbps)
 - **Encodage CBR H.264** via le codec hardware du téléphone — léger sur la batterie
-- **Auto-reconnexion** : si le réseau coupe (4G/5G fluctuant), Hōsō se reconnecte automatiquement jusqu'à 20 fois sur ~8 minutes, sans que tu aies à toucher quoi que ce soit
+- **Auto-reconnexion** : si le réseau coupe (4G/5G fluctuant), Hoso se reconnecte automatiquement jusqu'à 20 fois sur ~8 minutes, sans que tu aies à toucher quoi que ce soit
 
 ### 🎙 Audio flexible
 
@@ -134,7 +134,7 @@ Crée autant de profils de destination que tu veux : **Twitch**, **YouTube Live*
 
 **Mode Mix** — capture le micro ET le son du jeu en simultané, avec deux curseurs de volume indépendants. Tu règles la balance micro/jeu depuis l'écran de config ou depuis la bulle overlay pendant le stream.
 
-> Note : certains jeux bloquent la capture audio système (`AudioPlaybackCapture`). Si le tien est concerné, Hōsō fonctionne quand même en mode Micro seul.
+> Note : certains jeux bloquent la capture audio système (`AudioPlaybackCapture`). Si le tien est concerné, Hoso fonctionne quand même en mode Micro seul.
 
 ### 🫧 Overlay flottant
 
@@ -192,7 +192,7 @@ MainActivity (écran de configuration)
 
 ### Fork StreamPack
 
-Hōsō utilise un composite build local de StreamPack avec un correctif pour une race condition où le header AAC (`csd-0`) était émis avant que le handshake RTMP soit terminé — ce qui faisait que Twitch ne recevait jamais les infos du codec audio.
+Hoso utilise un composite build local de StreamPack avec un correctif pour une race condition où le header AAC (`csd-0`) était émis avant que le handshake RTMP soit terminé — ce qui faisait que Twitch ne recevait jamais les infos du codec audio.
 
 - Fork : `streampack-fork/` (gitignored, dépôt séparé)
 - Upstream PR : [ThibaultBee/StreamPack#294](https://github.com/ThibaultBee/StreamPack/pull/294)
@@ -243,7 +243,7 @@ Voir [docs/Roadmap.md](docs/Roadmap.md) pour le plan de features complet avec st
 
 ## 🤝 Contribuer
 
-Issues et pull requests bienvenus. Hōsō est construit autour d'un stack volontairement réduit — ouvre une issue pour discuter des changements substantiels avant d'envoyer une PR.
+Issues et pull requests bienvenus. Hoso est construit autour d'un stack volontairement réduit — ouvre une issue pour discuter des changements substantiels avant d'envoyer une PR.
 
 Conventions :
 - Commits atomiques, messages en anglais (style conventionnel)
@@ -254,7 +254,7 @@ Conventions :
 
 ## 📄 Licence
 
-Hōsō est distribué sous la [licence Apache 2.0](LICENSE).
+Hoso est distribué sous la [licence Apache 2.0](LICENSE).
 Les attributions de composants tiers sont listées dans [NOTICE](NOTICE).
 
 ---

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hōsō</string>
+    <string name="app_name">Hoso</string>
     <string name="app_subtitle">Stream mobile perso → Twitch</string>
 
     <string name="hint_stream_key">Twitch Stream Key</string>
@@ -26,11 +26,11 @@
     <string name="error_capture_denied">Capture écran refusée</string>
     <string name="error_stream_failed">Erreur de stream</string>
 
-    <string name="notification_channel_name">Hōsō Stream</string>
-    <string name="notification_title">Hōsō — En direct</string>
+    <string name="notification_channel_name">Hoso Stream</string>
+    <string name="notification_title">Hoso — En direct</string>
     <string name="notification_text">Stream actif. Appuyez pour revenir.</string>
     <string name="bitrate_hint">Twitch recommande 3000-6000 kbps pour 720p/1080p</string>
-    <string name="overlay_notification_title">Hōsō — Overlay actif</string>
+    <string name="overlay_notification_title">Hoso — Overlay actif</string>
 
     <!-- Section headers for the polished main screen (Material Cards).
          Short ALL-CAPS labels render the section identity at a glance. -->
@@ -40,7 +40,7 @@
     <string name="action_go_live">PASSER EN DIRECT</string>
     <string name="action_stop_live">ARRÊTER LE STREAM</string>
     <string name="action_quit">Quitter l\'application</string>
-    <string name="action_quit_desc">Arrête le stream, l\'overlay et ferme Hōsō</string>
+    <string name="action_quit_desc">Arrête le stream, l\'overlay et ferme Hoso</string>
     <!-- Phase C — discrete footer line. Tapping it opens the privacy
          policy (Play Store requires in-app access to the policy). -->
     <string name="footer_about">Politique de confidentialité · v%1$s · Apache 2.0</string>
@@ -87,16 +87,16 @@
     <string name="btn_resume">Reprendre</string>
     <string name="btn_privacy">Mode confidentialité</string>
     <string name="btn_privacy_off">Désactiver confidentialité</string>
-    <string name="privacy_mask_label">Hōsō — Mode confidentialité</string>
+    <string name="privacy_mask_label">Hoso — Mode confidentialité</string>
 
     <!-- G4.1 auto-reconnect -->
-    <string name="notification_reconnecting">Hōsō — Reconnexion (%1$d/%2$d)</string>
+    <string name="notification_reconnecting">Hoso — Reconnexion (%1$d/%2$d)</string>
     <string name="reconnect_lost">Connexion perdue, reconnexion…</string>
     <string name="reconnect_recovered">Reconnecté</string>
     <string name="reconnect_give_up">Reconnexion abandonnée après %1$d tentatives</string>
 
     <!-- G4.5 overlay collapse/expand ergonomics -->
-    <string name="overlay_trigger_label">Ouvrir les contrôles Hōsō</string>
+    <string name="overlay_trigger_label">Ouvrir les contrôles Hoso</string>
 
     <!-- G5.1 HUD live stats (overlay EXPANDED).
          Métriques honnêtes seulement : durée + bitrate sortant réel

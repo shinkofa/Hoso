@@ -1,4 +1,4 @@
-# Blueprint — Hōsō (放送)
+# Blueprint — Hoso (放送)
 
 **Version** : 0.1.0
 **Date** : 2026-04-19

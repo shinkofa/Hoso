@@ -3,7 +3,7 @@
   État COLLAPSED de l'overlay Hoso (G4.5 + passe design G7.2).
   Un seul élément discret, draggable, qui sert à la fois de
   marqueur de présence ("l'overlay est là") et de bouton d'ouverture
-  (tap court → EXPANDED). Cercle dark-glass + logo Hōsō sky-blue
+  (tap court → EXPANDED). Cercle dark-glass + logo Hoso sky-blue
   pour rester reconnaissable sans cogner visuellement.
   Position : libre, déplaçable par drag (sauvegardée dans l'état
   service tant que le service vit).

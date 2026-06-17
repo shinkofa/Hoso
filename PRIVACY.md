@@ -1,11 +1,11 @@
-# Privacy Policy — Hōsō
+# Privacy Policy — Hoso
 
-**App**: Hōsō (`com.theermite.hoso`)
+**App**: Hoso (`com.theermite.hoso`)
 **Version**: 1.0.0
 **Last updated**: 2026-06-14
 **License**: Apache 2.0 — source code: https://github.com/shinkofa/Hoso
 
-> Hōsō is an open-source personal mobile streaming app. It captures your screen and
+> Hoso is an open-source personal mobile streaming app. It captures your screen and
 > audio and sends them to a streaming server **you** configure (Twitch, YouTube,
 > Kick, or any custom RTMP/RTMPS endpoint). This document describes, in full, what
 > the app does and does not do with your data.
@@ -16,12 +16,12 @@
 
 ### Data we collect
 
-**None.** Hōsō has no user accounts, no analytics, no telemetry, no advertising, and
+**None.** Hoso has no user accounts, no analytics, no telemetry, no advertising, and
 no crash reporting. The developer receives **no data** from your use of the app.
 
 ### Data stored on your device
 
-Hōsō saves your settings locally, in the app's private storage on your device only:
+Hoso saves your settings locally, in the app's private storage on your device only:
 
 - Stream destinations (name, RTMP/RTMPS URL, **stream key**, Twitch channel name)
 - Video settings (resolution, bitrate, frame rate)
@@ -35,7 +35,7 @@ never sent to the developer or to any third party.
 
 ### Data transmitted off your device
 
-Hōsō makes network connections to two destinations, both under your control:
+Hoso makes network connections to two destinations, both under your control:
 
 1. **The streaming server you configure** — your screen and audio are encoded and
    sent live to the RTMP/RTMPS ingest URL you enter (e.g. Twitch). This is the core
@@ -69,7 +69,7 @@ or uninstall the app.
 
 ### Children
 
-Hōsō is not directed at children under 13.
+Hoso is not directed at children under 13.
 
 ### Changes
 
@@ -86,13 +86,13 @@ Questions or concerns: open an issue at https://github.com/shinkofa/Hoso/issues
 
 ### Données que nous collectons
 
-**Aucune.** Hōsō n'a pas de comptes utilisateur, pas d'analytics, pas de télémétrie,
+**Aucune.** Hoso n'a pas de comptes utilisateur, pas d'analytics, pas de télémétrie,
 pas de publicité et pas de rapport de plantage. Le développeur ne reçoit **aucune
 donnée** de votre utilisation de l'application.
 
 ### Données stockées sur votre appareil
 
-Hōsō enregistre vos réglages localement, uniquement dans le stockage privé de
+Hoso enregistre vos réglages localement, uniquement dans le stockage privé de
 l'application sur votre appareil :
 
 - Destinations de stream (nom, URL RTMP/RTMPS, **clé de stream**, chaîne Twitch)
@@ -107,7 +107,7 @@ la connexion RTMP standard. Elle n'est jamais envoyée au développeur ni à un 
 
 ### Données transmises hors de votre appareil
 
-Hōsō établit des connexions réseau vers deux destinations, toutes deux sous votre
+Hoso établit des connexions réseau vers deux destinations, toutes deux sous votre
 contrôle :
 
 1. **Le serveur de streaming que vous configurez** — votre écran et votre audio sont
@@ -142,7 +142,7 @@ de l'application dans les réglages Android, ou désinstallez l'application.
 
 ### Enfants
 
-Hōsō ne s'adresse pas aux enfants de moins de 13 ans.
+Hoso ne s'adresse pas aux enfants de moins de 13 ans.
 
 ### Modifications
 
@@ -160,13 +160,13 @@ https://github.com/shinkofa/Hoso/issues
 
 ### Datos que recopilamos
 
-**Ninguno.** Hōsō no tiene cuentas de usuario, ni analíticas, ni telemetría, ni
+**Ninguno.** Hoso no tiene cuentas de usuario, ni analíticas, ni telemetría, ni
 publicidad, ni informes de fallos. El desarrollador no recibe **ningún dato** de su
 uso de la aplicación.
 
 ### Datos almacenados en su dispositivo
 
-Hōsō guarda sus ajustes localmente, únicamente en el almacenamiento privado de la
+Hoso guarda sus ajustes localmente, únicamente en el almacenamiento privado de la
 aplicación en su dispositivo:
 
 - Destinos de transmisión (nombre, URL RTMP/RTMPS, **clave de transmisión**, canal de
@@ -182,7 +182,7 @@ RTMP estándar. Nunca se envía al desarrollador ni a terceros.
 
 ### Datos transmitidos fuera de su dispositivo
 
-Hōsō realiza conexiones de red hacia dos destinos, ambos bajo su control:
+Hoso realiza conexiones de red hacia dos destinos, ambos bajo su control:
 
 1. **El servidor de transmisión que usted configura** — su pantalla y su audio se
    codifican y se envían en directo a la URL de ingestión RTMP/RTMPS que introduzca
@@ -216,7 +216,7 @@ aplicación en los ajustes de Android, o desinstale la aplicación.
 
 ### Menores
 
-Hōsō no está dirigida a menores de 13 años.
+Hoso no está dirigida a menores de 13 años.
 
 ### Cambios
 
