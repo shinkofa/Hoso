@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -178,3 +179,33 @@ def find_repo_root(start: Path | None = None) -> Path:
         if (parent / ".git").exists():
             return parent
     return here
+
+
+def canonical_project_name(start: Path | None = None) -> str:
+    """Project name that stays stable inside a git worktree.
+
+    A worktree dir is branch-named, so `find_repo_root().name` is wrong there
+    and broke the Obsidian gate (looked for a note that never exists).
+    `git rev-parse --git-common-dir` points at the main repo's shared `.git`;
+    its parent name is the canonical project. Falls back to the local dir
+    name when git is unavailable — never raises.
+    """
+    repo = find_repo_root(start)
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=str(repo),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            common = Path(out.stdout.strip())
+            if not common.is_absolute():
+                common = (repo / common).resolve()
+            name = common.parent.name
+            if name:
+                return name
+    except Exception:
+        pass
+    return repo.name if repo else "<project>"

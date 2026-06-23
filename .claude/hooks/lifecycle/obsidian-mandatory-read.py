@@ -41,6 +41,7 @@ sys.path.insert(0, str(LIB_DIR))
 
 from common import (  # noqa: E402
     block,
+    canonical_project_name,
     find_repo_root,
     format_block,
     get_command,
@@ -96,24 +97,55 @@ def _missing_patterns(read_paths: list[str], required: list[str]) -> list[str]:
     return [p for p in required if p.lower() not in joined]
 
 
+def _should_pass_early(tool_name: str, data: dict) -> bool:
+    """True when this tool call never needs the Obsidian gate."""
+    if tool_name not in MUTATING_TOOLS:
+        return True
+    if tool_name == "Bash":
+        cmd = get_command(data).strip()
+        if any(cmd.startswith(p) for p in READ_ONLY_BASH):
+            return True
+    return False
+
+
+def _block_missing(project, missing, required, session_id, repo) -> None:
+    """Reset the marker so the gate re-fires, then emit the block (no return)."""
+    from session_state import read_state, write_state  # local import
+    st = read_state("obsidian-sync-checked", session_id=session_id, repo_root=repo)
+    st["seen"] = []
+    write_state("obsidian-sync-checked", st, session_id=session_id, repo_root=repo)
+
+    listing = (
+        f"\n  1. 01-Projets/_Cross-Project.md"
+        f"\n  2. 01-Projets/_Index.md"
+        f"\n  3. 01-Projets/{project}.md"
+        f"\n  (4. optional bonus: 01-Projets/{project}-Notes-Jay.md if it exists)"
+    )
+    loaded = len(required) - len(missing)
+    block(format_block(
+        f"OBSIDIAN SYNC not satisfied — {loaded}/{len(required)} mandatory notes loaded",
+        "Call the Obsidian MCP read tool (vault_read / get_note) for the mandatory files "
+        f"before any Edit/Write/Bash:{listing}\n"
+        f"Missing patterns: {', '.join(missing)}\n"
+        "These are Takumi's context for the current project. Without them, "
+        "the session works in the dark.",
+        reference="Workflows.md 'Sync Obsidian project notes'",
+    ))
+
+
 def main() -> None:
     raw, data = read_hook_input()
     tool_name = data.get("tool_name") or ""
 
-    # Non-mutating tools always pass
-    if tool_name not in MUTATING_TOOLS:
+    if _should_pass_early(tool_name, data):
         pass_through()
-
-    # Read-only Bash passes
-    if tool_name == "Bash":
-        cmd = get_command(data).strip()
-        if any(cmd.startswith(p) for p in READ_ONLY_BASH):
-            pass_through()
 
     session_id = data.get("session_id", "") or "no-session"
     transcript_path = data.get("transcript_path", "")
     repo = find_repo_root()
-    project = repo.name if repo else "<project>"
+    # Canonical name, NOT repo.name: inside a worktree the dir is branch-named
+    # and the project note would never match -> permanent unsatisfiable block.
+    project = canonical_project_name()
 
     # 3 mandatory patterns: cross-project, index, project file
     required = ["_Cross-Project", "_Index", project]
@@ -126,28 +158,7 @@ def main() -> None:
     missing = _missing_patterns(read_paths, required)
 
     if missing:
-        # Remove marker so the gate re-fires until satisfied
-        from session_state import read_state, write_state  # local import
-        st = read_state("obsidian-sync-checked", session_id=session_id, repo_root=repo)
-        st["seen"] = []
-        write_state("obsidian-sync-checked", st, session_id=session_id, repo_root=repo)
-
-        listing = (
-            f"\n  1. 01-Projets/_Cross-Project.md"
-            f"\n  2. 01-Projets/_Index.md"
-            f"\n  3. 01-Projets/{project}.md"
-            f"\n  (4. optional bonus: 01-Projets/{project}-Notes-Jay.md if it exists)"
-        )
-        loaded = len(required) - len(missing)
-        block(format_block(
-            f"OBSIDIAN SYNC not satisfied — {loaded}/{len(required)} mandatory notes loaded",
-            "Call the Obsidian MCP read tool (vault_read / get_note) for the mandatory files "
-            f"before any Edit/Write/Bash:{listing}\n"
-            f"Missing patterns: {', '.join(missing)}\n"
-            "These are Takumi's context for the current project. Without them, "
-            "the session works in the dark.",
-            reference="Workflows.md 'Sync Obsidian project notes'",
-        ))
+        _block_missing(project, missing, required, session_id, repo)
 
     pass_through()
 

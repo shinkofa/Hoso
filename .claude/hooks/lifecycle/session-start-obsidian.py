@@ -30,7 +30,11 @@ LIB_DIR = HOOK_DIR.parent / "lib"
 sys.path.insert(0, str(LIB_DIR))
 
 try:
-    from common import find_repo_root, read_hook_input  # type: ignore
+    from common import (  # type: ignore
+        canonical_project_name,
+        find_repo_root,
+        read_hook_input,
+    )
 except Exception:
     def read_hook_input():
         try:
@@ -42,10 +46,14 @@ except Exception:
     def find_repo_root():
         return Path.cwd()
 
+    def canonical_project_name():
+        return Path.cwd().name
+
 
 def _detect_project_name() -> str:
-    repo = find_repo_root()
-    return repo.name if repo else "<project>"
+    # Canonical name stays correct inside a git worktree (branch-named dir).
+    name = canonical_project_name()
+    return name or "<project>"
 
 
 def main() -> None:
