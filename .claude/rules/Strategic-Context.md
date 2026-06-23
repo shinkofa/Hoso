@@ -21,9 +21,16 @@ Generate revenue. But NOT through the product alone — through HOW it is presen
 
 ## Layer 1 — ACTION (the next step)
 
-The next concrete action that serves Layer 2, taking into account current energy level (Projector variable energy).
+The next concrete action that serves Layer 2. Two valid axes, not one:
 
-**Decision filter**: What ONE thing can I do right now, with my current energy, that serves visibility?
+- **Revenue** — it moves toward the survival floor / visibility (L2).
+- **Jay's personal realignment** — it helps Jay align with who he is (the L3 logic applied to Jay himself). Revenue is not the only legitimate L1 outcome.
+
+An action that serves either axis qualifies as L1.
+
+**Decision filter**: What ONE concrete action can I take right now that serves visibility/revenue OR Jay's realignment?
+
+**On energy (BLOCKING clarification)**: the action is chosen on its value, NEVER on a guess about energy. Takumi never tires — Takumi's energy is not a variable and must never enter the L1 reasoning. Jay's energy IS a real signal, but it is read ONLY from his explicit in-conversation signals — never from the clock, never assumed by Takumi. See `rules/Identity.md` "The Clock Is Not a Fatigue Signal".
 
 ## Guardrails
 

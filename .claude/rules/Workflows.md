@@ -106,7 +106,7 @@ It is the operational floor of the Monozukuri principle "la preuve, jamais l'aff
 - **Flag uncertainty explicitly** — say "I'm not certain" when unsure. Uncertainty acknowledged is trusted; uncertainty hidden erodes trust.
 - **Scope** — state what you will/won't touch. Inform Jay if scope changes.
 - **Consult SKB first** — SKB (Shinkofa Knowledge Base) is our collective brain. Search it for ALL domains (vision, coaching, tech, marketing, gaming, neurodiversity) before web research, before any decision.
-- **Verify before claiming** — training data is months stale. Check SKB + web for versions, features, best practices, architecture patterns before any recommendation that influences a decision.
+- **Verify before claiming** — training data is months stale. Check SKB + web for versions, features, best practices, architecture patterns before any recommendation that influences a decision. **Le dataset du modele est presume PERIME par defaut.** Toute solution, audit, conseil ou code fournis doivent etre **a jour a la date du jour** (la date courante est injectee a chaque message). On ne se fie JAMAIS a la connaissance interne pour une version, une API, une CVE ou une best practice — on verifie, on date la verification (marqueur `[VEILLE] ...@version verifie <date> via <source>`).
 - **3 Layers filter** — every decision passes: L3 (Shinkofa vision respected?) → L2 (serves visibility/revenue?) → L1 (doable now?). See `rules/Strategic-Context.md`.
 - **Research in 7 languages** — EN, FR, ZH, JA, KO, DE, RU for thorough coverage. Queries MUST be written in native script (汉字, 漢字/仮名, 한글, кириллица, etc.) — never in romanization, pinyin, romaji, or transliteration. Full protocol: `Eichi-Shinkofa/docs/Research-Protocol.md`.
 - **Visibility-first** — everything is potentially sellable. SEO, GEO, copywriting from day one.
@@ -115,7 +115,7 @@ It is the operational floor of the Monozukuri principle "la preuve, jamais l'aff
 - **Detect environment** — OS, machine (local/VPS), paths, shell at session start.
 - **Atomic commits** — one logical change per commit. Hook-enforced.
 - **Lego Library First (BLOCKING)** — before coding ANY UI element, check `@shinkofa/ui` inventory in `rules/Quality.md`. If it exists → import. If not → code in `Shinkofa-Shared/packages/ui/` first (with tests + story), then import. All text via `@shinkofa/i18n` keys (FR/EN/ES). All shared types via `@shinkofa/types`.
-- **Anti-overengineering** — only make changes directly requested or clearly necessary. No extras, no abstractions for one-time ops, no hypothetical futures. Three similar lines > premature abstraction.
+- **Anti-overengineering** — only make changes directly requested or clearly necessary. No extras, no abstractions for one-time ops, no hypothetical futures. Three similar lines > premature abstraction. **Nuance (Jay 2026-06-23)** : la cible n'est pas « toujours le strict minimum » mais le **minimum VIABLE dans le temps long** (lien Monozukuri #6). Le critere de viabilite passe par **contexte + stabilite + securite**, pas par le nombre d'utilisateurs. Meme pour peu d'utilisateurs, si une solution apporte tranquillite (robustesse, securite) ET une evolution future possible sans dette, elle est justifiee — ce n'est PAS de la suringenierie. La suringenierie, c'est l'abstraction speculative sans besoin reel ; la solidite anticipee sur un axe stabilite/securite ne l'est pas.
 - **ZERO rm -rf on work directories (BLOCKING)** — NEVER `rm -rf` on dist/, build/, output/, data/, or any directory containing work. `rm -rf` bypasses the recycle bin = IRREVERSIBLE LOSS. Always `mv x x-backup` or ask Jay BEFORE deletion. **RM-OK token (Jay 2026-06-14)** : when Jay has EXPLICITLY authorized a specific deletion in the conversation, append `# RM-OK: <reason>` to the command — the `bash-guard.py` hook then allows that ONE command (one deletion per token, reason mandatory). The token NEVER overrides a catastrophic target (root `/`, home, project root, `.git`, system dir) — those stay blocked. Every grant is logged to `.claude/state/rm-overrides.log` (auditable). The token removes the friction where the guard blocked even an authorized deletion.
 - **Sync Obsidian project notes (BLOCKING)** — **4 files, not 21.** At session start: load `_Cross-Project.md` + `_Index.md` + current project file + `[project]-Notes-Jay.md`. Additional files on demand only. At session end: write only to files touched by the session (current project + Notes-Jay + `_Cross-Project.md` if cross-project decisions + `Contenu.md` if visibility candidates). If MCP unreachable: STOP and escalate.
 - **Takumi-generated docs → Obsidian SKB, NEVER apps/<project>/docs/ (BLOCKING)** — tous les documents générés par Takumi (audits, rapports de session, blueprints, CDC, PET, briefs, research, mockups specs) sont écrits **directement dans Obsidian** sous `02-<Project>/` avec sous-dossiers `Sessions/`, `Audits/`, `CDC/`, `PET/`, `Briefs/`, `Research/`. Plus jamais dans `apps/<project>/docs/`. **Why** : Obsidian = brain cross-projet cross-machine RAG-able. `apps/<project>/docs/` = pollution repo code avec artefacts de travail. **Migration CDC/PET** : quand mature et stabilisé → déplacé dans dossier projet pertinent. **Décision Jay 2026-05-27** (Kōbō pilote, propagation autres projets via `/sync-repo`).
@@ -224,9 +224,11 @@ Degraded context causes circular failures. After 2 attempts to fix the same symp
 
 | Level | Trigger | Action |
 |-------|---------|--------|
-| L1 | First attempt | LOGS FIRST. Recent commits → error → most likely location. |
+| L1 | First attempt | LOGS FIRST. **Sur une app branchée GlitchTip : consulter GlitchTip EN PREMIER** (erreurs prod centralisées, alternative libre à Sentry), AVANT les logs locaux. Puis recent commits → error → most likely location. |
 | L2 | L1 failed | SKB consult + web research (8 languages). |
 | L3 | L2 failed | **STOP.** Generate detailed report. Return to Jay for brainstorming. |
+
+**GlitchTip = œil sur la prod (BLOCKING sur app branchée)** — GlitchTip collecte les erreurs prod de tout l'écosystème en temps réel. Un collecteur déployé mais jamais consulté est du gâchis : l'info existe, personne ne la lit. Sur tout bug d'une app branchée, GlitchTip est la première source, pas la dernière. Instance + apps branchées : voir `01-Projets/_Infrastructure.md` (Obsidian).
 
 ## Post-Block Recovery Protocol (BLOCKING)
 
@@ -301,6 +303,7 @@ Every deployment MUST include a smoke test that verifies:
 |-------|------|-----|
 | **Auth integrity** | Authentication is not broken or bypassed | Hit a protected endpoint without token → expect 401/403. Hit with valid token → expect 200. |
 | **API connections** | All external API integrations respond | Health-check each connected service (DB, Redis, external APIs). Log response status. |
+| **Error tracking (GlitchTip)** | L'app remonte bien ses erreurs vers GlitchTip, et zéro nouvelle erreur dans les minutes suivant le deploy | Déclencher une erreur test (route DSN) → vérifier qu'elle apparaît dans GlitchTip. Puis surveiller le flux : un pic d'erreurs post-deploy = rollback/hotfix immédiat. |
 | **Critical paths** | Core user flows still work | Automated or manual check of login, main feature, payment (if applicable). |
 | **Reverse proxy** | nginx/Caddy routes correctly | Verify public URL returns expected response, not 502/504. |
 | **Stale storage regression** | localStorage/sessionStorage schemas not broken by auth/session change | When deploy changes auth schema, JWT shape, cookie names, or session keys: explicitly check that existing browsers with OLD storage do not break the app. Test with a stale-storage browser profile OR ship a migration/cleanup script. |

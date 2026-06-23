@@ -485,9 +485,27 @@ Every public-facing Shinkofa platform adapts to the user's holistic profile. Thi
 | Temporal | Session length suggestions, break reminders, energy-aware scheduling | Energy cycles (Ki model) |
 | Content | Language, tone, examples, complexity level | Profile + interaction history |
 
+### Design for the Reference Profile First (BLOCKING)
+
+> Source : `Eichi/17/Interfaces-Spatiales-HPI-Multipotentiel.md` (2026-06-23). Profil de référence = Jay (Projector splénique 1/3, HPI, multipotentiel, hypersensible — ni autiste, ni dyslexique). Aligné D12 Build For Me First.
+
+**Anti-pattern named — the Normalizer reflex (FORBIDDEN as default)**: most "neurodivergence" UX guides design *in defense* against autism and dyslexia — cut animation, flatten, simplify everything for everyone. That reflex deprives one group because of another's needs. For an HPI / multipotentiel / hypersensitive brain, rich / spatial / dense is **not a risk to suppress — it is aligned with how that brain thinks** (tree/associative thinking, idea density, imaginational overexcitability). Flattening by default is a Dignity violation (l'ignorance n'est pas la stupidité → la richesse n'est pas le danger).
+
+**The rule**: design for the reference profile (rich, spatial, dense, non-linear) as the DEFAULT. The morphic engine **reduces/calms for the profiles that need it** — it never imposes the reduced state on everyone up front. "Riche par défaut, le morphique gère le reste", not "plat par défaut, enrichir à la demande".
+
+| Applies to | Default posture |
+|-----------|-----------------|
+| Thinking tools (Nagare, PKM, project manager, dashboard, notes, mind-map) | Rich/spatial/dense by default — a network-thinking brain is throttled by a flat list. |
+| Public first-contact (unknown user) | Safe morphic-neutral entry (zero categorization), then adapt richer or calmer per signals. The rich default is the *destination*, not the cold-open. |
+
+**Guard-rails (so "rich" never becomes decorative clinquant)**:
+- **Ergonomic, never decorative** — spatial must serve cognition (relations, navigation, memory). If it doesn't, remove it.
+- **Spatiality ≠ animation** — structure helps; gratuitous motion fatigues even a hypersensitive. Motion = opt-in, justified, `prefers-reduced-motion` respected.
+- **Density yes, chaos no** — beautiful and dense, never disordered. The morphic cursor must always be able to calm/strip down on demand.
+
 **Minimum viable adaptation** (day one):
 - Theme (dark/light/high-contrast) + reduced motion + font size
-- ND-friendly defaults (low cognitive load, predictable layout)
+- ND-friendly defaults available as the morphic-reduced state (low cognitive load, predictable layout) — offered, never forced on the reference profile
 - Language (FR/EN/ES with locale-aware formatting)
 
 **Full adaptation** (progressive):
@@ -509,6 +527,7 @@ Every Shinkofa project MUST have from day one:
 - [ ] Loading states (skeleton, not spinner)
 - [ ] Touch targets ≥ 44x44px on mobile
 - [ ] Feedback Widget integrated in main layout (WF-035)
+- [ ] Error tracking (GlitchTip) câblé — l'app envoie ses erreurs prod vers l'instance GlitchTip (jamais déployer une app aveugle). Cf. `rules/Workflows.md` Debug Escalation L1 + Post-Deploy Smoke Test.
 - [ ] Morphic adaptation: sensory defaults (theme + motion + font size)
 - [ ] Onboarding adaptatif : choix sensoriel (theme/motion/density) AVANT identite. Indications fonctionnalites visibles des le premier ecran. Cf. `rules/Dignity.md` §a L'ACCUEIL.
 
