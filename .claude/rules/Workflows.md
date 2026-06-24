@@ -442,3 +442,27 @@ Report all three dimensions separately, then the weighted total:
 | **Total** | **92** | |
 ```
 
+## Documentation & Suivi de Progression (BLOCKING — A8)
+
+> Format : Niveau / Regle / Pourquoi / Declencheur / Preuve / Sans hook.
+
+- **Niveau** : BLOCKING
+- **Regle** : Maintiens la documentation a jour PENDANT le travail — notes Obsidian (SKB + projet), README de chaque projet, suivi de progression (CDC/PET/rapports de session), et l'etat infra/architecture.
+- **Pourquoi** : une doc a jour laisse le suivant (Jay dans 3 mois, un autre dev, une autre IA) reprendre seul ; une doc perimee casse la transmission (Monozukuri #4 "documentation = matiere premiere").
+- **Declencheur** : la fin d'un bloc de travail ; toute decision d'architecture ou d'infrastructure ; tout changement qui rend un README ou une note obsolete.
+- **Preuve** : le README du projet reflete l'etat reel ; un rapport de session existe (`docs/Sessions/`) ; les notes Obsidian projet sont a jour ; les changements infra/archi sont traces (note projet, registry, `_Infrastructure.md`).
+- **Sans hook** : l'IA ecrit la trace elle-meme en fin de bloc et met a jour le README des que le comportement decrit a change.
+
+Cette regle est la source canonique que le palier portable `AGENTS.md` projette (bloc "Traceability"). Elle complete, sans les doubler, les regles "Takumi-generated docs -> Obsidian SKB" et "Sync Obsidian project notes" ci-dessus.
+
+## Agents & Sous-Agents — Orchestration et Concertation (A10)
+
+> Format : Niveau / Regle / Pourquoi / Declencheur / Preuve / Sans hook.
+
+- **Niveau** : DEFAUT
+- **Regle** : Delegue a l'agent dont c'est le metier, fais-les **se concerter** quand un sujet croise plusieurs domaines, et vise leur **niveau d'expertise maximal** (chaque agent raisonne comme un senior de son domaine, veille incluse).
+- **Pourquoi** : un conseil issu de plusieurs perspectives croisees bat un avis unique ; la concertation reduit les angles morts (cf. anti-circulaire `Quality.md`). Un agent generaliste sur un sujet pointu produit du tiede.
+- **Declencheur** : une tache qui touche un domaine specialise (securite, perf, i18n, design...) ; une decision qui croise 2+ domaines (ex. archi + securite + cout).
+- **Preuve** : la reponse cite quel(s) agent(s) ont contribue ; sur un sujet croise, au moins 2 perspectives distinctes apparaissent ; max 4 agents concurrents annonces (cf. "Agent Concurrency" ci-dessus).
+- **Sans hook** : l'IA adopte explicitement la perspective de chaque metier a tour de role et confronte les avis dans sa reponse, meme sans pouvoir lancer de sous-agents.
+

@@ -531,3 +531,25 @@ Every Shinkofa project MUST have from day one:
 - [ ] Morphic adaptation: sensory defaults (theme + motion + font size)
 - [ ] Onboarding adaptatif : choix sensoriel (theme/motion/density) AVANT identite. Indications fonctionnalites visibles des le premier ecran. Cf. `rules/Dignity.md` §a L'ACCUEIL.
 
+## Jidoka Without Hooks — Portability Bridge (BLOCKING — A9)
+
+> Format : Niveau / Regle / Pourquoi / Declencheur / Preuve / Sans hook.
+
+- **Niveau** : BLOCKING
+- **Regle** : Quand les hooks sont indisponibles (autre harnais que Claude Code), applique Jidoka (stop on defect) et Poka-yoke (error-proofing) **par comprehension** : emets toi-meme les marqueurs falsifiables et deroule les checklists auto-imposees.
+- **Pourquoi** : les hooks sont le filet de Claude Code ; sur OpenCode / Gemini / chat ils n'existent pas. L'esprit prime sur la mecanique, sinon la qualite s'effondre des qu'on sort de Claude Code.
+- **Declencheur** : toute session sur un harnais sans hooks (OpenCode, Gemini, Perplexity, chat, ou tout outil sans PreToolUse).
+- **Preuve** : les marqueurs (`[VEILLE]`, `[ROBUSTNESS]`) apparaissent dans la reponse, emis par l'IA elle-meme ; les 8 gates sont deroules explicitement ; une checklist ecrite remplace le hook absent.
+- **Sans hook** : c'est exactement le cas vise — l'IA EST son propre Jidoka. Le palier portable `AGENTS.md` et le champ "Sans hook" de chaque regle (`Rule-Format.md`) portent cette charge. Un verificateur externe (humain, 2e modele) reste le seul garant dur ; l'ecrit augmente la probabilite, il ne la garantit pas.
+
+## Lego Library — Alimentation Continue (BLOCKING — A10)
+
+> Format : Niveau / Regle / Pourquoi / Declencheur / Preuve / Sans hook.
+
+- **Niveau** : BLOCKING
+- **Regle** : Nourris la Lego library en continu — des qu'un element reutilisable est cree ou repere, extrais-le via `/extract-lego` vers `@shinkofa/ui` (avec tests + story) AVANT de le reutiliser ailleurs.
+- **Pourquoi** : une library qu'on n'alimente pas se perime, et la duplication repart ; "build once, reuse forever" exige une alimentation continue, pas un one-shot initial.
+- **Declencheur** : tout element reutilisable cree dans un projet, ou repere comme duplicable (un composant copie d'un projet a l'autre = signal d'extraction).
+- **Preuve** : l'element vit dans `Shinkofa-Shared/packages/ui` (test + story), importe via `@shinkofa/ui` ; le skill `/extract-lego` laisse une trace de l'extraction.
+- **Sans hook** : l'IA propose l'extraction dans sa reponse des qu'elle detecte un reutilisable, et code dans la library d'abord, le projet ensuite.
+
