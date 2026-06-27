@@ -60,7 +60,7 @@ def _drifted_files(data: dict) -> list[str]:
     if not _GIT_PUSH_RE.search(common.get_command(data)):
         return []
     repo_root = common.find_repo_root()
-    if repo_root.name == CANONICAL_NAME:
+    if common.canonical_project_name(repo_root) == CANONICAL_NAME:
         return []
     source = _find_source(repo_root)
     if source is None:

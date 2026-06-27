@@ -1,5 +1,11 @@
 """Tests for guards/pre-push-drift-check.py — D1 brick 2.
 
+Fix (2026-06-27): _drifted_files used find_repo_root().name to detect whether
+the current dir is the canonical source. Inside a git worktree that name is the
+worktree directory (branch-named), not the project name, so the check silently
+failed. Now uses canonical_project_name() which resolves via
+`git rev-parse --git-common-dir`.
+
 PreToolUse Bash guard: when about to `git push` from a propagated project, warn
 (never block) if any received methodology file has drifted from the Kata
 canonical source. Degrades silently when the source is not reachable (e.g. VPS).
@@ -114,6 +120,39 @@ def test_env_override_locates_source(tmp_path):
     assert res.returncode == 0
     assert b"WARNING" in res.stderr
     assert b"rules/Quality.md" in res.stderr
+
+
+def _git(args: list[str], cwd: Path) -> None:
+    subprocess.run(["git", *args], cwd=str(cwd), check=True, capture_output=True)
+
+
+def _real_repo(path: Path, name: str = "Kata") -> Path:
+    """Create a real git repo (not just a .git dir) needed for worktree tests."""
+    repo = path / name
+    repo.mkdir(parents=True, exist_ok=True)
+    _git(["init", "-b", "main"], repo)
+    _git(["config", "user.email", "t@test.com"], repo)
+    _git(["config", "user.name", "Test"], repo)
+    (repo / "README.md").write_text("x", encoding="utf-8")
+    _git(["add", "."], repo)
+    _git(["commit", "-m", "init"], repo)
+    return repo
+
+
+def test_no_warn_from_canonical_worktree(tmp_path):
+    # Bug: inside a worktree of Kata (dir named e.g. "Kata-feature"), the old
+    # find_repo_root().name check returned "Kata-feature" != "Kata" and the hook
+    # would warn about drift even when running from the canonical source itself.
+    src = _real_repo(tmp_path, "Kata")
+    _write(src, "rules/Quality.md", "canonical\n")
+    wt = tmp_path / "Kata-feature"
+    _git(["worktree", "add", "-b", "feature", str(wt)], src)
+    _write(wt, "rules/Quality.md", "canonical\n")
+    res = _run(wt, "git push origin main")
+    assert res.returncode == 0
+    assert b"WARNING" not in res.stderr, (
+        "hook should not warn when running from a worktree of the canonical source"
+    )
 
 
 def test_missing_file_does_not_warn(tmp_path):

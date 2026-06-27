@@ -95,6 +95,24 @@ Source : feedback Jay 2026-06-24 (travail micro-version portabilité — l'IA li
 | **Écrit structuré** | Gemini/Perplexity/chat | l'IA émet la Preuve dans sa réponse, sans filet code |
 | **Micro** | custom instructions ≤1500 car | seul l'esprit + 2-3 BLOCKING tiennent ; le reste tombe |
 
+## Règles supplémentaires pour les formes portables (2026-06-27)
+
+Ces deux règles s'appliquent quand on écrit une forme destinée à être lue sans contexte complet (Micro, AGENTS.md, Projet/Espace) :
+
+### Règle P1 — Nommer la source une fois avec son chemin complet
+
+**Niveau** : DÉFAUT
+**Règle** : Définis la source unique (Shinzo) une fois en haut de la forme avec son chemin complet (`github.com/theermite/Shinzo`), jamais le nom seul.
+**Pourquoi** : un modèle lit un nom propre étranger et l'invente ou le traduit (`心臓` → "cœur"). Le chemin complet est non-ambigu.
+**Déclencheur** : toute rédaction d'une forme portable (Micro, AGENTS.md, Projet/Espace).
+
+### Règle P2 — Chiffres = plafonds, pas cibles
+
+**Niveau** : DÉFAUT
+**Règle** : Exprime chaque contrainte numérique comme un plafond assorti d'une intention (`le plus court possible, max 1500 car`), jamais comme une cible seule.
+**Pourquoi** : un modèle littéral remplit le plafond (`≤ 3 paragraphes` → produit exactement 3). L'intention prime sur le chiffre.
+**Déclencheur** : toute règle qui contient un chiffre (longueur, nombre de paragraphes, nombre de fichiers, etc.).
+
 ## La limite honnête (à ne jamais oublier)
 
 Ce format **augmente la probabilité** de conformité ; il ne la **garantit** pas. La seule dureté vient d'un vérificateur externe (hook, humain, ou 2e modèle qui relit). Sur un palier sans code, même la Preuve repose sur l'honnêteté du modèle. D'où : hooks pour le binaire critique, format écrit-falsifiable pour le reste, 2e modèle pour ce qui compte le plus.

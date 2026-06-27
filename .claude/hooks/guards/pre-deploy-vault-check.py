@@ -47,6 +47,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 from common import (  # noqa: E402
     block,
+    canonical_project_name,
     find_repo_root,
     format_block,
     get_command,
@@ -69,7 +70,7 @@ def _project_name() -> str:
     override = os.environ.get("SHINKOFA_PROJECT")
     if override:
         return override.strip().lower()
-    return find_repo_root().name.lower()
+    return canonical_project_name().lower()
 
 
 def _matched_stems(vault: Path, project: str) -> list[str]:
@@ -106,6 +107,34 @@ def _present_keys(env_file: Path) -> set[str]:
 # --- Main -------------------------------------------------------------------
 
 
+def _collect_missing(vault: "Path", stems: list[str]) -> list[str]:
+    missing: list[str] = []
+    for stem in stems:
+        env_file = vault / "envs" / f"{stem}.env"
+        if not env_file.is_file():
+            continue  # covered-via-Infra / not generated here → cannot conclude
+        present = _present_keys(env_file)
+        for var in _required_vars(vault / "mappings" / f"{stem}.yaml"):
+            if var not in present:
+                missing.append(var)
+    return missing
+
+
+def _emit_block(project: str, missing: list[str]) -> None:
+    var_list = ", ".join(dict.fromkeys(missing))  # dedup, keep order
+    block(format_block(
+        reason=f"deploy aborted — Vault-mapped secret(s) missing from the "
+               f"generated env: {var_list}",
+        recovery=(
+            f"regenerate and inject for '{project}': "
+            f"`cd ~/Shinkofa-Vault && ./scripts/generate-envs.sh <stem> && "
+            f"./scripts/inject.sh <stem>`, then re-run the deploy. If the var is "
+            f"obsolete, remove it from mappings/<stem>.yaml."
+        ),
+        reference="VAULT.md (generate-envs.sh -> inject.sh)",
+    ))
+
+
 def main() -> None:
     _, data = read_hook_input()
     cmd = get_command(data)
@@ -121,31 +150,11 @@ def main() -> None:
     if not stems:
         pass_through()
 
-    missing: list[str] = []
-    for stem in stems:
-        env_file = vault / "envs" / f"{stem}.env"
-        if not env_file.is_file():
-            continue  # covered-via-Infra / not generated here → cannot conclude
-        present = _present_keys(env_file)
-        for var in _required_vars(vault / "mappings" / f"{stem}.yaml"):
-            if var not in present:
-                missing.append(var)
-
+    missing = _collect_missing(vault, stems)
     if not missing:
         pass_through()
 
-    var_list = ", ".join(dict.fromkeys(missing))  # dedup, keep order
-    block(format_block(
-        reason=f"deploy aborted — Vault-mapped secret(s) missing from the "
-               f"generated env: {var_list}",
-        recovery=(
-            f"regenerate and inject for '{project}': "
-            f"`cd ~/Shinkofa-Vault && ./scripts/generate-envs.sh <stem> && "
-            f"./scripts/inject.sh <stem>`, then re-run the deploy. If the var is "
-            f"obsolete, remove it from mappings/<stem>.yaml."
-        ),
-        reference="VAULT.md (generate-envs.sh -> inject.sh)",
-    ))
+    _emit_block(project, missing)
 
 
 if __name__ == "__main__":

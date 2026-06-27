@@ -176,3 +176,38 @@ def test_project_resolved_from_repo_dir_name(tmp_path):
     r = _run(DEPLOY, cwd=repo, vault=vault, project=None)
     assert r.returncode == 2
     assert b"DATABASE_URL" in r.stderr
+
+
+def _git(args: list[str], cwd: Path) -> None:
+    subprocess.run(["git", *args], cwd=str(cwd), check=True, capture_output=True)
+
+
+def _real_repo(path: Path, name: str) -> Path:
+    """Create a real git repo needed for worktree tests."""
+    repo = path / name
+    repo.mkdir(parents=True, exist_ok=True)
+    _git(["init", "-b", "main"], repo)
+    _git(["config", "user.email", "t@test.com"], repo)
+    _git(["config", "user.name", "Test"], repo)
+    (repo / "README.md").write_text("x", encoding="utf-8")
+    _git(["add", "."], repo)
+    _git(["commit", "-m", "init"], repo)
+    return repo
+
+
+def test_project_name_stable_in_worktree(tmp_path):
+    # Bug (pre-fix): find_repo_root().name returned the worktree dir name
+    # ("Kobo-feature") instead of the main repo name ("Kobo"), so the hook
+    # looked for a mapping named "kobo-feature" that never existed and silently
+    # passed through — leaving the deploy unguarded.
+    repo = _real_repo(tmp_path, "Kobo")
+    wt = tmp_path / "Kobo-feature"
+    _git(["worktree", "add", "-b", "feature", str(wt)], repo)
+    vault = _make_vault(tmp_path)
+    _mapping(vault, "kobo", ["DATABASE_URL"])
+    _env(vault, "kobo", [])  # missing → should BLOCK even from worktree
+    r = _run(DEPLOY, cwd=wt, vault=vault, project=None)
+    assert r.returncode == 2, (
+        "hook must resolve 'kobo' (main repo) not 'kobo-feature' (worktree dir)"
+    )
+    assert b"DATABASE_URL" in r.stderr
