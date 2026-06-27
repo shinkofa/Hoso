@@ -3,7 +3,7 @@
 Problem (D1)
 ------------
 `scripts/propagate-methodology.py` copies the canonical .claude/{rules,agents,
-hooks,skills}/ from MNK-GoRin into every project. The copy is ADDITIVE: it
+hooks,skills}/ from Kata into every project. The copy is ADDITIVE: it
 overwrites and adds, but never deletes. So between propagations there is no way
 to see whether a project edited a received file locally. The next propagation
 would silently overwrite it — losing a legitimate local fix, or letting an
@@ -13,7 +13,7 @@ This module is the shared, side-effect-free core that both the audit script
 (`scripts/audit-drift.py`) and the pre-push guard
 (`guards/pre-push-drift-check.py`) build on. stdlib only — no external deps.
 
-Vocabulary (source = MNK-GoRin canonical, dst = a propagated project)
+Vocabulary (source = Kata canonical, dst = a propagated project)
 ---------------------------------------------------------------------
 - identical : same relative path, same SHA-256 -> conformant
 - drifted   : same relative path, different content -> the real signal to act on

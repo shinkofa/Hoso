@@ -3,7 +3,7 @@
 Pure-function level: import the module directly (no subprocess). drift.py is
 stdlib-only and side-effect-free, so it is testable in isolation.
 
-Drift vocabulary (source = MNK-GoRin canonical, dst = a propagated project):
+Drift vocabulary (source = Kata canonical, dst = a propagated project):
 - identical : same relative path, same SHA-256 -> conformant
 - drifted   : same relative path, different content -> the real signal
 - missing   : in source, absent in project -> under-propagated

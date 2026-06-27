@@ -1,118 +1,57 @@
-# Rule-Format — Comment écrire une règle MNK-GoRin
+# Rule-Format — Comment écrire une règle
 
-> Le standard d'écriture de TOUTE règle de cette méthodologie.
-> But : qu'une règle soit comprise ET suivie par n'importe quelle IA, avec ou sans hooks.
-> Portée : appliqué quand on CRÉE ou MODIFIE une règle. Pas une règle de session ; ne fait pas partie du MANDATORY FIRST READ.
-> Source : décision Jay 2026-06-23, fondée sur veille instruction-following / prompting 2025-2026.
+> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/Rule-Format.md`
+> Standard d'écriture de toute règle. Appliqué à la création / édition de règles,
+> pas à chaque session.
 
-## Le principe (POURQUOI ce format existe)
+**Le principe** : une règle écrite ne s'applique pas seule. Un LLM récite
+parfaitement la règle qu'il vient de violer, et le raisonnement dégrade le suivi
+des règles strictes. Écrire pour le fonctionnement réel des modèles, pas pour faire
+joli. Reste portable hors Claude Code.
 
-Une règle écrite ne s'applique pas toute seule. La recherche 2025-2026 le prouve : un LLM **récite parfaitement la règle qu'il vient de violer**, et le raisonnement **dégrade** le suivi des règles strictes (il "rationalise" l'écart). Donc une règle doit être écrite pour viser le fonctionnement réel des modèles, pas pour faire joli. Ce format encode ce qui marche, et reste portable hors Claude Code (OpenCode, Gemini, tout chatbot).
-
-## Le format — 6 champs, ordre fixe
+**Le format — 6 champs, ordre fixe** :
 
 | Champ | Rôle | Obligatoire ? |
 |-------|------|---------------|
-| **Niveau** | `BLOCKING` / `DÉFAUT` / `GUIDE` — un seul marqueur, jamais empilé | oui |
-| **Règle** | l'énoncé au POSITIF, impératif, déterministe ("fais X") | oui |
-| **Pourquoi** | 1 ligne — la raison (augmente l'adhérence + gère les cas-limites) | oui |
-| **Déclencheur** | QUAND elle s'applique, nommé précisément (jamais "si pertinent") | oui |
-| **Preuve** | l'artefact falsifiable à produire (marqueur daté, test, sortie) — JAMAIS une coche | si vérifiable |
-| **Sans hook** | ce que l'IA fait quand aucun code ne l'applique (émettre la preuve / répondre la question dans sa réponse) | si portable |
+| Niveau | BLOCKING / DÉFAUT / GUIDE — un seul marqueur | oui |
+| Règle | énoncé au POSITIF, impératif, déterministe | oui |
+| Pourquoi | 1 ligne — la raison | oui |
+| Déclencheur | QUAND, nommé précisément (jamais « si pertinent ») | oui |
+| Preuve | artefact falsifiable (marqueur daté, test) — JAMAIS une coche | si vérifiable |
+| Sans hook | ce que l'IA fait quand aucun code n'applique | si portable |
 
-## Géométrie variable (anti-fatigue d'instructions)
+**Géométrie variable** (au-delà de ~30 instructions actives, la conformité chute) :
+BLOCKING = 6 champs ; DÉFAUT = Règle + Pourquoi + Déclencheur ; GUIDE = Règle + Pourquoi.
 
-Au-delà de ~30 instructions actives, la conformité des LLM chute. On n'alourdit donc que ce qui compte. Cinq règles vraiment suivies valent mieux que cinquante récitées.
+**La clé : preuve falsifiable, jamais une coche.** Une case « ✓ vérifié » est
+non-falsifiable (le modèle la coche comme un mot plausible). Un artefact daté et
+sourcé est vérifiable. Règle d'or : demander un artefact vérifiable, jamais une
+auto-attestation.
 
-| Niveau | Champs requis |
-|--------|---------------|
-| **BLOCKING** | les 6 |
-| **DÉFAUT** | Règle + Pourquoi + Déclencheur |
-| **GUIDE** | Règle + Pourquoi |
+**Anti-négation** : écrire chaque règle au positif (« fais X »). C'est de la
+fiabilité, pas du style — un modèle lit mal la négation, le token saillant reste X,
+la consigne peut produire l'inverse. Si une interdiction est inévitable, coller
+l'alternative positive juste après (« jamais rm -rf sur du travail ; à la place
+mv x x-backup »).
 
-## La clé : preuve falsifiable, jamais une coche
+**Règles d'écriture clés** : un seul marqueur d'emphase (pas BLOCKING+MUST+CRITICAL
+empilés) ; déclencheur nommé ; jargon glosé la 1re fois ; pour un fichier de règles,
+BLOCKING en tête ET rappelé en fin (lost-in-the-middle).
 
-Une case "✓ j'ai vérifié" est cochée par le modèle comme un mot plausible, pas comme la preuve d'un acte. Elle est non-falsifiable : on ne peut pas détecter le mensonge. Un artefact daté et sourcé, lui, est vérifiable.
+**Règles formes portables** :
+- **P1** — définir la source unique (Shinzo) une fois en haut avec son chemin
+  complet (github.com/theermite/Shinzo), jamais le nom seul (un modèle traduit
+  心臓 = « cœur » et perd le repo).
+- **P2** — chiffres = plafonds assortis d'une intention (« le plus court possible,
+  max 1500 car »), jamais cibles seules (un modèle littéral remplit le plafond).
 
-| Forme | Fiabilité | Pourquoi |
-|-------|-----------|----------|
-| "✓ fait" | ❌ faible | non-falsifiable |
-| `[VEILLE] react@19 vérifié 2026-06-23 via react.dev` | ✅ forte | daté, sourcé, "greppable" |
-| "Pose 3 questions, réponds SANS relire ton brouillon, puis conclus" | ✅ forte | force le vrai travail (CoVe, +23% mesuré) |
+**Portabilité — le champ « Sans hook » en 3 paliers** : Code-enforced (Claude
+Code / Kobo, un hook applique la preuve) ; Écrit structuré (Gemini / Perplexity /
+chat, l'IA émet la preuve sans filet) ; Micro (≤1500 car, seul l'esprit + 2-3
+BLOCKING tiennent).
 
-Règle d'or : **demander un artefact vérifiable, jamais une auto-attestation.**
+**La limite honnête** : ce format augmente la probabilité de conformité, ne la
+garantit pas. La seule dureté vient d'un vérificateur externe (hook, humain, 2e modèle).
 
-## Exemple — la règle Veille au format
-
-> **Niveau** : BLOCKING
-> **Règle** : Avant d'écrire du code touchant une version ou une dépendance, vérifie la version stable du jour sur le web, puis émets le marqueur de preuve.
-> **Pourquoi** : le dataset du modèle est périmé ; une version supposée fausse casse en prod ou introduit une faille.
-> **Déclencheur** : toute écriture sur un fichier source ou un manifeste de dépendances.
-> **Preuve** : `[VEILLE] <techno>@<version> vérifié <date> via <source>` — daté, sourcé, vérifiable.
-> **Sans hook** : l'IA émet le marqueur dans sa réponse AVANT le code ; pas de marqueur = pas de code.
-
-## Les règles d'écriture de chaque champ
-
-| Règle d'écriture | Pourquoi |
-|------------------|----------|
-| **Positif > négatif** ("fais X", pas "ne fais pas Y") ; si négatif obligatoire, ajoute l'alternative positive | la négation est un **risque de compréhension**, pas un défaut de style — voir "Anti-négation" ci-dessous |
-| **Pourquoi obligatoire** sur chaque règle | le rationale augmente l'adhérence, pas que la compréhension |
-| **Un seul marqueur d'emphase** (pas "CRITICAL + MUST + BLOCKING") | l'emphase empilée sur-déclenche / dilue |
-| **Déclencheur nommé**, jamais "si pertinent" / "si besoin" | si l'IA doit juger la pertinence, le raisonnement dégrade la règle |
-| **Jargon glosé** la 1re fois | portabilité : un modèle plus faible ne devine pas |
-| Pour un fichier de règles : **BLOCKING en tête ET rappelé en fin** | l'info au milieu d'un long contexte est déprioritisée (lost-in-the-middle) |
-
-## Anti-négation — la négation est un risque, pas un détail de style
-
-Écris chaque règle au positif ("fais X"). C'est une règle de **fiabilité**, pas d'élégance.
-
-Pourquoi : un modèle lit mal la négation. Devant "ne fais pas X", le token saillant qui reste est **X** — la consigne peut donc produire l'inverse de ce qu'elle interdit. Le défaut n'est pas que "ne fais pas Y" est moins joli ; c'est que ça **augmente la probabilité de faire Y**. La négation déplace la charge : au lecteur de calculer le complément ("tout sauf Y"), au lieu de lui donner directement la cible ("fais Z").
-
-Geste concret :
-
-- **Par défaut** : formule la cible, jamais l'interdit. "Range chaque fichier à sa place" plutôt que "ne laisse pas de fichiers en vrac".
-- **Si une interdiction est inévitable** (sécurité, garde-fou dur) : garde-la, mais **colle l'alternative positive juste après** — "jamais `rm -rf` sur du travail ; à la place `mv x x-backup`". L'interdit pose la limite, le positif donne le chemin.
-- **Portabilité** : un modèle plus faible (palier micro / chat) rate la négation encore plus souvent. Le positif est ce qui survit quand le contexte est mince.
-
-Source : feedback Jay 2026-06-24 (travail micro-version portabilité — l'IA lit mal la négation, on bascule en formulation positive).
-
-## Pourquoi chaque champ tient (fondement IA, vérifié)
-
-| Champ | Mécanisme IA ciblé | Source (2025-2026) |
-|-------|--------------------|--------------------|
-| Niveau non empilé | l'emphase agressive sur-déclenche | Anthropic (Claude 4.5/4.6) |
-| Règle au positif | le modèle lit mal la négation (risque de faire l'inverse) | Anthropic + OpenAI |
-| Pourquoi | le rationale ↑ l'adhérence | Anthropic ; constitution Claude "reason-based" jan 2026 |
-| Déclencheur nommé | le raisonnement dégrade les règles strictes | "When Thinking Fails", arXiv 2505.11423 |
-| Preuve falsifiable | recall ≠ compliance ; CoT fidèle ~25% | "Models Recall What They Violate" ; Anthropic |
-| Sans hook | l'écrit seul ne garantit rien | findings hybrides 2025 |
-
-## Portabilité — le champ "Sans hook" décline en 3 paliers
-
-| Palier | Cible | Le champ "Sans hook" |
-|--------|-------|----------------------|
-| **Code-enforced** | Claude Code, OpenCode (hooks TS), Kōbō | un hook applique la Preuve ; le champ sert de filet |
-| **Écrit structuré** | Gemini/Perplexity/chat | l'IA émet la Preuve dans sa réponse, sans filet code |
-| **Micro** | custom instructions ≤1500 car | seul l'esprit + 2-3 BLOCKING tiennent ; le reste tombe |
-
-## Règles supplémentaires pour les formes portables (2026-06-27)
-
-Ces deux règles s'appliquent quand on écrit une forme destinée à être lue sans contexte complet (Micro, AGENTS.md, Projet/Espace) :
-
-### Règle P1 — Nommer la source une fois avec son chemin complet
-
-**Niveau** : DÉFAUT
-**Règle** : Définis la source unique (Shinzo) une fois en haut de la forme avec son chemin complet (`github.com/theermite/Shinzo`), jamais le nom seul.
-**Pourquoi** : un modèle lit un nom propre étranger et l'invente ou le traduit (`心臓` → "cœur"). Le chemin complet est non-ambigu.
-**Déclencheur** : toute rédaction d'une forme portable (Micro, AGENTS.md, Projet/Espace).
-
-### Règle P2 — Chiffres = plafonds, pas cibles
-
-**Niveau** : DÉFAUT
-**Règle** : Exprime chaque contrainte numérique comme un plafond assorti d'une intention (`le plus court possible, max 1500 car`), jamais comme une cible seule.
-**Pourquoi** : un modèle littéral remplit le plafond (`≤ 3 paragraphes` → produit exactement 3). L'intention prime sur le chiffre.
-**Déclencheur** : toute règle qui contient un chiffre (longueur, nombre de paragraphes, nombre de fichiers, etc.).
-
-## La limite honnête (à ne jamais oublier)
-
-Ce format **augmente la probabilité** de conformité ; il ne la **garantit** pas. La seule dureté vient d'un vérificateur externe (hook, humain, ou 2e modèle qui relit). Sur un palier sans code, même la Preuve repose sur l'honnêteté du modèle. D'où : hooks pour le binaire critique, format écrit-falsifiable pour le reste, 2e modèle pour ce qui compte le plus.
+**Détail** (fondement IA par champ avec sources arXiv / Anthropic, exemples
+développés) → Shinzo.

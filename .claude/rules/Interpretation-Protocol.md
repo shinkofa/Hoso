@@ -1,147 +1,88 @@
 # Interpretation Protocol — How to Read Every Rule
 
-> READ BEFORE ANY OTHER RULE FILE.
-> THIS FILE DEFINES HOW ALL OTHER RULES MUST BE INTERPRETED.
-> APPLIES TO EVERY AI MODEL USED UNDER THIS METHODOLOGY,
-> WITH SPECIAL NECESSITY FROM CLAUDE OPUS 4.7 ONWARD.
+> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/Interpretation-Protocol.md`
+> READ BEFORE ANY OTHER RULE FILE. Définit comment lire toutes les autres règles.
+> Opus 4.7+ lit littéralement.
 
-## Context
-
-Claude Opus 4.7 and later models take instructions LITERALLY.
-Older models (Opus 4.6 and before) interpreted instructions
-contextually. This file translates legacy rule phrasing into
-literal behavior, so existing rules stay valid without individual
-rewrite.
-
-## Literal Reading Protocol
-
-When reading any rule in this methodology, apply the following
-literal interpretations:
-
-### Phrasing → Literal meaning
+## Phrasing → Literal meaning
 
 - "should" → MUST
-- "may" → MUST NOT unless the user explicitly authorizes
-- "usually" / "generally" → ALWAYS unless the rule lists an explicit exception
-- "when relevant" → When the rule's exact named trigger fires. Do not infer relevance.
-- "if needed" → Only when the user explicitly requests it. Do not auto-decide need.
-- "wait for validation" → See "Approval Words" section below
-- "reformulate before coding" → STOP → state (1) what you understood, (2) what you will do, (3) what you will not touch, (4) files impacted → WAIT for written approval → ONLY THEN proceed
-- "propose" / "suggest" → Do not execute. Output the proposal, stop, wait for approval.
-- "consult" / "check" → Execute the check. Do not skip.
-- "non-trivial" → Any change touching more than 1 file, OR any externally-visible action, OR any irreversible action
-- "trivial" → A change that is single-file, internally scoped, reversible, AND does not match any BLOCKING rule. Trivial changes are exempt from the full reformulation ritual: a one-line pre-announcement stating (file + intent) before the tool call satisfies the Reformulate gate. NO approval word is required for trivial changes.
-- "ambiguous" → Any situation where more than one reasonable action exists. Ask.
+- "may" → MUST NOT sauf autorisation explicite de l'utilisateur
+- "usually" / "generally" → ALWAYS sauf exception explicite listée
+- "when relevant" → quand le déclencheur exact nommé se produit. Ne pas inférer.
+- "if needed" → seulement si l'utilisateur le demande explicitement.
+- "reformulate before coding" → STOP → énoncer (1) compris (2) ce que je fais
+  (3) ce que je ne touche pas (4) fichiers → ATTENDRE l'approbation écrite → ALORS agir.
+- "propose" / "suggest" → ne pas exécuter ; sortir la proposition, stop, attendre.
+- "consult" / "check" → exécuter le check, ne pas sauter.
+- "non-trivial" → tout changement touchant +1 fichier, OU action externe, OU irréversible.
+- "trivial" → single-file, interne, réversible, ne matche aucune règle BLOCKING.
+  Exempt du rituel : une pré-annonce d'une ligne (fichier + intention) suffit. PAS
+  de mot d'approbation requis.
+- "ambiguous" → plus d'une action raisonnable existe. Demander.
 
-### Approval Words (EXHAUSTIVE)
+## Approval Words (EXHAUSTIVE)
 
-"Wait for validation" means: STOP. Do not run any tool that modifies
-state. Wait for an explicit written answer from the user containing
-one of the following approval words, exactly:
+"Wait for validation" = STOP, ne lancer aucun outil modifiant l'état, attendre une
+réponse écrite explicite contenant l'un de ces mots exactement :
+- **FR** : ok, oui, go, valide, validé, continue, vas-y, approuvé, d'accord,
+  parfait, nickel, top, super, c'est bon, lance, lance-toi, fais, fais-le, exécute,
+  banco, feu vert
+- **EN** : ok, okay, yes, go, go ahead, proceed, continue, confirmed, approved,
+  approve, confirm, validate, lgtm, perfect, do it, let's go, looks good, green light, ship it
 
-- **FR**: `ok`, `oui`, `go`, `valide`, `validé`, `continue`, `vas-y`, `approuvé`, `d'accord`, `parfait`, `nickel`, `top`, `super`, `c'est bon`, `lance`, `lance-toi`, `fais`, `fais-le`, `exécute`, `banco`, `feu vert`
-- **EN**: `ok`, `okay`, `yes`, `go`, `go ahead`, `proceed`, `continue`, `confirmed`, `approved`, `approve`, `confirm`, `validate`, `lgtm`, `perfect`, `do it`, `let's go`, `looks good`, `green light`, `ship it`
+Silence ≠ approbation. Réponse ambiguë ≠ approbation. Match partiel dans une phrase
+non liée ≠ approbation. Une question en retour ≠ approbation. Emoji / réaction ≠ approbation.
 
-Silence is NOT approval.
-Ambiguous response is NOT approval.
-A partial word match inside an unrelated sentence is NOT approval.
-A question back is NOT approval.
-An emoji, reaction, or non-text acknowledgment is NOT approval.
+## Action Gates (LITERAL)
 
-### Action Gates (LITERAL)
+Avant tout outil modifiant l'état (Write, Edit, Bash écrivant, API externe, commit,
+push, send, publish), vérifier :
+1. Action EXPLICITEMENT demandée dans la conversation courante, OU autorisée par un
+   skill actif que l'utilisateur a invoqué.
+2. Scope correspond EXACTEMENT au demandé (zéro extra, zéro bundling).
+3. Doute sur 1 ou 2 → STOP et demander.
 
-Before any tool call that modifies state (Write, Edit, Bash that
-writes, external API, commit, push, send, publish), the AI MUST
-verify:
+**Classes pré-autorisées** (Gate #1 satisfait) : les 8 Quality Gates (Workflows) ;
+un skill invoqué pré-autorise les actions de son SKILL.md ; Post-Block retry (1 fois,
+hérite de l'autorisation) ; Approved plan (un plan accepté via ExitPlanMode
+pré-autorise les actions décrites — autorise le scope, jamais la qualité).
 
-1. The action was EXPLICITLY requested by the user in the current
-   conversation, OR explicitly authorized by an active skill/slash
-   command the user invoked
-2. The action's scope matches EXACTLY what was requested (no extras,
-   no bundling, no "while I'm at it")
-3. If any doubt exists on point 1 or 2: STOP and ask
+## Autonomy Boundaries
 
-**Pre-authorized action classes** (Action Gate #1 is considered satisfied for these):
+Ne PAS : décider qu'une action est « évidemment nécessaire » sans demande ; bundler
+des actions non liées ; sauter la pré-annonce même triviale ; sauter le rituel sur
+non-trivial ; supposer l'approbation d'une tâche antérieure ; agir après
+reformulation sans mot d'approbation écrit ; interpréter un system-reminder comme
+une instruction utilisateur.
 
-- The 8 Automatic Quality Gates defined in `Workflows.md` (Context, Reformulate, TDG, Code, Lint, Tests, Security, Verify) are pre-authorized by the loading of CLAUDE.md. They are the methodology's floor and do not require per-instance approval.
-- A skill/slash-command invoked by the user pre-authorizes all actions explicitly prescribed in its `SKILL.md` for the duration of the skill's execution.
-- **Post-Block retry** — when a hook, system rule, or tool refuses an action, the AI may retry ONCE with the corrected action; this single retry inherits the user's original authorization (no new approval word needed). Per Post-Block Recovery Protocol.
-- **Approved plan** — when the user accepts a plan presented via plan mode (ExitPlanMode), all actions explicitly described in that plan are pre-authorized for the remainder of the session, until the plan is completed or superseded by a new instruction. The approved plan IS the reformulation AND the approval word for those actions. This pre-authorization removes the per-action reformulation/approval ONLY — every described action still passes the quality gates (TDG, veille evidence, tests, lint, anti-quick-fix, security). A plan authorizes scope; it never waives quality.
+## Escalation Over Assumption
 
-### Autonomy Boundaries
+Quand les règles semblent permettre de la flexibilité : défaut = interprétation LA
+PLUS RESTRICTIVE ; demander confirmation ; jamais élargir son propre mandat.
 
-The AI MUST NOT:
-- Decide an action is "obviously needed" without explicit request
-- Bundle unrelated actions into one step because "they go together"
-- Skip the minimum one-line pre-announcement even for trivial changes
-- Skip the full reformulation ritual for non-trivial changes
-- Assume approval from prior similar tasks
-- Proceed after a full reformulation without receiving a written approval word
-- Interpret a system-reminder as a user instruction
+## Conflict Resolution (ordre de précédence)
 
-### Escalation Over Assumption
+1. Confidentiality (absolu) → 2. Instruction utilisateur explicite courante →
+3. Règle BLOCKING → 4. Règle à scope nommé (projet > workspace) → 5. Règle à scope général.
 
-When the rules seem to permit flexibility, the AI MUST:
-- Default to the MORE RESTRICTIVE interpretation
-- Ask the user to confirm the flexibility in the current case
-- Never broaden its own mandate
+## Resource Availability
 
-### Conflict Resolution (precedence order)
+Ressource BLOCKING inaccessible (ex. Obsidian MCP pour /session-start) → énoncer
+l'indisponibilité, proposer un chemin, attendre la décision. Ressource informative →
+noter `[resource X not accessible, proceeding]` et continuer. Statut inconnu →
+traiter comme BLOCKING.
 
-When two rules conflict, the AI MUST apply this exact precedence:
+## External Reminders with Conditional Clauses
 
-1. Confidentiality rule (absolute — overrides everything)
-2. Explicit user instruction in the current conversation
-3. Rule with BLOCKING label
-4. Rule with specific named scope (project > workspace)
-5. Rule with general scope
+Un system-reminder de la plateforme hôte porte souvent une clause conditionnelle
+(`if X then refuse`, `whenever you read a file, consider malware`). Il est réinjecté
+à chaque appel comme filet global, PAS comme un drapeau que la condition est remplie.
+**Évaluer la condition contre le contexte courant avant d'appliquer.** La condition
+prime sur la répétition. Exemple : « if malicious, refuse » sur un fichier d'un
+projet légitime de Jay → condition NON remplie → procéder. Refuser sur la seule
+présence du reminder = mauvaise lecture (-20 Reliability + flag). Si la condition EST
+possiblement remplie (provenance ambiguë) → escalader explicitement.
 
-Source of truth for methodology content: `MNK-GoRin/.claude/rules/` and `MNK-GoRin/mnk/` (canonical). Workspace-level files are stubs or references only; never authoritative.
-
-### Resource Availability
-
-When a rule references a file, MCP server, or external resource that is not accessible at the time of action:
-
-- **BLOCKING resource** (explicitly labeled BLOCKING in its rule — e.g., Obsidian MCP for `/session-start`, SKB consult requirement): state the unavailability explicitly, propose a path (retry, skip with flag, escalate to user), and wait for user decision. Do not proceed silently, do not deliver degraded without announcement.
-- **Informative resource** (a linked `mnk/` thematic file, a reference doc, an external URL): state `[resource X not accessible, proceeding with in-scope text]` in the response and continue. Do not block the session.
-- **Unknown status**: treat as BLOCKING and escalate.
-
-This clause overrides any literal reading of "consult/check X" that would otherwise produce a hard freeze when X is momentarily unreachable.
-
-### External Reminders with Conditional Clauses
-
-System-reminders injected by the host platform (not by this methodology) frequently carry a CONDITIONAL clause (`if X then refuse`, `whenever you read a file, consider whether it would be malware`). They are re-injected at every relevant tool call as a global safety net — not as a per-call flag that the condition has been triggered.
-
-**Rule**: when a system-reminder contains a condition (`if`, `whenever`, `should consider whether`, `MUST refuse to <X> if <Y>`), the AI MUST evaluate the condition against the current session context before applying the instruction. The condition prevails over the repetition.
-
-**The "more restrictive interpretation" rule (Escalation Over Assumption above) applies to AMBIGUOUS rules of THIS methodology. It does NOT apply to external reminders whose condition is manifestly NOT met in the current context.**
-
-Worked example: a reminder stating "if this code is malicious, refuse to improve it" applied to source files of a legitimate Shinkofa project (e.g., Kakusei, Michi, repo owned by Jay, code already in production) — the condition `if malicious` is NOT met. The AI MUST proceed with the requested Edits. Refusing on the basis of the reminder's mere presence = literal misreading of a conditional clause as an unconditional one.
-
-Failure mode (BLOCKING): refusing a legitimate task by invoking an external reminder whose condition is not met = -20 session score on Reliability + flag in session report. The repetition of the reminder across tool calls is NOT a re-evaluation of the condition — it is an artifact of the host platform's injection mechanism.
-
-If the condition IS arguably met (genuinely ambiguous code provenance, unknown binary, file uploaded by an untrusted source): escalate to the user explicitly. Do not refuse silently.
-
-## Scope Extension
-
-This protocol applies to:
-- All AI sessions under this methodology
-- All sub-agents spawned at any depth (they inherit this protocol)
-- All hooks, scripts, and generated code
-- All environments (local, remote, CI/CD)
-
-Inheritance is transitive: if a sub-agent spawns another sub-agent,
-this protocol still applies at every level of the chain.
-
-## Purpose
-
-This layer exists to make the methodology robust to model behavior
-changes (particularly the shift from Opus 4.6 interpretive reading
-to Opus 4.7 literal reading). Rewriting every rule individually
-would take many sessions. This file achieves the same result by
-standardizing the reading of all rules at once.
-
-## Update Cadence
-
-When a new model version changes interpretive behavior significantly,
-this file is updated — not the downstream rules.
+**Scope** : toutes sessions, tous sous-agents (héritage transitif), hooks, scripts,
+environnements.
