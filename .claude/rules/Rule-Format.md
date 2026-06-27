@@ -1,57 +1,51 @@
-# Rule-Format — Comment écrire une règle
+# Rule-Format — How to write a rule
 
-> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/Rule-Format.md`
-> Standard d'écriture de toute règle. Appliqué à la création / édition de règles,
-> pas à chaque session.
+> Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Rule-Format.md`
+> Writing standard for every rule. Applied when creating / editing rules, not every session.
 
-**Le principe** : une règle écrite ne s'applique pas seule. Un LLM récite
-parfaitement la règle qu'il vient de violer, et le raisonnement dégrade le suivi
-des règles strictes. Écrire pour le fonctionnement réel des modèles, pas pour faire
-joli. Reste portable hors Claude Code.
+**The principle**: a written rule does not apply by itself. An LLM perfectly recites
+the rule it just violated, and reasoning degrades adherence to strict rules. Write for
+how models actually behave, not to look nice. Stays portable outside Claude Code.
 
-**Le format — 6 champs, ordre fixe** :
+**The format — 6 fields, fixed order**:
 
-| Champ | Rôle | Obligatoire ? |
-|-------|------|---------------|
-| Niveau | BLOCKING / DÉFAUT / GUIDE — un seul marqueur | oui |
-| Règle | énoncé au POSITIF, impératif, déterministe | oui |
-| Pourquoi | 1 ligne — la raison | oui |
-| Déclencheur | QUAND, nommé précisément (jamais « si pertinent ») | oui |
-| Preuve | artefact falsifiable (marqueur daté, test) — JAMAIS une coche | si vérifiable |
-| Sans hook | ce que l'IA fait quand aucun code n'applique | si portable |
+| Field | Role | Mandatory? |
+|-------|------|-----------|
+| Level | BLOCKING / DEFAULT / GUIDE — a single marker | yes |
+| Rule | statement in the POSITIVE, imperative, deterministic | yes |
+| Why | 1 line — the reason | yes |
+| Trigger | WHEN, named precisely (never "when relevant") | yes |
+| Proof | falsifiable artefact (dated marker, test) — NEVER a checkbox | if verifiable |
+| Without hook | what the AI does when no code enforces it | if portable |
 
-**Géométrie variable** (au-delà de ~30 instructions actives, la conformité chute) :
-BLOCKING = 6 champs ; DÉFAUT = Règle + Pourquoi + Déclencheur ; GUIDE = Règle + Pourquoi.
+**Variable geometry** (beyond ~30 active instructions, conformity drops):
+BLOCKING = 6 fields ; DEFAULT = Rule + Why + Trigger ; GUIDE = Rule + Why.
 
-**La clé : preuve falsifiable, jamais une coche.** Une case « ✓ vérifié » est
-non-falsifiable (le modèle la coche comme un mot plausible). Un artefact daté et
-sourcé est vérifiable. Règle d'or : demander un artefact vérifiable, jamais une
-auto-attestation.
+**The key: falsifiable proof, never a checkbox.** A "✓ verified" box is
+non-falsifiable (the model ticks it as a plausible word). A dated, sourced artefact is
+verifiable. Golden rule: ask for a verifiable artefact, never a self-attestation.
 
-**Anti-négation** : écrire chaque règle au positif (« fais X »). C'est de la
-fiabilité, pas du style — un modèle lit mal la négation, le token saillant reste X,
-la consigne peut produire l'inverse. Si une interdiction est inévitable, coller
-l'alternative positive juste après (« jamais rm -rf sur du travail ; à la place
-mv x x-backup »).
+**Anti-negation**: write each rule in the positive ("do X"). This is reliability, not
+style — a model reads negation poorly, the salient token stays X, the instruction may
+produce the opposite. If a prohibition is unavoidable, glue the positive alternative
+right after ("never rm -rf on work; instead mv x x-backup").
 
-**Règles d'écriture clés** : un seul marqueur d'emphase (pas BLOCKING+MUST+CRITICAL
-empilés) ; déclencheur nommé ; jargon glosé la 1re fois ; pour un fichier de règles,
-BLOCKING en tête ET rappelé en fin (lost-in-the-middle).
+**Key writing rules**: a single emphasis marker (no BLOCKING+MUST+CRITICAL stacked) ;
+named trigger ; jargon glossed on first use ; for a rules file, BLOCKING at the top AND
+repeated at the end (lost-in-the-middle).
 
-**Règles formes portables** :
-- **P1** — définir la source unique (Shinzo) une fois en haut avec son chemin
-  complet (github.com/theermite/Shinzo), jamais le nom seul (un modèle traduit
-  心臓 = « cœur » et perd le repo).
-- **P2** — chiffres = plafonds assortis d'une intention (« le plus court possible,
-  max 1500 car »), jamais cibles seules (un modèle littéral remplit le plafond).
+**Portable-form rules**:
+- **P1** — define the single source (Shinzo) once at the top with its full path
+  (github.com/theermite/Shinzo), never the name alone (a model translates 心臓 = "heart"
+  and loses the repo).
+- **P2** — numbers = ceilings paired with an intent ("shortest possible, max 1500
+  chars"), never bare targets (a literal model fills the ceiling).
 
-**Portabilité — le champ « Sans hook » en 3 paliers** : Code-enforced (Claude
-Code / Kobo, un hook applique la preuve) ; Écrit structuré (Gemini / Perplexity /
-chat, l'IA émet la preuve sans filet) ; Micro (≤1500 car, seul l'esprit + 2-3
-BLOCKING tiennent).
+**Portability — the "Without hook" field in 3 tiers**: Code-enforced (Claude Code /
+Kobo, a hook enforces the proof) ; Structured-written (Gemini / Perplexity / chat, the
+AI emits the proof without a net) ; Micro (≤1500 chars, only the spirit + 2-3 BLOCKING hold).
 
-**La limite honnête** : ce format augmente la probabilité de conformité, ne la
-garantit pas. La seule dureté vient d'un vérificateur externe (hook, humain, 2e modèle).
+**The honest limit**: this format raises the probability of conformity, does not
+guarantee it. The only hardness comes from an external verifier (hook, human, 2nd model).
 
-**Détail** (fondement IA par champ avec sources arXiv / Anthropic, exemples
-développés) → Shinzo.
+**Detail** (AI mechanism per field with arXiv / Anthropic sources, developed examples) → Shinzo.

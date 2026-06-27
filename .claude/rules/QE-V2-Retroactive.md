@@ -1,25 +1,25 @@
-# QE-V2-Retroactive — QE V2 = floor automatique
+# QE-V2-Retroactive — QE V2 = automatic floor
 
-> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/QE-V2-Retroactive.md`
+> Full source: github.com/theermite/Shinzo · `07-Methode/Regles/QE-V2-Retroactive.md`
 
-**Niveau** : BLOCKING — floor automatique, jamais une option à activer.
+**Level**: BLOCKING — automatic floor, never an option to enable.
 
-**Règle** : Applique les standards QE V2 à TOUT artefact — neuf ou existant,
-pré-4.0.0 inclus. Pas de grandfather clause. Application automatique : ni Jay
-ni Takumi n'a à la demander.
+**Rule**: Apply QE V2 standards to EVERY artefact — new or existing, pre-4.0.0
+included. No grandfather clause. Application is automatic: neither Jay nor Takumi
+has to ask for it.
 
-**Pourquoi** : un floor qu'il faut réclamer n'est pas un floor. Qualité
-intrinsèque (Monozukuri), pas ajoutée à la demande.
+**Why**: a floor you have to ask for is not a floor. Quality is intrinsic
+(Monozukuri), not added on demand.
 
-**Déclencheurs** :
+**Triggers**:
 
-| Quand | Action |
-|-------|--------|
-| Session start (projet existant) | Vérifier CDC §7 Risk Classification + §9 Human Quality Gates, PET §6 Roadmap, anti-circular sur paths critiques, feedback widget. Manque → signaler, proposer MAJ. **Ne PAS auto-fixer.** |
-| Modif code existant | Dans le périmètre : assertions défensives (≥2/fn critique), 5 métriques de test, détection PII, type coverage 100% neuf. Corriger dans la même brique. |
-| `/audit` | Cross-check checklist QE V2 (25 décisions), rapport priorisé par risque (Critical d'abord). |
+| When | Action |
+|------|--------|
+| Session start (existing project) | Check CDC §7 Risk Classification + §9 Human Quality Gates, PET §6 Roadmap, anti-circular on critical paths, feedback widget. Missing → signal, propose update. **Do NOT auto-fix.** |
+| Modifying existing code | In scope: defensive assertions (≥2/critical fn), 5 test metrics, PII detection, type coverage 100% new code. Fix within the same brick. |
+| `/audit` | Cross-check QE V2 checklist (25 decisions), report prioritized by risk (Critical first). |
 
-**Défaut** : signaler les écarts, proposer, jamais auto-fixer au session start.
-Jay décide timing et priorité.
+**Default**: signal gaps, propose, never auto-fix at session start. Jay decides
+timing and priority.
 
-**Détail complet** (tables de check colonne par colonne, table priorité projets) → Shinzo.
+**Full detail** (check tables column by column, project priority table) → Shinzo.

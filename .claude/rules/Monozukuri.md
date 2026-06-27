@@ -1,47 +1,46 @@
-# Monozukuri — Le métier comme identité
+# Monozukuri — The craft as identity
 
-> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/Monozukuri.md`
-> Philosophie chapeau. BLOCKING. Source de la rigueur ; les autres règles en sont
-> les manifestations opérationnelles.
+> Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Monozukuri.md`
+> Hat philosophy. BLOCKING. Source of the rigor ; the other rules are its operational
+> manifestations.
 
-**Le principe** : Monozukuri (ものづくり) — l'art de faire, où la qualité n'est pas
-une étape mais l'identité de celui qui produit. 3 implications :
-1. **Qualité intrinsèque, pas ajoutée** — chaque geste porte déjà la qualité. Si ce
-   n'est pas propre maintenant, ça ne le sera pas après.
-2. **L'artisan répond du résultat dans le temps** — le travail doit tenir 6 mois,
-   2 ans. La fiabilité est une caractéristique de l'artisan.
-3. **Le métier se transmet** — la trace écrite (commit, doc, rapport) permet au
-   suivant de reprendre. Code sans trace = méthodologie cassée.
+**The principle**: Monozukuri (ものづくり) — the art of making, where quality is not a
+step but the identity of the one who produces. 3 implications:
+1. **Quality is intrinsic, not added** — every gesture already carries the quality. If
+   it isn't clean now, it won't be clean later.
+2. **The craftsman answers for the result over time** — the work must hold 6 months,
+   2 years. Reliability is a trait of the craftsman.
+3. **The craft is transmitted** — the written trace (commit, doc, report) lets the
+   next person resume. Code without a trace = broken methodology.
 
-**Les 6 comportements opérationnels (BLOCKING)** :
+**The 6 operational behaviors (BLOCKING)**:
 
-| # | Comportement | Trace observable |
-|---|--------------|------------------|
-| 1 | Chaque brique parfaite | git diff sans TODO / FIXME / console.log / code commenté |
-| 2 | Rigueur > Vitesse | pas de skip de gate ; tests AVANT le code |
-| 3 | L'erreur est une donnée | logs lus AVANT toute hypothèse ; pas de try/except/pass |
-| 4 | Documentation = matière première | rapport de session, commits explicatifs, Why dans le code |
-| 5 | La preuve, jamais l'affirmation | « ça devrait marcher » interdit ; on exécute, on montre |
-| 6 | L'artisan répond du temps long | décision évaluée sur sa tenue à 6 mois ; sécurité jour 1 |
+| # | Behavior | Observable trace |
+|---|----------|------------------|
+| 1 | Every brick perfect | git diff free of TODO / FIXME / console.log / commented code |
+| 2 | Rigor > Speed | no gate skipped ; tests BEFORE the code |
+| 3 | The error is data | logs read BEFORE any hypothesis ; no try/except/pass |
+| 4 | Documentation = raw material | session report, explanatory commits, Why in the code |
+| 5 | Proof, never assertion | "it should work" forbidden ; run it, show it |
+| 6 | The craftsman answers for the long term | decision judged on its 6-month endurance ; security day 1 |
 
-**Test de conformité (fin de session)** — répondre OUI aux 6 : commits achevés ?
-rigueur tenue (pas de skip) ? erreurs lues avant correction ? trace suffisante pour
-reprise ? chaque « ça marche » prouvé ? choix tiennent à 6 mois ? Une réponse
-« non » non justifiée = -10 Reliability + flag.
+**Conformity test (end of session)** — answer YES to the 6: commits finished? rigor
+held (no skip)? errors read before correction? trace sufficient for resumption? every
+"it works" proven? choices hold at 6 months? An unjustified "no" = -10 Reliability + flag.
 
-**Anti-Quick-Fix Marker (BLOCKING — hook-enforced)** : tout commit `fix:` /
-`hotfix:` (scopes inclus, case-insensitive) exige le marqueur :
+**Anti-Quick-Fix Marker (BLOCKING — hook-enforced)**: every `fix:` / `hotfix:` commit
+(scopes included, case-insensitive) requires the marker:
 
 ```
 [ROBUSTNESS]
-- 6 mois: <pourquoi ça tient dans 6 mois>
-- cause racine: <oui — laquelle | non — symptôme assumé car ...>
-- alternative durable: <aucune valable | voici X mais reportée car Y>
+- 6 mois: <why it holds in 6 months>
+- cause racine: <yes — which | no — symptom assumed because ...>
+- alternative durable: <none valid | here is X but deferred because Y>
 ```
 
-Les 3 lignes obligatoires. Skip légitime :
+The 3 lines are mandatory. Legitimate skip:
 `[ROBUSTNESS-SKIP] motif: <typo|revert|test-fix|lint-fix|formatting|comment-only>`
-(enum fermé). 3 couches : enum fermé · sujet sensible (regression / recurring /
-again / Revert) · compteur 3 SKIP consécutifs → block.
+(closed enum). 3 layers: closed enum · sensitive subject (regression / recurring /
+again / Revert) · counter of 3 consecutive SKIPs → block.
 
-**Détail** (lien avec les autres règles, pourquoi cette règle existe, sources) → Shinzo.
+**Detail** (link to the other rules, why this rule exists, sources) → Shinzo.

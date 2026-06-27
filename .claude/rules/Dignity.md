@@ -1,40 +1,37 @@
-# Dignity — Respecter l'intelligence de celui qui ne sait pas encore
+# Dignity — Respect the intelligence of the one who does not know yet
 
-> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/Dignity.md`
-> Principe fondateur. BLOCKING. S'applique à toutes les plateformes, contenus,
-> onboardings, interfaces, communications.
+> Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Dignity.md`
+> Founding principle. BLOCKING. Applies to all platforms, content, onboardings,
+> interfaces, communications.
 
-**Le principe** : « Respecter l'intelligence de celui qui ne sait pas encore. »
-Shinkofa traite l'utilisateur comme une personne à respecter, jamais comme un sujet
-à convertir. Le différenciateur fondamental — la posture, pas la tech.
+**The principle**: "Respect the intelligence of the one who does not know yet."
+Shinkofa treats the user as a person to respect, never as a subject to convert. The
+fundamental differentiator — posture, not tech.
 
-**Les 3 axiomes** :
-- **A. L'utilisateur n'est jamais le produit** — chaque donnée demandée sert
-  L'UTILISATEUR, pas l'analytics. Si une donnée ne change pas SON expérience → on
-  ne la demande pas. On dit ce que la donnée change pour lui.
-- **B. L'ignorance n'est pas la stupidité** — expliquer avec précision et
-  profondeur, jamais avec condescendance. Test dual : un HPI ne se sent pas pris
-  pour un idiot ET un novice comprend sans être submergé (les deux vrais).
-- **C. Le consentement est informé, pas manipulé** — pourquoi on demande, ce que
-  ça change, choix réel (pas de faux choix dégradé). Zéro dark pattern, FOMO,
-  compteur d'urgence.
+**The 3 axioms**:
+- **A. The user is never the product** — every datum requested serves THE USER, not
+  analytics. If a datum does not change THEIR experience → do not ask for it. State
+  what the datum changes for them.
+- **B. Ignorance is not stupidity** — explain with precision and depth, never with
+  condescension. Dual test: an HPI does not feel taken for a fool AND a novice
+  understands without being overwhelmed (both true).
+- **C. Consent is informed, not manipulated** — why you ask, what it changes, a real
+  choice (no degraded fake choice). Zero dark patterns, FOMO, urgency counters.
 
-**Les 7 moments de vérité** (où la dignité se gagne/perd) : accueil, explication,
-erreur, limite/paywall, vente, conversation IA, départ, notifications. Détail de
-chaque → Shinzo.
+**The 7 moments of truth** (where dignity is won/lost): welcome, explanation, error,
+limit/paywall, sale, AI conversation, departure, notifications. Detail of each → Shinzo.
 
-**Tests de conformité (BLOCKING)** sur chaque interface / copy / CTA / erreur /
-notif / flow :
+**Conformity tests (BLOCKING)** on every interface / copy / CTA / error / notif / flow:
 
-| Test | Seuil |
-|------|-------|
-| Intelligence (novice comprend ET expert non insulté) | les deux = oui |
-| Transparence (chaque donnée a son impact utilisateur visible) | 100% des champs |
-| Choix réel (refus/report sans mur ni dégradation punitive) | tout champ non-bloquant |
-| Dark patterns (fausse urgence, guilt-trip, FOMO, prix barré, désinscription compliquée) | 0 occurrence |
-| Ton (erreurs factuelles orientées solution ; notifs à valeur utilisateur) | 100% |
-| Vente (tiers présentés par ce qu'ils offrent, pas ce qui manque) | oui |
-| IA (propose sans prescrire, admet ses limites, ne pousse pas l'upsell) | oui |
-| Départ (suppression 2 clics, export proposé, zéro guilt-trip) | oui |
+| Test | Threshold |
+|------|-----------|
+| Intelligence (novice understands AND expert not insulted) | both = yes |
+| Transparency (every datum has its user impact visible) | 100% of fields |
+| Real choice (refuse/defer without wall or punitive degradation) | every non-blocking field |
+| Dark patterns (fake urgency, guilt-trip, FOMO, fake strikethrough price, hard unsubscribe) | 0 occurrence |
+| Tone (errors factual and solution-oriented ; notifs with user value) | 100% |
+| Sale (tiers presented by what they offer, not what is missing) | yes |
+| AI (proposes without prescribing, admits limits, does not push upsell) | yes |
+| Departure (deletion in 2 clicks, export offered, zero guilt-trip) | yes |
 
-**Détail** (origine, 7 moments développés a→h, exemples concrets) → Shinzo.
+**Detail** (origin, 7 moments developed a→h, concrete examples) → Shinzo.

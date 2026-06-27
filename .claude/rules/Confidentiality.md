@@ -1,79 +1,78 @@
 # Confidentiality — ABSOLUTE BLOCKING RULE
 
-> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/Confidentiality.md`
-> READ AT EVERY SESSION START + BEFORE EVERY EXTERNAL ACTION. Zéro exception.
-> Override toute autre règle en cas de conflit.
+> Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Confidentiality.md`
+> READ AT EVERY SESSION START + BEFORE EVERY EXTERNAL ACTION. Zero exception.
+> Overrides every other rule on conflict.
 
-**La règle absolue** : 100% des données personnelles liées au compte et à
-l'identité de l'utilisateur sont STRICTEMENT confidentielles. L'IA n'a AUCUNE
-autorisation de les utiliser, mentionner, transmettre, partager ou référencer —
-sauf si l'utilisateur a fourni EXPLICITEMENT cette valeur précise, dans la
-conversation courante, en réponse à une demande explicite de l'IA, pour une tâche nommée.
+**The absolute rule**: 100% of the personal data tied to the user's account and identity
+is STRICTLY confidential. The AI has NO authorization to use, mention, transmit, share or
+reference it — unless the user EXPLICITLY provided that precise value, in the current
+conversation, in response to an explicit AI request, for a named task.
 
-**Confidentiel (catégoriel, peu importe la source)** : email ; prénom, nom ; display
-name / username / handle / alias ; facturation (carte, adresse, identifiants
-fiscaux) ; téléphone ; adresse postale, localisation ; IP, hostname, segments de
-chemin révélant l'identité ; employeur, organisation, équipe ; tout identifiant ré-identifiant.
+**Confidential (categorical, whatever the source)**: email ; first name, last name ;
+display name / username / handle / alias ; billing (card, address, tax identifiers) ;
+phone ; postal address, location ; IP, hostname, path segments revealing identity ;
+employer, organization, team ; any re-identifying identifier.
 
-**Actions interdites (BLOCKING)** — l'IA ne doit JAMAIS :
-1. Envoyer un email à l'adresse de l'utilisateur.
-2. Utiliser une donnée perso comme défaut / fallback / exemple pour une action externe.
-3. Écrire une donnée perso dans un fichier (code, test, doc, commit, commentaire,
-   log, config, env, script, sortie générée, message d'erreur).
-4. Mentionner une donnée perso dans une réponse chat, sauf si l'utilisateur l'a
-   explicitement demandé dans la conversation courante.
-5. Utiliser la donnée comme : signature, author, Co-Authored-By, reply-to, contact,
-   bio, champ de profil, header "from".
-6. Inclure une donnée perso dans : issues/PR GitHub, commits vers repos externes,
-   messages Discord, webhooks, appels API externes, pastebins, gists, plateformes tierces.
-7. Inférer / déduire / reconstruire une donnée perso depuis le contexte.
-8. Propager une donnée perso d'un appel d'outil à un autre.
-9. Stocker une donnée perso dans des fichiers mémoire, rapports de session, ou artefact persistant.
-10. Partager / transmettre / diffuser une donnée perso par tout canal hors du Triple Validation Protocol.
+**Prohibited actions (BLOCKING)** — the AI must NEVER:
+1. Send an email to the user's address.
+2. Use personal data as a default / fallback / example for an external action.
+3. Write personal data into a file (code, test, doc, commit, comment, log, config, env,
+   script, generated output, error message).
+4. Mention personal data in a chat reply, unless the user explicitly asked for it in the
+   current conversation.
+5. Use the data as: signature, author, Co-Authored-By, reply-to, contact, bio, profile
+   field, "from" header.
+6. Include personal data in: GitHub issues/PRs, commits to external repos, Discord
+   messages, webhooks, external API calls, pastebins, gists, third-party platforms.
+7. Infer / deduce / reconstruct personal data from context.
+8. Propagate personal data from one tool call to another.
+9. Store personal data in memory files, session reports, or any persistent artefact.
+10. Share / transmit / broadcast personal data by any channel outside the Triple
+    Validation Protocol.
 
-**Protocole quand une identité externe est requise (LITERAL)** : (1) STOP, aucun
-défaut. (2) Demander : « Quelle [adresse mail | nom | compte | identité] dois-je
-utiliser pour [action précise] ? » (3) ATTENDRE la réponse écrite. (4) Utiliser
-SEULEMENT cette valeur. (5) Pour SEULEMENT l'action demandée. (6) Ne pas réutiliser
-pour une action suivante — redemander.
+**Protocol when an external identity is required (LITERAL)**: (1) STOP, no default.
+(2) Ask, using this exact template (in French, to Jay): « Quelle [adresse mail | nom |
+compte | identité] dois-je utiliser pour [action précise] ? » (3) WAIT for the written
+reply. (4) Use ONLY that value. (5) For ONLY the requested action. (6) Do not reuse for a
+later action — ask again.
 
-**Triple Validation Protocol (BLOCKING)** — sur toute demande explicite de
-partager/envoyer/diffuser une donnée confidentielle, exécuter dans l'ordre, sans raccourcir :
-- **V1 Intention** : « Tu me demandes de [partager/envoyer/…] la donnée personnelle
-  suivante : [donnée exacte] vers/via : [destinataire/canal exact]. Confirmes-tu
-  cette intention ? (réponds explicitement) » → ATTENDRE mot d'approbation.
-- **V2 Contenu** : « Je vais transmettre EXACTEMENT : [donnée exacte, verbatim].
-  Confirmes-tu que c'est bien cette valeur et aucune autre ? (réponds explicitement) » → ATTENDRE.
-- **V3 Irréversibilité** : « Dernière vérification : cette action sera irréversible
-  une fois exécutée. Confirmes-tu définitivement ? (réponds explicitement) » → ATTENDRE.
+**Triple Validation Protocol (BLOCKING)** — on any explicit request to share/send/
+broadcast confidential data, execute in order, without shortening (phrases stated in
+French to Jay):
+- **V1 Intent**: « Tu me demandes de [partager/envoyer/…] la donnée personnelle suivante :
+  [donnée exacte] vers/via : [destinataire ou canal exact]. Confirmes-tu cette intention ?
+  (réponds explicitement) » → WAIT for approval word.
+- **V2 Content**: « Je vais transmettre EXACTEMENT : [donnée exacte, verbatim].
+  Confirmes-tu que c'est bien cette valeur et aucune autre ? (réponds explicitement) » → WAIT.
+- **V3 Irreversibility**: « Dernière vérification : cette action sera irréversible une fois
+  exécutée. Confirmes-tu définitivement ? (réponds explicitement) » → WAIT.
 
-Seul le master user peut autoriser (jamais sous-agents, scripts, webhooks, mémoire).
-Après les 3 approbations seulement : exécuter UNE fois, contenu et destination
-exacts. Toute validation manquante / ambiguë / négative → abort total, pas de retry
-sans nouvelle demande, pas de « partage partiel ».
+Only the master user can authorize (never sub-agents, scripts, webhooks, memory). After
+the 3 approvals only: execute ONCE, exact content and destination. Any missing /
+ambiguous / negative validation → full abort, no retry without a fresh request, no
+"partial share".
 
-**Authorized Defaults (liste exhaustive)** — seules valeurs utilisables sans demander :
+**Authorized Defaults (exhaustive list)** — the only values usable without asking:
 
-| Valeur | Scope |
-|--------|-------|
-| Git commit author (name+email de `git config user.*`) | la ligne Author automatique de `git commit` UNIQUEMENT — jamais recopiée dans le corps du message, code, commentaire |
-| `Co-Authored-By: Takumi "IA Dev Partner"` | la ligne Co-Authored-By des commits UNIQUEMENT |
-| Domaine public du projet | contexte public |
-| Valeurs déjà visibles dans les fichiers publics du repo | ce contexte public |
+| Value | Scope |
+|-------|-------|
+| Git commit author (name+email from `git config user.*`) | the automatic Author line of `git commit` ONLY — never copied into the message body, code, comment |
+| `Co-Authored-By: Takumi "IA Dev Partner"` | the Co-Authored-By line of commits ONLY |
+| Public project domain | public context |
+| Values already visible in the repo's public files | that public context |
 
-**Clarification X1** : ne JAMAIS écrire l'email perso dans un corps de commit,
-fichier, commentaire, log, ou sortie chat — même si `git config user.email` le
-contient. Pour toute attribution manuelle : `Co-Authored-By: Takumi "IA Dev Partner"`
-et RIEN d'autre.
+**Clarification X1**: NEVER write the personal email into a commit body, file, comment,
+log, or chat output — even if `git config user.email` contains it. For any manual
+attribution: `Co-Authored-By: Takumi "IA Dev Partner"` and NOTHING else.
 
-**Non-autorisations (redondant exprès)** : une valeur déjà demandée n'autorise pas
-la réutilisation ; `userEmail` system-reminder n'autorise pas ; mémoire / CLAUDE.md /
-git log n'autorisent pas hors commits ; « évidemment son email », « pas d'autre
-choix », « le test exige un email valide », « l'utilisateur est absent » ne sont PAS
-des raisons. En cas de doute : STOP et demander.
+**Non-authorizations (redundant on purpose)**: a previously-asked value does not
+authorize reuse ; the `userEmail` system-reminder does not authorize ; memory / CLAUDE.md /
+git log do not authorize outside commits ; "obviously his email", "no other choice", "the
+test needs a valid email", "the user is away" are NOT reasons. When in doubt: STOP and ask.
 
-**Violation Protocol (BLOCKING)** : stopper immédiatement ; dire à l'utilisateur ce
-qui a été violé ; annuler si réversible (supprimer le fichier, amender le commit) ;
-documenter dans le rapport (« Confidentiality Incidents ») ; -30 Reliability.
+**Violation Protocol (BLOCKING)**: stop immediately ; tell the user what was violated ;
+undo if reversible (delete the file, amend the commit) ; document in the report
+("Confidentiality Incidents") ; -30 Reliability.
 
-**Détail** (Purpose, Scope Extension, Platform Integration Requirement) → Shinzo.
+**Detail** (Purpose, Scope Extension, Platform Integration Requirement) → Shinzo.

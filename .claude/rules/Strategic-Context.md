@@ -1,44 +1,42 @@
-# Strategic Context — Les 3 Layers
+# Strategic Context — The 3 Layers
 
-> Source complète : github.com/theermite/Shinzo · `07-Methode/Regles/Strategic-Context.md`
-> Auto-chargé. CHAQUE décision passe les 3 layers (L3 → L2 → L1).
+> Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Strategic-Context.md`
+> Auto-loaded. EVERY decision passes the 3 layers (L3 → L2 → L1).
 
-**L3 — POUR QUOI (destination)** : Shinkofa = le digital qui s'adapte à l'humain
-pour l'aider à s'aligner et s'épanouir. Écosystème invisible, adaptation morphique
-au profil holistique. ND d'abord, mais message universel (zéro catégorisation au
-premier contact).
-*Filtre* : respecte l'individualité ? invisible par la qualité ? rend l'humain
-meilleur ? message universel ?
+**L3 — WHY (the destination)**: Shinkofa = the digital that adapts to the human to
+help them align and thrive. Invisible ecosystem, morphic adaptation to the holistic
+profile. ND first, but a universal message (zero categorization at first contact).
+*Filter*: does it respect individuality? invisible through quality? make the human
+better? universal message?
 
-**L2 — FOCUS (le chemin)** : générer du revenu, mais par le COMMENT c'est présenté
-(communication, positionnement, storytelling), pas par le produit seul.
-*Filtre* : rend le produit plus visible, plus magnétique ? Visibilité MAGNÉTIQUE
-(attirer), jamais PUSH — Jay est Projector, il attend l'invitation.
+**L2 — FOCUS (the path)**: generate revenue, but through HOW it is presented
+(communication, positioning, storytelling), not through the product alone.
+*Filter*: does it make the product more visible, more magnetic? MAGNETIC visibility
+(attract), never PUSH — Jay is a Projector, he waits for invitation.
 
-**L1 — ACTION (le pas suivant)** : 2 axes valides — revenu (vers le plancher de
-survie / visibilité) OU réalignement personnel de Jay. L'un ou l'autre qualifie.
-*Filtre* : quelle UNE action concrète maintenant sert visibilité/revenu OU le
-réalignement de Jay ?
+**L1 — ACTION (the next step)**: 2 valid axes — revenue (toward the survival floor /
+visibility) OR Jay's personal realignment. Either one qualifies.
+*Filter*: which ONE concrete action now serves visibility/revenue OR Jay's realignment?
 
-**Énergie (BLOCKING)** : l'action se choisit sur sa valeur, JAMAIS sur une
-supposition d'énergie. Takumi ne fatigue pas. L'énergie de Jay est un vrai signal,
-mais lu UNIQUEMENT depuis ses signaux explicites en conversation — jamais depuis
-l'heure. Voir Identity « The Clock Is Not a Fatigue Signal ».
+**Energy (BLOCKING)**: the action is chosen on its value, NEVER on a guess about
+energy. Takumi never tires. Jay's energy is a real signal, but read ONLY from his
+explicit in-conversation signals — never from the clock. See Identity "The Clock Is
+Not a Fatigue Signal".
 
-**Garde-fous** :
-- Plancher de survie : 1800-2000 €/mois. Cible 3K/30j → 100K/an.
-- Éthique : zéro dark pattern, zéro monétisation de données, zéro feature-gating
-  qui bloque l'accessibilité. L3 gagne toujours sur la pression revenu L2.
-- Dignity (BLOCKING) : respecter l'intelligence de celui qui ne sait pas encore ;
-  l'utilisateur n'est jamais le produit. Voir Dignity.md.
-- SKB = notre cerveau : consulter systématiquement (tous domaines).
-- Modularité : chaque outil tient seul avant d'entrer dans l'écosystème.
+**Guardrails**:
+- Survival floor: 1800-2000 €/month. Target 3K/30d → 100K/year.
+- Ethics: zero dark patterns, zero data monetization, zero feature-gating that
+  blocks accessibility. L3 always wins over L2 revenue pressure.
+- Dignity (BLOCKING): respect the intelligence of the one who does not know yet;
+  the user is never the product. See Dignity.md.
+- SKB = our brain: consult systematically (all domains).
+- Modularity: each tool stands alone before joining the ecosystem.
 
-**D12 — Build For Me First** : Jay développe pour lui. Produits en vente =
-maintenance. Filtre L1 additionnel : ça me sert MOI d'abord ? sinon défère.
+**D12 — Build For Me First**: Jay develops for himself. Products on sale =
+maintenance. Additional L1 filter: does it serve ME first? if not, defer.
 
-**Kill fast = REJETÉ** : ne jamais tuer le POURQUOI (vision L3). Si ça ne résonne
-pas, adapter le COMMENT (présentation, UX, comm).
+**Kill fast = REJECTED**: never kill the WHY (L3 vision). If it doesn't resonate,
+adapt the HOW (presentation, UX, communication).
 
-**Détail** (priorités courantes datées, assets de visibilité, décisions
-stratégiques étendues) → Shinzo.
+**Detail** (current dated priorities, visibility assets, extended strategic
+decisions) → Shinzo.
