@@ -75,9 +75,14 @@ SKIP_PATH_PARTS = (
     "/docs/",
     "/mnk/",
     "/rules/",
+    "/__tests__/",
 )
 
-# Filename patterns that do NOT require veille evidence
+# Filename patterns that do NOT require veille evidence.
+# Test files legitimately import the framework (pytest, vitest) and the module
+# under test — both may be external — so they are exempt by design, like a
+# `[VEILLE-SKIP] motif: test-only`. Covers .test./.spec. plus the pytest naming
+# conventions test_*.py / test-*.py / *_test.py (Jay 2026-06-24 friction).
 SKIP_FILENAME_PATTERNS = (
     r"\.test\.",
     r"\.spec\.",
@@ -86,6 +91,9 @@ SKIP_FILENAME_PATTERNS = (
     r"conftest\.py",
     r"setup\.py",
     r"setup\.cfg",
+    r"^test_",
+    r"^test-",
+    r"_test\.py$",
 )
 
 # Layer A — closed enum of acceptable SKIP motifs

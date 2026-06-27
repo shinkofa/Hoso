@@ -1,10 +1,10 @@
 """Tests for guards/pre-push-drift-check.py — D1 brick 2.
 
 PreToolUse Bash guard: when about to `git push` from a propagated project, warn
-(never block) if any received methodology file has drifted from the MNK-GoRin
+(never block) if any received methodology file has drifted from the Kata
 canonical source. Degrades silently when the source is not reachable (e.g. VPS).
 
-The hook locates the canonical source as a sibling directory named "MNK-GoRin"
+The hook locates the canonical source as a sibling directory named "Kata"
 (all repos live side by side: D:/30-Dev-Projects/* locally, ~/apps/* on VPS),
 overridable via the MNK_GORIN_SRC env var.
 """
@@ -49,8 +49,8 @@ def _run(cwd: Path, command: str, env_extra: dict | None = None) -> subprocess.C
 
 
 def _src_and_project(tmp_path: Path):
-    """Create a sibling source 'MNK-GoRin' and a project repo under tmp_path."""
-    src = _make_repo(tmp_path / "MNK-GoRin")
+    """Create a sibling source 'Kata' and a project repo under tmp_path."""
+    src = _make_repo(tmp_path / "Kata")
     proj = _make_repo(tmp_path / "Kobo")
     return src, proj
 
@@ -87,7 +87,7 @@ def test_silent_on_non_push_command(tmp_path):
 
 
 def test_silent_when_source_missing(tmp_path):
-    # A lone project with no sibling MNK-GoRin and no env override.
+    # A lone project with no sibling Kata and no env override.
     proj = _make_repo(tmp_path / "Kobo")
     _write(proj, "rules/Quality.md", "whatever\n")
     res = _run(proj, "git push")
@@ -96,8 +96,8 @@ def test_silent_when_source_missing(tmp_path):
 
 
 def test_pass_when_cwd_is_canonical_source(tmp_path):
-    # Editing files in MNK-GoRin itself is legitimate — never warn there.
-    src = _make_repo(tmp_path / "MNK-GoRin")
+    # Editing files in Kata itself is legitimate — never warn there.
+    src = _make_repo(tmp_path / "Kata")
     _write(src, "rules/Quality.md", "canonical\n")
     res = _run(src, "git push origin main")
     assert res.returncode == 0

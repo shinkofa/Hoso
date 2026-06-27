@@ -55,19 +55,33 @@ Règle d'or : **demander un artefact vérifiable, jamais une auto-attestation.**
 
 | Règle d'écriture | Pourquoi |
 |------------------|----------|
-| **Positif > négatif** ("fais X", pas "ne fais pas Y") ; si négatif obligatoire, ajoute l'alternative positive | le négatif est plus dur à suivre, gaspille des tokens de raisonnement |
+| **Positif > négatif** ("fais X", pas "ne fais pas Y") ; si négatif obligatoire, ajoute l'alternative positive | la négation est un **risque de compréhension**, pas un défaut de style — voir "Anti-négation" ci-dessous |
 | **Pourquoi obligatoire** sur chaque règle | le rationale augmente l'adhérence, pas que la compréhension |
 | **Un seul marqueur d'emphase** (pas "CRITICAL + MUST + BLOCKING") | l'emphase empilée sur-déclenche / dilue |
 | **Déclencheur nommé**, jamais "si pertinent" / "si besoin" | si l'IA doit juger la pertinence, le raisonnement dégrade la règle |
 | **Jargon glosé** la 1re fois | portabilité : un modèle plus faible ne devine pas |
 | Pour un fichier de règles : **BLOCKING en tête ET rappelé en fin** | l'info au milieu d'un long contexte est déprioritisée (lost-in-the-middle) |
 
+## Anti-négation — la négation est un risque, pas un détail de style
+
+Écris chaque règle au positif ("fais X"). C'est une règle de **fiabilité**, pas d'élégance.
+
+Pourquoi : un modèle lit mal la négation. Devant "ne fais pas X", le token saillant qui reste est **X** — la consigne peut donc produire l'inverse de ce qu'elle interdit. Le défaut n'est pas que "ne fais pas Y" est moins joli ; c'est que ça **augmente la probabilité de faire Y**. La négation déplace la charge : au lecteur de calculer le complément ("tout sauf Y"), au lieu de lui donner directement la cible ("fais Z").
+
+Geste concret :
+
+- **Par défaut** : formule la cible, jamais l'interdit. "Range chaque fichier à sa place" plutôt que "ne laisse pas de fichiers en vrac".
+- **Si une interdiction est inévitable** (sécurité, garde-fou dur) : garde-la, mais **colle l'alternative positive juste après** — "jamais `rm -rf` sur du travail ; à la place `mv x x-backup`". L'interdit pose la limite, le positif donne le chemin.
+- **Portabilité** : un modèle plus faible (palier micro / chat) rate la négation encore plus souvent. Le positif est ce qui survit quand le contexte est mince.
+
+Source : feedback Jay 2026-06-24 (travail micro-version portabilité — l'IA lit mal la négation, on bascule en formulation positive).
+
 ## Pourquoi chaque champ tient (fondement IA, vérifié)
 
 | Champ | Mécanisme IA ciblé | Source (2025-2026) |
 |-------|--------------------|--------------------|
 | Niveau non empilé | l'emphase agressive sur-déclenche | Anthropic (Claude 4.5/4.6) |
-| Règle au positif | le négatif est plus dur à suivre | Anthropic + OpenAI |
+| Règle au positif | le modèle lit mal la négation (risque de faire l'inverse) | Anthropic + OpenAI |
 | Pourquoi | le rationale ↑ l'adhérence | Anthropic ; constitution Claude "reason-based" jan 2026 |
 | Déclencheur nommé | le raisonnement dégrade les règles strictes | "When Thinking Fails", arXiv 2505.11423 |
 | Preuve falsifiable | recall ≠ compliance ; CoT fidèle ~25% | "Models Recall What They Violate" ; Anthropic |

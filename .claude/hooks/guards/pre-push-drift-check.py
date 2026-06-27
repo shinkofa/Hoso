@@ -4,15 +4,16 @@ before a `git push` from a propagated project.
 
 Trigger: PreToolUse Bash whose command is a `git push`.
 
-When fired from a propagated project (any repo NOT named MNK-GoRin), it compares
+When fired from a propagated project (any repo NOT named Kata), it compares
 that project's .claude/{rules,agents,hooks,skills} against the canonical
-MNK-GoRin source and, if a received file was edited locally (drift), prints a
+Kata source (MNK-GoRin methodology) and, if a received file was edited locally
+(drift), prints a
 WARNING listing the drifted files. It NEVER blocks the push (exit 0) — the right
 fix is social/process (edit the source, re-propagate), not a hard stop.
 
 Locating the source:
-- env MNK_GORIN_SRC if set (absolute path to the MNK-GoRin repo), else
-- a sibling directory named "MNK-GoRin" (all repos live side by side:
+- env MNK_GORIN_SRC if set (absolute path to the Kata repo), else
+- a sibling directory named "Kata" (all repos live side by side:
   D:/30-Dev-Projects/* locally, ~/apps/* on the VPS).
 If the source is not found, the hook degrades silently (pass-through) — e.g. a
 clone where the canonical repo is absent.
@@ -36,12 +37,12 @@ import common  # noqa: E402
 import drift  # noqa: E402
 
 SYNC_DIRS = ("rules", "agents", "hooks", "skills")
-CANONICAL_NAME = "MNK-GoRin"
+CANONICAL_NAME = "Kata"
 _GIT_PUSH_RE = re.compile(r"\bgit\s+push\b")
 
 
 def _find_source(repo_root: Path) -> Path | None:
-    """Locate the canonical MNK-GoRin repo, or None if unreachable."""
+    """Locate the canonical Kata repo (MNK-GoRin methodology source), or None."""
     override = os.environ.get("MNK_GORIN_SRC", "").strip()
     if override:
         cand = Path(override)
@@ -74,13 +75,13 @@ def _emit_warning(drifted: list[str]) -> None:
     listing = "\n".join(f"  ~ {f}" for f in drifted)
     common.warn(
         common.format_warn(
-            f"{len(drifted)} methodology file(s) drifted from MNK-GoRin "
+            f"{len(drifted)} methodology file(s) drifted from Kata "
             f"in this project (locally edited canonical file)",
-            "Fix at the SOURCE (MNK-GoRin) then re-propagate — do not edit "
+            "Fix at the SOURCE (Kata) then re-propagate — do not edit "
             "propagated files in the project. "
             "(If the source merely moved ahead, run the propagation instead.)\n"
             f"{listing}",
-            reference="rules/Workflows.md (methodology is canonical in MNK-GoRin)",
+            reference="rules/Workflows.md (methodology is canonical in Kata)",
         )
     )
 

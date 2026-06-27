@@ -59,7 +59,7 @@ NON_DEPLOYS = [
     "git status",
     "git pull --ff-only",
     "grep -rn 'ssh.*docker|deploy|systemctl' .claude/hooks/",
-    "ssh vps 'rm -f ~/apps/MNK-GoRin/.claude/hooks/guards/pre-deploy-vault-check-TEST.py'",
+    "ssh vps 'rm -f ~/apps/Kata/.claude/hooks/guards/pre-deploy-vault-check-TEST.py'",
     "ssh vps 'bash -s'",
     "cat docker-compose.yml",
     "rm pre-deploy-old.py",

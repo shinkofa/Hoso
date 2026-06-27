@@ -248,6 +248,33 @@ def test_blocks_after_three_consecutive_skips(tmp_path):
     assert b"threshold reached" in r3.stderr
 
 
+def test_silent_on_fix_string_inside_node_e(tmp_path):
+    # `node -e "...git commit -m \"fix:\"..."` is a JS test of a regex, NOT a real
+    # commit. `git commit` lives inside a quoted -e argument -> must pass through.
+    transcript = _make_transcript(tmp_path, "no marker")
+    cmd = 'node -e "const m = \'git commit -m \\"fix: x\\"\'; console.log(/fix:/.test(m))"'
+    r = _run(cmd, transcript=transcript, session_id=_sid())
+    assert r.returncode == 0, f"git commit inside node -e must not gate: {r.stderr!r}"
+    assert r.stderr == b""
+
+
+def test_silent_on_fix_string_inside_echo(tmp_path):
+    transcript = _make_transcript(tmp_path, "no marker")
+    r = _run("""echo 'git commit -m "fix: y"'""", transcript=transcript, session_id=_sid())
+    assert r.returncode == 0, f"git commit inside echo must not gate: {r.stderr!r}"
+    assert r.stderr == b""
+
+
+def test_real_fix_commit_in_compound_still_gates(tmp_path):
+    # Regression: a REAL `git commit -m "fix:"` as a command (even chained after
+    # &&) must still gate when no marker is present.
+    transcript = _make_transcript(tmp_path, "no marker")
+    r = _run('cd repo && git commit -m "fix(api): clamp size"',
+             transcript=transcript, session_id=_sid())
+    assert r.returncode == 2, f"a real chained fix commit must still gate: {r.stderr!r}"
+    assert b"ROBUSTNESS" in r.stderr
+
+
 def test_full_marker_resets_skip_counter(tmp_path):
     """A real [ROBUSTNESS] marker resets the SKIP counter to 0."""
     sid = _sid()

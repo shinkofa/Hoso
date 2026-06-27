@@ -322,3 +322,45 @@ def test_no_marker_fresh_session_still_blocks(tmp_path):
     t = _write_transcript(tmp_path, {"role": "assistant", "content": [{"type": "text", "text": "no marker"}]})
     r = _run_sid(t, file_path="lib/app/foo.ex", content="def a, do: :ok\n", session_id=sid)
     assert r.returncode == 2, f"fresh session with no veille must block: {r.stderr!r}"
+
+
+# --- pytest-convention test files are exempt from veille (Jay 2026-06-24) -----
+# A test file legitimately imports pytest + the module under test (both may be
+# external). It must NOT be flagged "sensitive: new external import". The
+# existing exemptions covered `.test.`, `.spec.`, `conftest.py` but NOT the
+# pytest naming `test_*.py` / `test-*.py` / `*_test.py`, nor a `__tests__/` dir
+# at the PATH level. Sensitive (Layer B) must never fire on an exempt path.
+
+
+def test_pytest_test_file_exempt_no_marker(tmp_path):
+    # `test_*.py` importing an external lib (pytest) must pass with NO marker.
+    r = _run(None, file_path="scripts/__tests__/test_portable_drift.py",
+             content="import pytest\nimport requests\n\ndef test_it():\n    assert requests\n")
+    assert r.returncode == 0, f"pytest test_*.py must be exempt: {r.stderr!r}"
+
+
+def test_dash_test_file_exempt_no_marker(tmp_path):
+    r = _run(None, file_path="scripts/test-drift.py",
+             content="import pytest\n\ndef test_x():\n    assert True\n")
+    assert r.returncode == 0, f"test-*.py must be exempt: {r.stderr!r}"
+
+
+def test_underscore_test_suffix_exempt_no_marker(tmp_path):
+    r = _run(None, file_path="pkg/foo_test.py",
+             content="import pytest\n\ndef test_y():\n    assert True\n")
+    assert r.returncode == 0, f"*_test.py must be exempt: {r.stderr!r}"
+
+
+def test_dunder_tests_dir_path_exempt_no_marker(tmp_path):
+    # A non-.test.* file living under a __tests__/ directory is exempt by PATH.
+    r = _run(None, file_path="lib/__tests__/helper.ts",
+             content="import { describe } from 'vitest'\nimport axios from 'axios'\n")
+    assert r.returncode == 0, f"__tests__/ dir must be exempt by path: {r.stderr!r}"
+
+
+def test_production_py_with_new_import_still_blocks(tmp_path):
+    # Regression: a NON-test source file with a new external import still blocks
+    # when no marker is present (the exemption is scoped to test files only).
+    r = _run(None, file_path="src/app/service.py",
+             content="import requests\n\ndef fetch():\n    return requests.get('x')\n")
+    assert r.returncode == 2, f"production file must still require evidence: {r.stderr!r}"

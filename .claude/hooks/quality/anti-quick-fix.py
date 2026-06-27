@@ -54,6 +54,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -140,33 +141,57 @@ STATE_NAME = "robustness-skips"
 # --- Command parsing ---------------------------------------------------------
 
 
-def is_gated_commit(cmd: str) -> tuple[bool, str]:
-    """Return (is_gated, subject). subject = first -m message subject line, or ''.
+def _command_has_git_commit(cmd: str) -> bool:
+    """True only if `git` and `commit` appear as ADJACENT command tokens.
 
-    Not gated when: not a commit, --amend, info subcommand, no -m message,
-    subject not starting with fix/hotfix.
+    Tokenizing with shlex means `git commit` buried inside a quoted argument to
+    another program (e.g. `node -e "...git commit -m fix:..."`, `echo '...'`) is
+    NOT a real commit and does not gate (Jay 2026-06-24 friction — a regex test
+    string was blocked as if it were a commit). On unbalanced quotes shlex
+    raises; we fall back to the conservative substring match so a genuinely
+    malformed-but-real commit still gates rather than slips through.
     """
-    if not cmd:
-        return False, ""
-    if not _COMMIT_CMD_RE.search(cmd):
-        return False, ""
-    if _AMEND_RE.search(cmd):
-        return False, ""
-    if _GIT_INFO_RE.search(cmd):
-        return False, ""
+    try:
+        tokens = shlex.split(cmd, posix=True)
+    except ValueError:
+        return bool(_COMMIT_CMD_RE.search(cmd))
+    return any(
+        tokens[i] == "git" and tokens[i + 1] == "commit"
+        for i in range(len(tokens) - 1)
+    )
 
+
+def _is_real_commit_cmd(cmd: str) -> bool:
+    """A real `git commit` invocation, excluding --amend and info subcommands."""
+    if not cmd:
+        return False
+    if not _command_has_git_commit(cmd):
+        return False
+    if _AMEND_RE.search(cmd):
+        return False
+    if _GIT_INFO_RE.search(cmd):
+        return False
+    return True
+
+
+def _extract_subject(cmd: str) -> str:
+    """First -m / --message subject line, or '' when there is no message arg
+    (e.g. bare `git commit` opening an editor — out of scope)."""
     m = _MESSAGE_ARG_RE.search(cmd)
     if not m:
-        # No -m: this could be `git commit` (opens editor). Out of scope —
-        # the hook cannot read the editor buffer. Pass through.
-        return False, ""
-
+        return ""
     raw_msg = m.group(1) or m.group(2) or m.group(3) or ""
-    subject = raw_msg.splitlines()[0] if raw_msg else ""
+    return raw_msg.splitlines()[0] if raw_msg else ""
 
+
+def is_gated_commit(cmd: str) -> tuple[bool, str]:
+    """Return (is_gated, subject). Gated only when a REAL git commit carries a
+    -m subject starting with fix/hotfix."""
+    if not _is_real_commit_cmd(cmd):
+        return False, ""
+    subject = _extract_subject(cmd)
     if not _FIX_SUBJECT_RE.match(subject):
         return False, ""
-
     return True, subject
 
 
@@ -190,12 +215,31 @@ def _extract_text(entry) -> str:
     return "\n".join(chunks)
 
 
-def latest_marker(transcript_path: str) -> tuple[str, str, str] | None:
-    """Return (marker_type, block_text, hash) of the most recent marker, or None.
+def _raw_entry_text(raw: str) -> str:
+    """Plain text of one transcript JSONL line (falls back to the raw line)."""
+    try:
+        return _extract_text(json.loads(raw))
+    except (json.JSONDecodeError, ValueError):
+        return raw
 
-    `block_text` is the marker line PLUS the next few lines (so Layer A body
-    validation can see the 3 required dashed fields).
+
+def _marker_from_text(text: str) -> tuple[str, str, str] | None:
+    """Last marker in a text blob -> (marker_type, block_text, hash), or None.
+
+    `block_text` is the marker line PLUS up to 8 following lines, so Layer A
+    body validation can see the 3 required dashed fields.
     """
+    matches = list(_MARKER_RE.finditer(text))
+    if not matches:
+        return None
+    m = matches[-1]
+    block_text = "\n".join(text[m.start():].splitlines()[:9])
+    digest = hashlib.sha1(block_text.encode("utf-8")).hexdigest()[:16]
+    return m.group(1), block_text, digest
+
+
+def latest_marker(transcript_path: str) -> tuple[str, str, str] | None:
+    """Return (marker_type, block_text, hash) of the most recent marker, or None."""
     if not transcript_path or not os.path.isfile(transcript_path):
         return None
     try:
@@ -203,28 +247,13 @@ def latest_marker(transcript_path: str) -> tuple[str, str, str] | None:
             lines = f.readlines()
     except OSError:
         return None
-    recent = lines[-TRANSCRIPT_SCAN_LIMIT:]
-    for raw in reversed(recent):
+    for raw in reversed(lines[-TRANSCRIPT_SCAN_LIMIT:]):
         raw = raw.strip()
         if not raw:
             continue
-        try:
-            entry = json.loads(raw)
-            text = _extract_text(entry)
-        except (json.JSONDecodeError, ValueError):
-            text = raw
-        matches = list(_MARKER_RE.finditer(text))
-        if not matches:
-            continue
-        m = matches[-1]
-        marker_type = m.group(1)
-        # Capture the marker line + up to 8 following lines for body validation.
-        start = m.start()
-        tail = text[start:]
-        block_lines = tail.splitlines()[:9]
-        block_text = "\n".join(block_lines)
-        digest = hashlib.sha1(block_text.encode("utf-8")).hexdigest()[:16]
-        return marker_type, block_text, digest
+        found = _marker_from_text(_raw_entry_text(raw))
+        if found:
+            return found
     return None
 
 
@@ -278,90 +307,92 @@ def _block(msg: str) -> None:
     sys.exit(2)
 
 
-def main() -> None:
-    _, data = read_hook_input()
-    cmd = get_command(data)
-    gated, subject = is_gated_commit(cmd)
-    if not gated:
-        pass_through()
+def _block_no_marker(subject: str) -> None:
+    _block(format_block(
+        reason=f"`fix:` / `hotfix:` commit without [ROBUSTNESS] marker (subject: {subject!r})",
+        recovery=(
+            "Output the marker BEFORE retrying the commit:\n"
+            "  [ROBUSTNESS]\n"
+            "  - 6 mois: <pourquoi cette correction tient dans 6 mois>\n"
+            "  - cause racine: <oui -- quelle racine | non -- symptome assume car ...>\n"
+            "  - alternative durable: <aucune valable | voici X mais reportee car Y>\n"
+            "Or, for trivial commits, emit:\n"
+            f"  [ROBUSTNESS-SKIP] motif: <one of {sorted(ALLOWED_SKIP_MOTIFS)}>"
+        ),
+        reference="rules/Monozukuri.md > Anti-Quick-Fix Marker",
+    ))
 
-    transcript_path = data.get("transcript_path") or os.environ.get("CLAUDE_TRANSCRIPT_PATH", "")
-    session_id = data.get("session_id") or os.environ.get("CLAUDE_SESSION_ID", "")
-    repo_root = find_repo_root()
 
-    latest = latest_marker(transcript_path)
-    counter = load_counter(session_id, repo_root)
+def _skip_motif(block_text: str) -> str:
+    m = _SKIP_MOTIF_RE.search(block_text)
+    return m.group(1).lower() if m else ""
 
-    if latest is None:
+
+def _enforce_layer_b(subject: str, block_text: str) -> None:
+    """SKIP refused when the subject is a regression / revert (except motif=revert
+    on a `Revert ` subject)."""
+    reason = subject_demands_full_marker(subject)
+    if not reason:
+        return
+    if _skip_motif(block_text) == "revert" and _REVERT_SUBJECT_RE.search(subject):
+        return
+    _block(format_block(
+        reason=f"[ROBUSTNESS-SKIP] refused -- {reason}",
+        recovery=(
+            "Emit the full [ROBUSTNESS] marker (3 lines) BEFORE retrying. "
+            "A regression or revert demands explicit reflection on durability "
+            "and root cause; a skip motif is not sufficient."
+        ),
+        reference="rules/Monozukuri.md > Anti-Quick-Fix Marker (Layer B)",
+    ))
+
+
+def _enforce_layer_a(block_text: str) -> None:
+    """SKIP motif must be in the closed enum."""
+    motif = _skip_motif(block_text)
+    if motif not in ALLOWED_SKIP_MOTIFS:
         _block(format_block(
-            reason=f"`fix:` / `hotfix:` commit without [ROBUSTNESS] marker (subject: {subject!r})",
+            reason=f"[ROBUSTNESS-SKIP] motif '{motif or '(empty)'}' not in closed enum",
             recovery=(
-                "Output the marker BEFORE retrying the commit:\n"
-                "  [ROBUSTNESS]\n"
-                "  - 6 mois: <pourquoi cette correction tient dans 6 mois>\n"
-                "  - cause racine: <oui -- quelle racine | non -- symptome assume car ...>\n"
-                "  - alternative durable: <aucune valable | voici X mais reportee car Y>\n"
-                "Or, for trivial commits, emit:\n"
-                f"  [ROBUSTNESS-SKIP] motif: <one of {sorted(ALLOWED_SKIP_MOTIFS)}>"
+                f"Use one of {sorted(ALLOWED_SKIP_MOTIFS)} "
+                "or emit a full [ROBUSTNESS] marker instead."
             ),
-            reference="rules/Monozukuri.md > Anti-Quick-Fix Marker",
+            reference="rules/Monozukuri.md > Anti-Quick-Fix Marker (Layer A)",
         ))
 
-    marker_type, block_text, marker_hash = latest
 
-    # Layer B: subject mentions regression / revert -> SKIP refused (except motif=revert
-    # when the subject is a Revert).
-    layer_b_reason = subject_demands_full_marker(subject)
-    if layer_b_reason and marker_type == "ROBUSTNESS-SKIP":
-        m = _SKIP_MOTIF_RE.search(block_text)
-        motif = m.group(1).lower() if m else ""
-        # Special allowance: `motif: revert` on a `Revert ` subject is legitimate.
-        if not (motif == "revert" and _REVERT_SUBJECT_RE.search(subject)):
-            _block(format_block(
-                reason=f"[ROBUSTNESS-SKIP] refused -- {layer_b_reason}",
-                recovery=(
-                    "Emit the full [ROBUSTNESS] marker (3 lines) BEFORE retrying. "
-                    "A regression or revert demands explicit reflection on durability "
-                    "and root cause; a skip motif is not sufficient."
-                ),
-                reference="rules/Monozukuri.md > Anti-Quick-Fix Marker (Layer B)",
-            ))
-
-    if marker_type == "ROBUSTNESS-SKIP":
-        # Layer A: motif must be in enum
-        m = _SKIP_MOTIF_RE.search(block_text)
-        motif = m.group(1).lower() if m else ""
-        if motif not in ALLOWED_SKIP_MOTIFS:
-            _block(format_block(
-                reason=f"[ROBUSTNESS-SKIP] motif '{motif or '(empty)'}' not in closed enum",
-                recovery=(
-                    f"Use one of {sorted(ALLOWED_SKIP_MOTIFS)} "
-                    "or emit a full [ROBUSTNESS] marker instead."
-                ),
-                reference="rules/Monozukuri.md > Anti-Quick-Fix Marker (Layer A)",
-            ))
-
-        # Layer C: counter (count once per unique marker hash)
-        if counter["last_marker_hash"] != marker_hash:
-            counter["skip_count"] += 1
-        if counter["skip_count"] >= SKIP_COUNT_THRESHOLD:
-            save_counter(session_id, repo_root, counter["skip_count"], marker_hash)
-            _block(format_block(
-                reason=(
-                    f"[ROBUSTNESS-SKIP] threshold reached "
-                    f"(consecutive skips: {counter['skip_count']}, threshold {SKIP_COUNT_THRESHOLD})"
-                ),
-                recovery=(
-                    "Emit a full [ROBUSTNESS] marker (3 lines) -- the counter "
-                    "resets only with a real reflection, not with another SKIP."
-                ),
-                reference="rules/Monozukuri.md > Anti-Quick-Fix Marker (Layer C)",
-            ))
-
+def _enforce_skip_counter(marker_hash: str, counter: dict,
+                          session_id: str, repo_root: Path) -> None:
+    """Layer C — block at the 3rd consecutive SKIP (counted once per hash)."""
+    if counter["last_marker_hash"] != marker_hash:
+        counter["skip_count"] += 1
+    if counter["skip_count"] >= SKIP_COUNT_THRESHOLD:
         save_counter(session_id, repo_root, counter["skip_count"], marker_hash)
-        sys.exit(0)
+        _block(format_block(
+            reason=(
+                f"[ROBUSTNESS-SKIP] threshold reached "
+                f"(consecutive skips: {counter['skip_count']}, threshold {SKIP_COUNT_THRESHOLD})"
+            ),
+            recovery=(
+                "Emit a full [ROBUSTNESS] marker (3 lines) -- the counter "
+                "resets only with a real reflection, not with another SKIP."
+            ),
+            reference="rules/Monozukuri.md > Anti-Quick-Fix Marker (Layer C)",
+        ))
+    save_counter(session_id, repo_root, counter["skip_count"], marker_hash)
 
-    # marker_type == "ROBUSTNESS" -> verify the 3 required body labels are present.
+
+def _handle_skip_marker(subject: str, block_text: str, marker_hash: str,
+                        counter: dict, session_id: str, repo_root: Path) -> None:
+    """Layers B (regression), A (motif enum), C (session counter) for a SKIP."""
+    _enforce_layer_b(subject, block_text)
+    _enforce_layer_a(block_text)
+    _enforce_skip_counter(marker_hash, counter, session_id, repo_root)
+
+
+def _handle_full_marker(block_text: str, marker_hash: str, counter: dict,
+                        session_id: str, repo_root: Path) -> None:
+    """Verify the 3 required body labels, then reset the skip counter."""
     ok, missing = body_has_three_labels(block_text)
     if not ok:
         _block(format_block(
@@ -375,11 +406,31 @@ def main() -> None:
             ),
             reference="rules/Monozukuri.md > Anti-Quick-Fix Marker",
         ))
-
-    # Real marker accepted -> reset the skip counter on a new hash.
     if counter["last_marker_hash"] != marker_hash:
         save_counter(session_id, repo_root, 0, marker_hash)
 
+
+def main() -> None:
+    _, data = read_hook_input()
+    gated, subject = is_gated_commit(get_command(data))
+    if not gated:
+        pass_through()
+
+    transcript_path = data.get("transcript_path") or os.environ.get("CLAUDE_TRANSCRIPT_PATH", "")
+    session_id = data.get("session_id") or os.environ.get("CLAUDE_SESSION_ID", "")
+    repo_root = find_repo_root()
+
+    latest = latest_marker(transcript_path)
+    if latest is None:
+        _block_no_marker(subject)
+
+    marker_type, block_text, marker_hash = latest
+    counter = load_counter(session_id, repo_root)
+
+    if marker_type == "ROBUSTNESS-SKIP":
+        _handle_skip_marker(subject, block_text, marker_hash, counter, session_id, repo_root)
+    else:
+        _handle_full_marker(block_text, marker_hash, counter, session_id, repo_root)
     sys.exit(0)
 
 
