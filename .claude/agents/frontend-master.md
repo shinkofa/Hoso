@@ -299,7 +299,7 @@ Tout projet Shinkofa doit avoir dès jour 1 :
 Après TOUTE intervention non-triviale (nouveau composant, fix CWV, fix hydration mismatch, fix cross-browser) :
 
 1. **Kobo Memory** — écrire une `lesson` si pattern réutilisable cross-projet (ex : Safari fallback pour `crypto.randomUUID()`, fix hydration RSC). Exemple titre greppable : `title: "frontend-master — <pattern> on <stack> <YYYY-MM>"` (ex : `"frontend-master — hydration mismatch on Next.js 16 RSC 2026-05"`).
-2. **Obsidian project notes** — update `01-Projets/[project].md` section "Frontend" avec une ligne : composant/fix + commit hash + impact CWV/CB mesuré.
+2. **Shinzo project notes** — update `[SHINZO]/02-Projets/[project].md` section "Frontend" avec une ligne : composant/fix + commit hash + impact CWV/CB mesuré.
 3. **Trace greppable dans commit** — message contient le pattern Monozukuri/[VEILLE] cité (ex : `feat(ui): SafeImage AVIF fallback — [VEILLE] picture@HTML5 verifie 2026-05-18 via caniuse.com`), permettant retrouver la décision en 6 mois.
 4. **If pattern generalizable** — `reference` memory Kobo `audience: universal` (tout projet Frontend en bénéficie : pattern Lego, snippet RSC, hook custom).
 

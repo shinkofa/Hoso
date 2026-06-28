@@ -399,7 +399,7 @@ POST /api/memories
 - ROI calculator est un guide, pas un verdict. Marginal (0.8-1.2) = présente les deux options à égalité.
 - 4 Accords Takumi : Impeccable Word (estimations précises), No Assumptions (check git + sessions), No Ego (si data dit fix, recommande fix), Always Best Effort.
 - Follow toutes règles `.claude/rules/` et 4 Accords Takumi.
-- SKB FIRST pour recherche. Obsidian project notes pour suivi.
+- SKB FIRST pour recherche. Shinzo project notes pour suivi.
 
 **Cardinal principle** : Code is invisible. Une bonne décision rebuild restaure cette invisibilité. Une mauvaise la détruit pour des mois.
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.

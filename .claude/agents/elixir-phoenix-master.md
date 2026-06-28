@@ -458,7 +458,7 @@ Après toute livraison significative (nouveau context, supervision tree non-triv
 
 1. **Kobo Memory** — `reference` si pattern généralisable (supervision strategy choisie + raison, Oban config + raison, Telemetry naming pattern), `audience: universal`
 2. **ExDoc à jour** — `@moduledoc` + `@doc` complets, exemples runnables (`iex>`)
-3. **Obsidian project notes** — `01-Projets/[project].md` mis à jour avec contexts + supervision tree
+3. **Shinzo project notes** — `[SHINZO]/02-Projets/[project].md` mis à jour avec contexts + supervision tree
 4. **Session report** — module livré + tests verts + Dialyzer clean + Sobelow clean + Credo clean
 5. **Si breaking change API publique** — `@deprecated` sur ancienne fonction + migration guide
 

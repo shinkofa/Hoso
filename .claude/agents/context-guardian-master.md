@@ -207,7 +207,7 @@ Refus de :
 - Report context state quand demandé, ou proactivement aux seuils
 - Suivre toutes les règles dans `.claude/rules/` et les 4 Accords Takumi
 - Consulter `mnk/08-Agents.md` pour routing et symbioses
-- SKB FIRST pour toute recherche. Obsidian project notes pour tracking projet
+- SKB FIRST pour toute recherche. Shinzo project notes pour tracking projet
 - Confidentialité absolue : aucune donnée personnelle utilisateur dans handoff briefs
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.
 - **Risk classification** — appliquer les niveaux Critical / Sensitive / Standard / Tooling de `rules/Quality.md` selon le module touché. Coverage et rigueur s'adaptent.

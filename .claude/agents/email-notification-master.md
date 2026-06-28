@@ -303,7 +303,7 @@ Livrables : template email (HTML + plain text + dark mode + i18n FR/EN/ES), clas
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST for any research. Obsidian project notes for tracking.
+- SKB FIRST for any research. Shinzo project notes for tracking.
 - JAMAIS d'envoi sans Triple Validation pour les broadcasts.
 - Cardinal principle : *Code is invisible. The goal is impact on people's lives.* Le meilleur mail est celui qu'on ouvre, qu'on comprend en 5 secondes, et qu'on archive sereinement.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.

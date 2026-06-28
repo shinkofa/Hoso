@@ -16,8 +16,8 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
 ## Steps
 
 0. **ANNOUNCE OUTPUTS**: At the very start, state explicitly to Jay the two files that will be produced and their exact paths:
-   - CDC : `02-<Project>/CDC/CDC-<Project>.md` (in Obsidian SKB)
-   - PET : `02-<Project>/PET/PET-<Project>.md` (in Obsidian SKB)
+   - CDC : `docs/CDC.md` (in project repo — intention figée)
+   - PET : `docs/PET.md` (in project repo — exécution vivante)
    - Workflow has STOP points at each questionnaire answer and each CDC section. Confirm Jay knows where each artifact lands BEFORE step 1.
 
 1. **ARCHETYPE DETECT**: Identify project archetype from signals (see `mnk/10-Blueprints.md`). This is a reference lookup, NOT a document to produce.
@@ -34,7 +34,7 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
 4. **RESEARCH + VEILLE**: Search in 7 languages (EN, FR, ZH, JA, KO, DE, RU). State-of-art < 14 days. When evaluating architecture: consider the tri-layer direction (TypeScript visible + Elixir/Phoenix backend + Rust critical modules) as validated direction, POC pending. **CRITICAL**: Verify ALL technology recommendations, architecture patterns, and best practices via web. Training data is months stale. Veille dates land in `docs/CDC.md` §5 (Stack technique).
 5. **NON-TECH AGENTS (PREPARE)**: Invoke UX, Brand, Pedagogy, Content, Gaming agents to review the concept BEFORE coding decisions.
 
-6. **CDC** (BLOCKING — interactive, section by section): Write the CDC at path `02-<Project>/CDC/CDC-<Project>.md` (in Obsidian SKB, NOT `apps/<project>/docs/`). Use template `templates/docs-structure/CDC.md` v2.0.0. The CDC is built **one section at a time, with a STOP between each** — never as a 13-section monologue. After EACH section below: present the draft to Jay, STOP, wait for "ok / go / validé" or for substantive correction. Only then proceed to the next section.
+6. **CDC** (BLOCKING — interactive, section by section): Write the CDC at `docs/CDC.md` in the project repo. Use template `templates/docs-structure/CDC.md` v2.0.0. The CDC is built **one section at a time, with a STOP between each** — never as a 13-section monologue. After EACH section below: present the draft to Jay, STOP, wait for "ok / go / validé" or for substantive correction. Only then proceed to the next section.
 
    | Order | Section | STOP after? |
    |-------|---------|-------------|
@@ -54,9 +54,9 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
 
    - **Dignity gate** : tout écran de collecte, copy, CTA, message d'erreur passe le test `rules/Dignity.md`. Documenté dans §9.
    - **Deviations**: any deviation from the Universal Project Checklist (`rules/Quality.md`) MUST be documented with explicit justification in the CDC (§10 ou §13). No silent omissions.
-   - **Path reminder**: at the start AND at the end of step 6, state explicitly: "CDC écrit dans `02-<Project>/CDC/CDC-<Project>.md` (Obsidian SKB)." NEVER write to `apps/<project>/docs/`. Per `rules/Workflows.md` rule "Takumi-generated docs → Obsidian SKB".
+   - **Path reminder**: at the start AND at the end of step 6, state explicitly: "CDC écrit dans `docs/CDC.md` (repo projet)." Per `rules/Workflows.md` décision 2026-06-27 : CDC/PET → repo projet `docs/`.
 
-7. **PET** (BLOCKING): Write the PET at path `02-<Project>/PET/PET-<Project>.md` (in Obsidian SKB, NOT `apps/<project>/docs/`). Use template `templates/docs-structure/PET.md` v2.0.0. State the path explicitly to Jay before writing. The PET is the **living execution journal**. It MUST contain ALL of the following sections at creation, then be updated at every brick:
+7. **PET** (BLOCKING): Write the PET at `docs/PET.md` in the project repo. Use template `templates/docs-structure/PET.md` v2.0.0. State the path explicitly to Jay before writing. The PET is the **living execution journal**. It MUST contain ALL of the following sections at creation, then be updated at every brick:
 
    | # | Section | Content |
    |---|---------|---------|
@@ -78,7 +78,7 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
    A PET missing any of sections 1-9 at creation is BLOCKING — do not proceed to step 8.
 
 8. **VERIFY** (BLOCKING): Cross-check CDC + PET before presenting:
-   - [ ] CDC and PET are at the announced Obsidian paths (`02-<Project>/CDC/...` and `02-<Project>/PET/...`), NOT in `apps/<project>/docs/`
+   - [ ] CDC and PET are at `docs/CDC.md` and `docs/PET.md` in the project repo
    - [ ] CDC §5 has veille dates for every stack row
    - [ ] CDC §7 Risk Classification covers every module
    - [ ] CDC §8 FMEA exists for every Critical module
@@ -113,7 +113,7 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
 
    **Test avant de présenter** : « Si je partage ce fichier à quelqu'un qui ne connaît rien au projet ni à la tech, est-ce qu'il comprend et a envie ? » Si non → reformuler en plus simple, plus visuel.
 
-10. **OBSIDIAN SYNC**: Create `01-Projets/[project].md` in Obsidian (flat structure post 2026-04-11, one file per project) with sections: Notes, Décisions, Bugs, Prochaines étapes, Connexions. Add an entry to `_Index.md`. Reference CDC + PET. The old nested `02-Projets/[project]/*.md` structure is LEGACY — never create there.
+10. **SHINZO SYNC**: Create `[SHINZO]/02-Projets/[project].md` with sections: Notes, Décisions, Bugs, Prochaines étapes, Connexions. Add an entry to `[SHINZO]/02-Projets/_Index.md`. Reference `docs/CDC.md` + `docs/PET.md`. Commit + push Shinzo. `[SHINZO]` = `D:/30-Dev-Projects/Shinzo` (local) · `~/Shinzo` (VPS).
 
 11. **VALIDATE**: Wait for Jay's explicit approval before ANY coding.
 

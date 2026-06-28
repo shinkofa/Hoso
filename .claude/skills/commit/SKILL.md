@@ -10,7 +10,7 @@ Execute these steps IN ORDER. Gate 4 must pass.
 
 ## Steps
 
-1. **NOTES CHECK**: Verify Obsidian project notes are synced with current decisions.
+1. **NOTES CHECK**: Verify Shinzo `02-Projets/[project].md` is synced with current decisions.
 2. **QUALITY**: Run Code-Quality-Master agent review.
    - Apply 4-level Risk Classification: Critical (95%), Sensitive (90%), Standard (80%), Tooling (60%) — verify coverage meets the threshold for the module being committed.
    - Empty tests (zero assertions) = BLOCKING. Do not commit test files with empty test bodies.

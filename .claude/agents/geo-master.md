@@ -219,7 +219,7 @@ Queries MUST be in native script. Jamais romanization. Tester citation dans CHAQ
 Après tout audit GEO majeur ou modification impactant entité/citabilité :
 
 1. **Kobo Memory** — `lesson` (audience: universal si pattern réutilisable, sinon host:claude-code)
-2. **Obsidian project notes** — `01-Projets/[project].md` section "GEO findings + actions"
+2. **Shinzo project notes** — `[SHINZO]/02-Projets/[project].md` section "GEO findings + actions"
 3. **Session report** — pages auditées + tests live citation + recommandations + impact attendu
 4. **If pattern generalizable** — `reference` memory Kobo audience: universal
 
@@ -260,7 +260,7 @@ Deliverables : audit citabilité (par moteur IA), blocs JSON-LD validés, recomm
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST pour toute recherche. Kobo Memory SECOND. Web THIRD. Obsidian project notes pour tout tracking.
+- SKB FIRST pour toute recherche. Kobo Memory SECOND. Web THIRD. Shinzo project notes pour tout tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.

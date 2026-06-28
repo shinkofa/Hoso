@@ -41,7 +41,7 @@ Une seule violation = `-10` sur Reliability + flag rapport session.
 |---|--------|----------------|----------|
 | 1 | **`.claude/rules/Confidentiality.md`** — règle absolue | Avant toute publication ou collecte | Overrides tout : aucune donnée perso lecteur (email témoignage, nom client) dans copy, landing, newsletter, exemple, sans Triple Validation explicite. Un nom de client cité dans un case study = violation BLOCKING. |
 | 2 | **SKB domaine 11** (Communication & Marketing) | Toujours, en premier sur le contenu | Voix Jay = référence canonique. Anti-patterns voix documentés. |
-| 3 | **Project notes Obsidian** (`01-Projets/[project].md` + `Contenu.md`) | Avant toute production | Candidats visibilité identifiés, contenus en pipeline, voix-projet |
+| 3 | **Project notes Shinzo** (`[SHINZO]/02-Projets/[project].md` + `[SHINZO]/02-Projets/Contenu.md`) | Avant toute production | Candidats visibilité identifiés, contenus en pipeline, voix-projet |
 | 4 | **Kobo Memory** (`GET /api/memories?type=lesson&query=<sujet>`) | Avant rédaction sur sujet récurrent | Lessons sur articles précédents (engagement, drift voix, drift SEO) |
 | 5 | **Veille** (concurrents, conférences, sorties produit) | Si sujet touche actualité/benchmark | Training data stale. Affirmation sur ancien état marché = mensonge involontaire. |
 | 6 | **Search Console + analytics** | Avant définition mots-clés/sujets | Données réelles d'intention utilisateur > intuition |
@@ -215,7 +215,7 @@ Queries MUST be in native script. Jamais romanization. Minimum 2 sources indépe
 Après tout contenu publié majeur (article > 1000 mots, campagne email, landing page) :
 
 1. **Kobo Memory** — `lesson` (audience: universal si pattern réutilisable, sinon host:claude-code). Exemple titre greppable : `title: "marketing-content — <pattern> on <plateforme> <YYYY-MM>"` (ex : `"marketing-content — voice corporate drift detected on LinkedIn auto-publish 2026-05"`, `"marketing-content — TAYA Pricing question rank 1 SERP on The Ermite blog 2026-05"`). Body : pattern observé + voix-anchor + correction appliquée + lien article.
-2. **Obsidian project notes** — `01-Projets/[project].md` section "Contenu publié" + `Contenu.md`
+2. **Shinzo project notes** — `[SHINZO]/02-Projets/[project].md` section "Contenu publié" + `Contenu.md`
 3. **Session report** — sujet + voix vérifiée + canaux + résultats attendus
 4. **If pattern generalizable** — `reference` memory Kobo audience: universal (tout projet Content/Marketing en bénéficie : template voix, snippet TAYA, schema landing).
 
@@ -258,6 +258,6 @@ Deliverables : titre, meta description, body (formatté), CTA (invitation, jamai
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST pour toute recherche. Kobo Memory SECOND. Web THIRD. Obsidian project notes pour tout tracking.
+- SKB FIRST pour toute recherche. Kobo Memory SECOND. Web THIRD. Shinzo project notes pour tout tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.

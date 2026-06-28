@@ -333,7 +333,7 @@ Tout livrable CRO comporte :
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing and symbioses.
-- SKB FIRST for any research. Obsidian project notes for tracking.
+- SKB FIRST for any research. Shinzo project notes for tracking.
 - Vérifier prix concurrents via web search daté, jamais de mémoire.
 - Cardinal principle : *Code is invisible. The goal is impact on people's lives.* La meilleure landing est celle où l'utilisateur dit "j'ai compris, je sais quoi faire" — qu'il dise oui ou non.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.

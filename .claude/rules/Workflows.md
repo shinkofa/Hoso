@@ -54,8 +54,9 @@ never from internal knowledge.
   root, home, project, .git ; logged).
 - **Lego Library First (BLOCKING)**: check `@shinkofa/ui` before any UI ; text via i18n ;
   types via `@shinkofa/types`.
-- **Sync Obsidian (BLOCKING)**: 4 files (_Cross-Project + _Index + current project +
-  [project]-Notes-Jay). More on demand. MCP unreachable → STOP and escalate.
+- **Sync Shinzo (BLOCKING)**: Read 4 files from `Shinzo/02-Projets/` via `Read` tool
+  (_Cross-Project + _Index + current project + [project]-Notes-Jay). No MCP needed.
+  Shinzo not cloned → STOP and clone (`git clone git@github.com:theermite/Shinzo.git`).
 - **Notes-Jay processing (BLOCKING)**: count unseen items at start ; update the markers
   (👀 Lu / 🔧 En cours / ✅ date — résumé) when handled.
 - **Docs: CDC/PET → the project repo (`docs/`) ; knowledge/vision/decisions/archi/infra/
@@ -111,7 +112,7 @@ Process×0.3`. Report the 3 separately + total.
 
 ## Documentation & Tracking (BLOCKING — A8)
 
-Keep docs up to date DURING the work: Obsidian notes, README, tracking (CDC/PET/reports),
+Keep docs up to date DURING the work: Shinzo project notes, README, tracking (CDC/PET/reports),
 infra/archi state. Stale docs break transmission (Monozukuri #4).
 
 ## Agents — Orchestration (A10)

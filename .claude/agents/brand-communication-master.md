@@ -45,7 +45,7 @@ Une seule violation = `-10` sur Reliability + flag rapport session.
 | 4 | **`mnk/13-Visibility.md`** | Avant copy de visibilité (landing, social, pitch) | Stratégie magnetic visibility (Projector) |
 | 5 | **`@shinkofa/i18n` namespaces** (20, `rules/Quality.md`) | Avant proposer copy user-facing | Namespace approprié, FR source of truth, expansion 30% |
 | 6 | **Kobo Memory** (`GET /api/memories?type=lesson&query=<voice/tone issue>`) | L2 sur ajustement de voix récurrent | Lesson écrite par Marketing dans Kakusei sert dans Shizen |
-| 7 | **Écrits Jay réels** (blog The Ermite, Obsidian Takumi-Notes-Jay) | Avant copy en voix Ermite | Échantillon authentique de la voix Jay |
+| 7 | **Écrits Jay réels** (blog The Ermite, Shinzo `[SHINZO]/02-Projets/[project]-Notes-Jay.md`) | Avant copy en voix Ermite | Échantillon authentique de la voix Jay |
 | 8 | **`rules/Conventions.md`** | Avant naming Shinkofa | Naming Japanese (Kakusei, Michi, Hibiki), Ermite, etc. |
 
 Sauter une source = `-10` Reliability + risque de voix off-brand ou condescendante.
@@ -240,13 +240,13 @@ Livrable : messaging tier utilisé, classification tone, score brand alignment, 
 - `rules/Dignity.md` — 8 tests BLOCKING, 7 moments de vérité
 - `rules/Identity.md` — profile Jay, voix Ermite
 - `mnk/13-Visibility.md` — stratégie magnetic visibility (Projector)
-- Écrits Jay (blog The Ermite, Obsidian Takumi-Notes-Jay) — échantillon authentique
+- Écrits Jay (blog The Ermite, Shinzo Notes-Jay) — échantillon authentique
 
 ## General Rules
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Obsidian project notes pour tracking.
+- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Shinzo project notes pour tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.
 - **Risk classification** — appliquer les niveaux Critical / Sensitive / Standard / Tooling de `rules/Quality.md` selon le module touché. Coverage et rigueur s'adaptent.

@@ -37,7 +37,7 @@ Le déploiement est l'acte où le travail rencontre le réel. Toute approximatio
 2. **Sortie CI/CD** — GitHub Actions run logs, exit codes, artifacts.
 3. **Smoke test output** — curl, playwright, healthcheck endpoints. Sortie complète, pas un summary.
 4. **Sentry / Monitoring** — erreurs en cours, latence, mémoire. Données du DERNIER deploy.
-5. **Project notes Obsidian** — `01-Projets/[project].md` + Notes-Jay (historique deploys, incidents passés).
+5. **Project notes Shinzo** — `[SHINZO]/02-Projets/[project].md` + Notes-Jay (historique deploys, incidents passés).
 6. **Kobo Memory L2** — leçons de deploys passés (failures, root causes, runbooks).
 7. **SKB** — patterns de deploy (canary, blue-green, expand-contract).
 8. **Veille web 7 langues** (EN, FR, ZH, JA, KO, DE, RU) — uniquement si pattern inconnu. Native scripts only.
@@ -322,7 +322,7 @@ POST /api/memories
 }
 ```
 
-Et : session report `docs/Sessions/`, update runbook si nouveau cas, update Obsidian `01-Projets/[project].md`.
+Et : session report `docs/Sessions/`, update runbook si nouveau cas, update Shinzo `[SHINZO]/02-Projets/[project].md`.
 
 ## Symbioses
 

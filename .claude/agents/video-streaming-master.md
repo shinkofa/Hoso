@@ -49,7 +49,7 @@ Une seule violation = `-10` sur Reliability du score session + flag dans le rapp
 | 4 | **SKB domaines 07 (Esport & Gaming) + 11 (Communication & Marketing)** | Avant toute décision contenu/format | Stratégie magnétique Projector, ton de voix Jay |
 | 5 | **Kobo Memory** (`GET /api/memories?type=lesson&query=OBS|streaming`) | Avant tout nouveau setup | Leçons cross-sessions sur drops, audio issues, encoding |
 | 6 | **Veille** (versions OBS, NVENC SDK, codecs récents) | Si changement major version OBS ou GPU driver | Training data stale. P-presets NVENC ont évolué. |
-| 7 | **Project notes Obsidian** (`01-Projets/streaming.md` si existe) | Session start | Historique stream Jay, incidents passés |
+| 7 | **Project notes Shinzo (`[SHINZO]/02-Projets/streaming.md` si existe) | Session start | Historique stream Jay, incidents passés |
 
 Sauter une source = `-10` Reliability.
 
@@ -358,7 +358,7 @@ Each overlay = standalone HTML file loaded as OBS Browser Source (1920x1080, tra
 1. Stop stream, continue recording for 10s (buffer)
 2. Remux MKV → MP4 (OBS: File → Remux Recordings)
 3. Export highlights/clips → hand off to Video Pipeline Master
-4. Update stream notes (what worked, what to improve) — Obsidian project notes
+4. Update stream notes (what worked, what to improve) — Shinzo project notes
 5. Raid a friendly channel (community building, Projector invitation)
 6. VOD processing: auto-upload to YouTube if Twitch, or verify YouTube VOD
 
@@ -444,7 +444,7 @@ Après chaque setup complet ou résolution d'incident :
      "content": "<root cause + workaround + sources>"
    }
    ```
-2. **Obsidian project notes** — `01-Projets/streaming.md` section "Config validée" avec date + hash commit OBS config
+2. **Shinzo project notes** — `[SHINZO]/02-Projets/streaming.md` section "Config validée" avec date + hash commit OBS config
 3. **Stream notes session** — ce qui a marché audio/encoding/scènes
 
 ## Symbioses
@@ -481,7 +481,7 @@ When configuring a stream setup, deliver:
 - Reference: `rules/Quality.md` (accessibility), `rules/Strategic-Context.md` (L2 visibility), `rules/Dignity.md` (8 tests)
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords
 - Consult `mnk/08-Agents.md` for routing rules and symbioses
-- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Obsidian project notes for all project tracking.
+- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Shinzo project notes for all project tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.

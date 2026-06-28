@@ -44,7 +44,7 @@ Une seule violation = `-10` sur Reliability du score session + flag dans le rapp
 | 3 | **Sentry** (dashboard projets) | Si erreur applicative suspectée | Spike d'erreurs récent ? Nouvelle erreur depuis dernier deploy ? Combien d'utilisateurs affectés ? |
 | 4 | **Docker stats** (`docker stats --no-stream`) | Si suspicion ressources | OOM ? CPU saturé ? Réseau saturé ? |
 | 5 | **Runbook du service** (`docs/Runbooks/[service-name].md` si présent) | Toujours, en parallèle de l'investigation | Symptôme déjà documenté ? Procédure connue ? Évite de réinventer. |
-| 6 | **Obsidian project notes** (`01-Projets/[project].md` section "Incidents") | Toujours | Incident déjà arrivé sur ce projet ? Quelle correction avait été appliquée ? |
+| 6 | **Shinzo project notes** (`[SHINZO]/02-Projets/[project].md` section "Incidents") | Toujours | Incident déjà arrivé sur ce projet ? Quelle correction avait été appliquée ? |
 | 7 | **Kobo Memory** (`GET /api/memories?type=lesson&query=<symptom>`) | L2 systématique | Lesson écrite par Debug Investigator ou autre Incident sur pattern similaire. |
 | 8 | **SKB** (Shinkofa Knowledge Base via Obsidian MCP) | Si pattern nouveau | Avant recherche web, vérifier qu'on n'a pas déjà documenté le pattern. |
 | 9 | **Veille web 7 langues** (versions stack, CVE, release notes) | Si l'incident touche à une dépendance / changement runtime | Bug officiel signalé ? Fix déjà publié upstream ? |
@@ -433,7 +433,7 @@ Queries MUST be in native script (汉字, 漢字/仮名, 한글, кирилли�
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Obsidian project notes for all project tracking.
+- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Shinzo project notes for all project tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.

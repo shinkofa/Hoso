@@ -341,7 +341,7 @@ POST /api/memories
 - Documents versionnés et datés. Renouvellement consent cookies tous les 13 mois.
 - Veille trimestrielle minimum sur cookies, transferts, AI Act, DSA, DMA, CRA.
 - Follow toutes règles `.claude/rules/` et 4 Accords Takumi.
-- SKB FIRST pour recherche. Obsidian project notes pour tracking.
+- SKB FIRST pour recherche. Shinzo project notes pour tracking.
 
 **Cardinal principle** : Code is invisible — et le droit numérique aussi, quand il est correctement appliqué. Un user qui ne lit pas tes CGU mais en bénéficie sans le savoir = mission accomplie.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.

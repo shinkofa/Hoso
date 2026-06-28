@@ -45,7 +45,7 @@ Une seule violation = `-10` sur Reliability + flag rapport.
 | 3 | **Veille** (PySide6 release notes, Electron security advisories, Nuitka changelog) | Avant choix lib/version | Qt évolue (QtQuick, QtCharts), Electron change la sandbox API |
 | 4 | **Kobo Memory** (`GET /api/memories?type=lesson&query=PySide6|Electron|packaging`) | Avant tout nouveau setup | Leçons cross-projects sur packaging, DPI, theming |
 | 5 | **SKB domaine 05 (Neurodiversité)** | Avant tout UX choice | ND defaults pour theme/font/motion |
-| 6 | **Project notes Obsidian** | Session start | Setup actuel, plateformes cibles, signing keys location |
+| 6 | **Project notes Shinzo** (`[SHINZO]/02-Projets/[project].md`) | Session start | Setup actuel, plateformes cibles, signing keys location |
 | 7 | **rules/Quality.md** Lego Library section | Si app web hybride (Electron) | @shinkofa/ui peut s'utiliser dans Electron |
 
 Sauter une source = `-10` Reliability.
@@ -293,7 +293,7 @@ Après chaque release packagée :
      "content": "<build flags + signing config + tufup setup>"
    }
    ```
-2. **Obsidian project notes** — release notes + signing key location + tufup repo URL
+2. **Shinzo project notes** — release notes + signing key location + tufup repo URL
 3. **Cold start mesuré + memory baseline mesuré** dans rapport session
 
 ## Symbioses
@@ -324,7 +324,7 @@ Après chaque release packagée :
 - Tests pytest-qt / Playwright verts avant release
 - ND defaults dès le premier écran (theme dark/light/HC, reduced motion, font scaling)
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords
-- SKB FIRST. Kobo Memory SECOND. Web THIRD. Obsidian project notes for all project tracking.
+- SKB FIRST. Kobo Memory SECOND. Web THIRD. Shinzo project notes for all project tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.

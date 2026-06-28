@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Obsidian sync reminder — SessionStart hook.
+"""Shinzo sync reminder — SessionStart hook.
 
-Non-blocking reminder of the 4 mandatory Obsidian project notes Takumi
-MUST sync at every session start (per Workflows.md "Sync Obsidian project
-notes"). The hook does NOT call the MCP itself (hooks are external
-processes with no MCP access) — it surfaces the reminder so Takumi
-loads the right files via mcp__obsidian-vault__get_note.
+Non-blocking reminder of the 4 mandatory Shinzo project notes Takumi
+MUST read at every session start (per Workflows.md "Sync Shinzo project
+notes"). The hook does NOT read files itself — it surfaces the reminder
+so Takumi loads the right files via the Read tool (no MCP needed).
 
-The 4 files:
-  1. 01-Projets/_Cross-Project.md
-  2. 01-Projets/_Index.md
-  3. 01-Projets/<current-project>.md
-  4. 01-Projets/<current-project>-Notes-Jay.md
+The 4 files (in Shinzo/02-Projets/):
+  1. _Cross-Project.md
+  2. _Index.md
+  3. <current-project>.md
+  4. <current-project>-Notes-Jay.md
 
+Shinzo path: D:/30-Dev-Projects/Shinzo (local) | ~/Shinzo (VPS).
 Current project is auto-detected from the repo basename.
 
 Exit code: 0 always (reminder is non-blocking, printed on stderr so
@@ -64,12 +64,13 @@ def main() -> None:
 
     project = _detect_project_name()
     msg = (
-        "OBSIDIAN SYNC reminder (SessionStart) — load these 3 mandatory files "
-        "via mcp__obsidian-vault__get_note before any mutating tool:\n"
-        f"  1. 01-Projets/_Cross-Project.md\n"
-        f"  2. 01-Projets/_Index.md\n"
-        f"  3. 01-Projets/{project}.md\n"
-        f"  (bonus: 01-Projets/{project}-Notes-Jay.md if it exists)\n"
+        "SHINZO SYNC reminder (SessionStart) — Read these 3 mandatory files "
+        "from Shinzo/02-Projets/ via the Read tool before any mutating tool:\n"
+        f"  1. [SHINZO]/02-Projets/_Cross-Project.md\n"
+        f"  2. [SHINZO]/02-Projets/_Index.md\n"
+        f"  3. [SHINZO]/02-Projets/{project}.md\n"
+        f"  (bonus: [SHINZO]/02-Projets/{project}-Notes-Jay.md if it exists)\n"
+        "  [SHINZO] = D:/30-Dev-Projects/Shinzo (local) | ~/Shinzo (VPS)\n"
         "Companion hook obsidian-mandatory-read.py will BLOCK the first "
         "Edit/Write/Bash until the 3 mandatory patterns are read."
     )

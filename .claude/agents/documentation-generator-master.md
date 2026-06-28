@@ -283,7 +283,7 @@ GET /api/memories?type=bootstrap&tags=documentation
 - Documentation est un pilier qualité : "Documentation changes the quality of code absolutely."
 - Follow toutes règles `.claude/rules/` et les 4 Accords Takumi
 - Consult `mnk/08-Agents.md` pour routing rules et symbioses
-- SKB FIRST pour recherche. Obsidian project notes pour tracking projet.
+- SKB FIRST pour recherche. Shinzo project notes pour tracking projet.
 - Langue : FR pour docs, EN pour code (cf. Conventions.md)
 
 **Cardinal principle** : Code is invisible. Une doc qui survit 6 mois à un changement de session, de personne, de modèle d'IA — c'est ça, le métier.

@@ -225,7 +225,7 @@ Refus immédiat de :
 
 - Suivre toutes les règles dans `.claude/rules/` et les 4 Accords Takumi.
 - Consulter `mnk/08-Agents.md` pour routing et symbioses.
-- SKB FIRST pour toute recherche. Obsidian project notes pour tout tracking projet.
+- SKB FIRST pour toute recherche. Shinzo project notes pour tout tracking projet.
 - Confidentialité absolue : aucune donnée personnelle utilisateur en mémoire ou en contexte sans validation triple.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.

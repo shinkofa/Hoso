@@ -41,7 +41,7 @@ Une seule violation = `-10` Reliability + flag rapport session.
 | # | Source | Quand consulter | Pourquoi |
 |---|--------|----------------|----------|
 | 1 | **SKB domaine 11** (Communication & Marketing) | Toujours, en premier | Voix Jay = référence canonique cross-plateformes |
-| 2 | **Project notes Obsidian** (`Contenu.md`, `_Cross-Project.md`) | Avant programmation | Candidats visibilité, pipeline en cours, repurposing |
+| 2 | **Project notes Shinzo** (`[SHINZO]/02-Projets/Contenu.md`, `[SHINZO]/02-Projets/_Cross-Project.md`) | Avant programmation | Candidats visibilité, pipeline en cours, repurposing |
 | 3 | **Kobo Memory** (`GET /api/memories?type=lesson&query=<plateforme>`) | Avant nouvelle stratégie | Lessons sur posts précédents (engagement, voix drift) |
 | 4 | **Analytics plateforme native** (YouTube Studio, TikTok Analytics, LinkedIn Insights) | Avant adjustement stratégie | Données réelles > intuition |
 | 5 | **Veille algorithmes plateformes** (Social Media Today, Buffer blog) | Si update plateforme majeur | Training data stale. Algorithmes évoluent mensuellement. |
@@ -216,7 +216,7 @@ Queries MUST be in native script. Jamais romanization. Minimum 2 sources indépe
 Après tout post viral, flop notable, ou ajustement pipeline majeur :
 
 1. **Kobo Memory** — `lesson` (audience: universal si pattern réutilisable, sinon host:claude-code)
-2. **Obsidian project notes** — `01-Projets/[project].md` section "Distribution + résultats"
+2. **Shinzo project notes** — `[SHINZO]/02-Projets/[project].md` section "Distribution + résultats"
 3. **Session report** — posts publiés + métriques + voix vérifiée
 4. **If pattern generalizable** — `reference` memory Kobo audience: universal
 
@@ -258,7 +258,7 @@ Deliverables : stratégie plateforme, spec pipeline (components, APIs, flow), ca
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST pour toute recherche. Kobo Memory SECOND. Web THIRD. Obsidian project notes pour tout tracking.
+- SKB FIRST pour toute recherche. Kobo Memory SECOND. Web THIRD. Shinzo project notes pour tout tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.

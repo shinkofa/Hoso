@@ -294,7 +294,7 @@ POST /api/memories
 - Consult SKB domaine 12 (Business & Sales) pour pricing philosophy Jay
 - DIGNITY > REVENUE PRESSURE (BLOCKING) — jamais de dark pattern même sous pression survival floor
 - Follow toutes règles `.claude/rules/` et 4 Accords Takumi
-- SKB FIRST pour recherche. Obsidian project notes pour tracking.
+- SKB FIRST pour recherche. Shinzo project notes pour tracking.
 
 **Cardinal principle** : Code is invisible. Pricing juste = invisible (utilisateur paie sans se sentir manipulé). Pricing manipulatif = visible (le piège transparaît, la confiance s'effondre).
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.

@@ -366,7 +366,7 @@ No lesson written on novel finding = knowledge lost = `-10` Process.
 After any L2 review or novel pattern detection :
 
 1. **Kobo Memory** — write `lesson` (see L2 Step 4 format)
-2. **Obsidian project notes** — update `01-Projets/[project].md` section "Quality Findings" with summary + commit hash if relevant
+2. **Shinzo project notes** — update `[SHINZO]/02-Projets/[project].md` section "Quality Findings" with summary + commit hash if relevant
 3. **Session report** — patterns détectés + remédiations dans rapport session
 4. **If pattern generalizable** — write `reference` memory `audience: universal` so all projects benefit
 5. **If CDC/PET drift detected** — flag to Jay : "Le code dit X mais CDC/PET dit Y. Décision : aligner ?"

@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
-"""Obsidian mandatory-read gate — PreToolUse(Edit|Write|Bash).
+"""Shinzo mandatory-read gate — PreToolUse(Edit|Write|Bash).
 
 Companion to session-start-obsidian.py reminder. Workflows.md declares
-Obsidian sync BLOCKING at session start: project notes MUST be loaded
-via the Obsidian MCP read tool before any state-mutating tool.
+Shinzo sync BLOCKING at session start: project notes MUST be loaded from
+Shinzo 02-Projets/ via the Read tool before any state-mutating tool.
 
-The Obsidian MCP server has exposed this read tool under more than one
-name across versions (`vault_read`, `get_note`). To stay robust to that
-drift, this hook matches ANY known alias instead of a single hardcoded
-name — per the cross-project lesson (2026-06-08): a gate that depends on
-an external tool name must match several aliases, never a single literal.
+Primary source: Read tool calls on Shinzo/02-Projets/ files (portable,
+no MCP dependency). Obsidian MCP aliases kept as fallback during
+transition (vault_read / get_note).
 
-This hook scans the transcript for those read tool calls in this session
-and verifies the 3 MANDATORY files have been read (by name substring):
-  1. _Cross-Project        (cross-project blockers + decisions)
-  2. _Index                (vault index)
+This hook scans the transcript and verifies 3 MANDATORY files were read
+(by name substring):
+  1. _Cross-Project        (cross-project decisions, infra, blockers)
+  2. _Index                (project inventory)
   3. <project>             (current project file)
 
-A 4th file (<project>-Notes-Jay) is RECOMMENDED when it exists in the
-vault, but not blocking — some repos (e.g. MNK-GoRin methodology itself)
-don't have a Notes-Jay sibling.
+A 4th file (<project>-Notes-Jay) is RECOMMENDED but not blocking.
 
 After all 3 mandatory patterns are detected, a state marker is written
 and subsequent mutating tools pass through silently.
@@ -56,7 +52,10 @@ MUTATING_TOOLS = {"Edit", "Write", "Bash", "NotebookEdit"}
 # The Obsidian MCP read tool has shipped under several names across versions.
 # Match ANY of these aliases so the gate is satisfiable whichever one the
 # active MCP server exposes. Add new aliases here, never replace.
-OBSIDIAN_TOOL_NAMES = (
+# Primary: Read tool on Shinzo/02-Projets/ files (portable, no MCP needed).
+# Fallback: Obsidian MCP aliases kept for backward compatibility.
+SHINZO_READ_TOOL_NAMES = (
+    "Read",
     "mcp__obsidian-vault__vault_read",
     "mcp__obsidian-vault__get_note",
 )
@@ -70,15 +69,13 @@ READ_ONLY_BASH = (
 )
 
 
-def _collect_vault_read_paths(transcript_path: str) -> list[str]:
-    """Return paths read via any known Obsidian MCP read-tool alias."""
+def _collect_read_paths(transcript_path: str) -> list[str]:
+    """Return file paths read via Read tool or any known Obsidian MCP alias."""
     if not transcript_path:
         return []
     paths: list[str] = []
-    aliases = set(OBSIDIAN_TOOL_NAMES)
+    aliases = set(SHINZO_READ_TOOL_NAMES)
     try:
-        # No tool_name filter: scan all tool_use blocks and keep those whose
-        # name matches any alias. Robust to the MCP server renaming the tool.
         for call in iter_tool_calls(transcript_path):
             if call.get("name") not in aliases:
                 continue
@@ -116,20 +113,21 @@ def _block_missing(project, missing, required, session_id, repo) -> None:
     write_state("obsidian-sync-checked", st, session_id=session_id, repo_root=repo)
 
     listing = (
-        f"\n  1. 01-Projets/_Cross-Project.md"
-        f"\n  2. 01-Projets/_Index.md"
-        f"\n  3. 01-Projets/{project}.md"
-        f"\n  (4. optional bonus: 01-Projets/{project}-Notes-Jay.md if it exists)"
+        f"\n  1. [SHINZO]/02-Projets/_Cross-Project.md"
+        f"\n  2. [SHINZO]/02-Projets/_Index.md"
+        f"\n  3. [SHINZO]/02-Projets/{project}.md"
+        f"\n  (4. optional: [SHINZO]/02-Projets/{project}-Notes-Jay.md if it exists)"
+        f"\n  [SHINZO] = D:/30-Dev-Projects/Shinzo (local) | ~/Shinzo (VPS)"
     )
     loaded = len(required) - len(missing)
     block(format_block(
-        f"OBSIDIAN SYNC not satisfied — {loaded}/{len(required)} mandatory notes loaded",
-        "Call the Obsidian MCP read tool (vault_read / get_note) for the mandatory files "
+        f"MANDATORY FIRST READ not satisfied — {loaded}/{len(required)} file(s) unread",
+        "Read the missing file(s) from Shinzo 02-Projets/ via the Read tool "
         f"before any Edit/Write/Bash:{listing}\n"
         f"Missing patterns: {', '.join(missing)}\n"
-        "These are Takumi's context for the current project. Without them, "
-        "the session works in the dark.",
-        reference="Workflows.md 'Sync Obsidian project notes'",
+        "These are the BLOCKING files declared in CLAUDE.md (Interpretation-Protocol, Confidentiality, Monozukuri). "
+        "They define how Takumi reads every other rule See CLAUDE.md MANDATORY FIRST READ.",
+        reference="Workflows.md 'Sync Shinzo project notes'",
     ))
 
 
@@ -154,7 +152,7 @@ def main() -> None:
     if not mark_once("obsidian-sync-checked", "checked", session_id=session_id):
         pass_through()
 
-    read_paths = _collect_vault_read_paths(transcript_path)
+    read_paths = _collect_read_paths(transcript_path)
     missing = _missing_patterns(read_paths, required)
 
     if missing:

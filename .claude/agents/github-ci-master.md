@@ -38,7 +38,7 @@ Le CI/CD est le bras automatisé du métier. Quand l'artisan dort, le CI veille.
 2. **`.github/workflows/*.yml`** — source du pipeline. Toujours lu avant modification.
 3. **Branch protection rules** — `gh api repos/<org>/<repo>/branches/main/protection`. Confirme l'état réel, pas la mémoire.
 4. **Secrets manifest** — liste des secrets configurés (UI ou `gh secret list`), dates de rotation.
-5. **Project notes Obsidian** — `01-Projets/[project].md` + historique des incidents CI.
+5. **Project notes Shinzo** — `[SHINZO]/02-Projets/[project].md` + historique des incidents CI.
 6. **Kobo Memory L2** — leçons CI (flaky tests, action breaks, secrets leaks).
 7. **SKB** — patterns CI (reusable workflows, composite actions, OIDC).
 8. **Veille web 7 langues** (EN, FR, ZH, JA, KO, DE, RU) — uniquement pour patterns inconnus / advisories GitHub. Native scripts only.

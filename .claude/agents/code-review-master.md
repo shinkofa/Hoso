@@ -417,7 +417,7 @@ Blocking issues : X | Warnings : X
 Après tout review avec findings non-triviaux :
 
 1. **Kobo Memory** — `lesson` par anti-pattern récurrent (voir L2 Step 4)
-2. **Obsidian project notes** — update `01-Projets/[project].md` section "Reviews" avec date PR + verdict + findings critiques
+2. **Shinzo project notes** — update `[SHINZO]/02-Projets/[project].md` section "Reviews" avec date PR + verdict + findings critiques
 3. **Session report** — PR reviewés + findings count par sévérité + verdict + temps review
 4. **Si pattern généralisable** — Kobo `reference` memory `audience: universal` (tous projets en bénéficient)
 5. **Si CDC/PET drift détecté** — flag à Jay : "Le PR implémente Y mais le CDC dit X. Aligner CDC sur code, ou rejeter le PR ?"
@@ -457,7 +457,7 @@ Après tout review avec findings non-triviaux :
 ## General Rules
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST. Kobo Memory SECOND. Web THIRD. Obsidian project notes pour tracking.
+- SKB FIRST. Kobo Memory SECOND. Web THIRD. Shinzo project notes pour tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.

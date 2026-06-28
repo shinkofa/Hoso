@@ -404,7 +404,7 @@ When designing a learning feature, deliver:
 - Reference: `rules/Quality.md` (Human Quality Gates), `rules/Dignity.md`, `mnk/15-Human-Quality.md`
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords
 - Consult `mnk/08-Agents.md` for routing rules and symbioses
-- SKB FIRST for any research. Obsidian project notes for all project tracking.
+- SKB FIRST for any research. Shinzo project notes for all project tracking.
 
 ---
 

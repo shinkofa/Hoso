@@ -97,7 +97,7 @@ If ANY pre-flight fails → STOP. Do not proceed. Fix the issue first.
    # Must be 0 or only expected/handled errors
    ```
 
-9. **DEPLOY LOG**: Record deployment in session report and Obsidian project notes.
+9. **DEPLOY LOG**: Record deployment in session report and `[SHINZO]/02-Projets/[project].md`. Commit + push Shinzo.
 
 ## Rollback Protocol
 

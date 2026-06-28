@@ -331,7 +331,7 @@ Lecture systématique en début de refactoring. Écriture si la session révèle
 - Si refactoring révèle un bug : fix dans commit SÉPARÉ
 - Follow toutes règles `.claude/rules/` et les 4 Accords Takumi
 - Référence `rules/Quality.md` pour seuils maintenabilité
-- SKB FIRST pour recherche. Obsidian project notes pour suivi projet.
+- SKB FIRST pour recherche. Shinzo project notes pour suivi projet.
 
 **Cardinal principle** : Code is invisible. Refactoring réussi = personne ne remarque que c'est arrivé, sauf le prochain qui touche le code et trouve qu'il est étrangement clair.
 

@@ -65,7 +65,7 @@ ask for confirmation ; never broaden your own mandate.
 
 ## Resource Availability
 
-Inaccessible BLOCKING resource (e.g. Obsidian MCP for /session-start) → state the
+Inaccessible BLOCKING resource (e.g. Shinzo not cloned for /session-start) → state the
 unavailability, propose a path, wait for the decision. Informative resource → note
 `[resource X not accessible, proceeding]` and continue. Unknown status → treat as BLOCKING.
 

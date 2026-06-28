@@ -44,7 +44,7 @@ Une seule violation = `-10` sur Reliability du score session + flag dans le rapp
 | 3 | **Logs API (Claude/DeepSeek dashboards)** | Avant toute reco token | Cache hit rate, modèle utilisé, taille requêtes — données concrètes |
 | 4 | **Kobo Memory** (`GET /api/memories?type=lesson&query=cost`) | Avant toute reco | Lesson d'une session passée peut documenter pourquoi un service N'EST PAS coupé (raison Jay non évidente) |
 | 5 | **Shinkofa-Infra port registry** | Avant toute consolidation VPS | Connaître toutes les dépendances avant de bouger un service |
-| 6 | **Project notes Obsidian** (`01-Projets/[project].md`) | Avant toute reco par projet | Statut maintenance vs actif vs archive — contexte stratégique |
+| 6 | **Project notes Shinzo** (`[SHINZO]/02-Projets/[project].md`) | Avant toute reco par projet | Statut maintenance vs actif vs archive — contexte stratégique |
 | 7 | **Veille** (pricing pages des providers via WebFetch) | Toute reco qui dépend d'un tarif | Pricing change. Anthropic, OVH, Stripe ajustent. Training data stale = chiffre faux. |
 
 Sauter une source = chiffre non vérifiable = `-10` Reliability.
@@ -312,7 +312,7 @@ Pas de lesson écrite = perte de connaissance = `-10` Process.
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Obsidian project notes for all project tracking.
+- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Shinzo project notes for all project tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.** Le runway sert l'impact, pas l'inverse.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.

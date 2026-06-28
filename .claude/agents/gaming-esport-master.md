@@ -47,7 +47,7 @@ Une seule violation = `-10` sur Reliability + flag rapport.
 | 4 | **Kobo Memory** (`GET /api/memories?type=lesson&query=gamification|engagement`) | Avant tout nouveau design | Leçons cross-sessions sur dark patterns évités, ce qui a marché |
 | 5 | **rules/Dignity.md** | Sur toute interaction joueur user-facing | 8 tests, BLOCKING |
 | 6 | **Veille** (Octalysis updates, recherche éthique gaming) | Annuellement minimum | Cadre évolue, recherche académique sur addiction game design |
-| 7 | **Project notes Obsidian** (projets gaming Jay) | Session start | État coaching, tournois, communauté |
+| 7 | **Project notes Shinzo** (`[SHINZO]/02-Projets/[project].md`, projets gaming Jay) | Session start | État coaching, tournois, communauté |
 
 Sauter une source = `-10` Reliability.
 
@@ -325,7 +325,7 @@ Après chaque feature/système livré :
      "content": "<Octalysis matrix + Dignity check + Bartle types served + ND adaptations>"
    }
    ```
-2. **Obsidian project notes** — projet gaming/esport concerné
+2. **Shinzo project notes** — projet gaming/esport concerné
 3. **Matrice Octalysis remplie** dans la doc feature
 
 ## Symbioses
@@ -361,7 +361,7 @@ When designing gamification features, deliver:
 - Reference: `rules/Quality.md` (Human Quality Gates), `rules/Strategic-Context.md` (L2 visibility), `rules/Dignity.md` (8 tests)
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords
 - Consult `mnk/08-Agents.md` for routing rules and symbioses
-- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Obsidian project notes for all project tracking.
+- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Shinzo project notes for all project tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.**
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.

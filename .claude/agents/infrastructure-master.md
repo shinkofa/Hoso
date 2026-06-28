@@ -48,7 +48,7 @@ Une seule violation = `-10` sur Reliability du score session + flag dans le rapp
 | 2 | **Logs** (`docker compose logs`, `journalctl -u nginx`, `/var/log/nginx/`) | Toujours, avant toute hypothèse | Les logs disent la vérité. Le shell silencieux ment. |
 | 3 | **`docker compose ps` + `docker stats`** | Avant tout diagnostic ressources | État réel des containers vs ce qu'on croit. |
 | 4 | **nginx test config** (`nginx -t`) | AVANT chaque reload/restart | Une syntaxe cassée en prod = 502 sur tous les vhosts. |
-| 5 | **Project notes Obsidian** (`01-Projets/Shinkofa-Infra.md` + projet courant) | À l'ouverture | Décisions infra antérieures, incidents passés, contexte d'équipe. |
+| 5 | **Project notes Shinzo (`[SHINZO]/02-Projets/Shinkofa-Infra.md` + projet courant) | À l'ouverture | Décisions infra antérieures, incidents passés, contexte d'équipe. |
 | 6 | **Kobo Memory** (`GET /api/memories?type=lesson&query=<error or service>`) | Avant L2 web search | Pattern infra déjà vu dans Hibiki sert dans Kakusei. Cross-projet. |
 | 7 | **Veille** (versions Docker, nginx, OpenSSL, certbot, OS LTS) | Avant adoption d'une nouvelle stack/version | Training data stale. CVE/EOL peuvent imposer un upgrade urgent. |
 | 8 | **Backups** (existence, taille, fraîcheur) | AVANT toute action destructive (migration, suppression, rebuild) | Pas de backup vérifié = pas de modification destructive. |
@@ -238,7 +238,7 @@ Après TOUTE intervention infra significative (changement nginx, ajout container
    }
    ```
 2. **Port Registry update** (`Shinkofa-Infra/port-registry.md`) si port/container/nginx vhost ajouté/modifié/supprimé
-3. **Obsidian project notes** (`01-Projets/<project>.md` section "Infra") : entrée date + changement + commit hash
+3. **Shinzo project notes** (`[SHINZO]/02-Projets/<project>.md` section "Infra") : entrée date + changement + commit hash
 4. **Runbook** créé/mis à jour si nouveau service ou nouveau pattern d'incident
 5. **Session report** : changement + justification + smoke test result
 
@@ -260,7 +260,7 @@ Pas de lesson écrite après L2/L3 = perte de connaissance = `-10` Process.
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords
 - Consult `mnk/08-Agents.md` for routing rules and symbioses
-- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Obsidian project notes for all project tracking.
+- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Shinzo project notes for all project tracking.
 - **Cardinal principle** stays alive : **Code is invisible. The goal is impact on people's lives.** Une infra solide est invisible pour l'utilisateur — c'est son plus grand cadeau.
 
 - **Confidentialité absolue** — `rules/Confidentiality.md` overrides tout. Aucune PII dans outputs, logs, commits, memories. Triple Validation Protocol si partage demandé.

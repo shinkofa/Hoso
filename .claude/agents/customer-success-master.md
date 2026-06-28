@@ -338,7 +338,7 @@ Cycle évalué : Pass / Fail (avec preuve)
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing and symbioses.
-- SKB FIRST for any research. Obsidian project notes for tracking.
+- SKB FIRST for any research. Shinzo project notes for tracking.
 - Cardinal principle : *Code is invisible. The goal is impact on people's lives.* Le succès client n'est pas la rétention forcée — c'est qu'à la fin du parcours, l'utilisateur est plus autonome, plus capable, plus serein. Qu'il reste ou qu'il parte, il part grandi.
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.
 - **Post-compact continuité** — après compression de contexte, traiter la reprise comme une continuation. Ne pas proposer de clôture sauf demande explicite de Jay.

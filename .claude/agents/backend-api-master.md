@@ -303,7 +303,7 @@ After ANY significant endpoint design or change :
 
 1. **Kobo Memory** — write `reference` memory if pattern generalizable (idempotency key impl, circuit breaker config, RLS pattern), with `audience: universal`
 2. **OpenAPI updated** — same commit as code change, no drift
-3. **Obsidian project notes** — `01-Projets/[project].md` updated with endpoint list + version
+3. **Shinzo project notes** — `[SHINZO]/02-Projets/[project].md` updated with endpoint list + version
 4. **Session report** — endpoint added/modified + tests + smoke test result
 5. **If breaking change** — `Sunset` header set, migration guide drafted, 6-month notice opened
 

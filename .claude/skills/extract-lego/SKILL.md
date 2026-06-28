@@ -64,7 +64,7 @@ Extract a component from the current project into `@shinkofa/ui` in Shinkofa-Sha
 
 10. **UPDATE INVENTORY**:
     - Add component name to `write-guard.py` Lego list (in MNK-GoRin canonical + current project)
-    - Update `01-Projets/Bibliotheque-Lego.md` in Obsidian (component count, category)
+    - Update `[SHINZO]/02-Projets/Bibliotheque-Lego.md` (component count, category). Commit + push Shinzo.
     - Commit in both repos (Shinkofa-Shared + source project)
 
 ## Rules

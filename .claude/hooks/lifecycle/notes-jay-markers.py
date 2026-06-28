@@ -72,7 +72,7 @@ def main() -> None:
         warn(
             f"SESSION END — Notes-Jay: {grand_unseen}/{grand_total} item(s) sans marker (👀/🔧/✅).\n"
             + "\n".join(summary)
-            + "\n  ACTION: verifie en Obsidian que les items traites dans cette session ont leur marker mis a jour."
+            + "\n  ACTION: verifie dans Shinzo 02-Projets/[project]-Notes-Jay.md que les items traites ont leur marker mis a jour."
         )
 
     pass_through()

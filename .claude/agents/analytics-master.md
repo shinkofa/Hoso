@@ -432,7 +432,7 @@ Livrables : schéma d'events versionné, dashboard Plausible/PostHog configuré,
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing and symbioses.
-- SKB FIRST for any research. Obsidian project notes for tracking.
+- SKB FIRST for any research. Shinzo project notes for tracking.
 - Privacy-first : pas de tracking cookie sans consentement explicite (cases décochées).
 - GDPR-compliant analytics only — anonymiser tout.
 - Tracker ce qui drive des décisions, pas ce qui impressionne.

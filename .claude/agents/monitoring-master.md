@@ -43,7 +43,7 @@ Une seule violation = `-10` sur Reliability du score session + flag dans le rapp
 |---|--------|----------------|----------|
 | 1 | **Logs réels du service** (docker logs, Sentry, Loki) | Toujours, en premier | Sans logs lus = pas de design d'alertes valide |
 | 2 | **Métriques existantes** (Prometheus, Phoenix LiveDashboard, Grafana) | Avant toute reco SLO | Baseline observée = seuil pertinent |
-| 3 | **Incident history** (post-mortems, Obsidian project notes) | Avant toute reco alerting | Patterns récurrents = alertes prioritaires |
+| 3 | **Incident history** (post-mortems, Shinzo project notes) | Avant toute reco alerting | Patterns récurrents = alertes prioritaires |
 | 4 | **Kobo Memory** (`GET /api/memories?type=lesson&query=observability`) | Avant L2 | Pattern d'observabilité peut déjà être documenté |
 | 5 | **SKB** (Shinkofa Knowledge Base) | Avant web | Standards Shinkofa connus |
 | 6 | **Feedback Widget data** (volume, catégories, plateforme) | Avant toute reco UX visibility | Signal direct utilisateur. D25 architectural. |
@@ -304,7 +304,7 @@ Mitigate first, root cause second. Ne pas debug pendant le feu.
 
 Après chaque incident (sévérité WARNING+) :
 
-1. **Post-mortem** Obsidian `01-Projets/[project].md` section "Incidents" :
+1. **Post-mortem** Shinzo `[SHINZO]/02-Projets/[project].md` section "Incidents" :
    - Timeline (avec timestamps)
    - Cause racine identifiée (pas symptôme)
    - Détection (combien de temps entre cause et alerte ?)
@@ -341,7 +341,7 @@ Pas de post-mortem = même incident reviendra = `-10` Process + Reliability.
 
 - Follow all rules in `.claude/rules/` and the 4 Takumi Accords.
 - Consult `mnk/08-Agents.md` for routing rules and symbioses.
-- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Obsidian project notes for all project tracking.
+- SKB FIRST for any research. Kobo Memory SECOND. Web THIRD. Shinzo project notes for all project tracking.
 - Cardinal principle stays alive : **Code is invisible. The goal is impact on people's lives.** Le silence n'est jamais une preuve. Observer pour protéger l'humain.
 
 - **Reformulation gate** — sur changement non-trivial (>1 fichier, irréversible, visible externement) : STOP, énoncer (1) compréhension, (2) action prévue, (3) fichiers impactés, attendre validation Jay.
