@@ -16,12 +16,20 @@ android {
     namespace = "com.theermite.hoso"
     compileSdk = 36
 
+    // GlitchTip/Sentry DSN — injected from local.properties (gitignored),
+    // never committed. Empty by default so open-source builds and forks
+    // report nowhere (Sentry no-ops on a blank DSN). Debug builds also get
+    // an empty DSN below so local dev never pollutes the GlitchTip project.
+    val sentryDsn = signingProps.getProperty("sentry.dsn", "")
+
     defaultConfig {
         applicationId = "com.theermite.hoso"
         minSdk = 29
         targetSdk = 35
         versionCode = 11
         versionName = "1.0.0"
+
+        manifestPlaceholders["sentryDsn"] = sentryDsn
     }
 
     signingConfigs {
@@ -48,6 +56,11 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+        }
+        debug {
+            // Never report from local dev builds to the shared GlitchTip
+            // project — keep the crash feed limited to real users.
+            manifestPlaceholders["sentryDsn"] = ""
         }
     }
 
@@ -76,6 +89,8 @@ dependencies {
     implementation(libs.streampack.core)
     implementation(libs.streampack.services)
     implementation(libs.streampack.rtmp)
+
+    implementation(libs.sentry.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.org.json)

@@ -19,6 +19,18 @@
         android:theme="@style/Theme.Hoso"
         tools:targetApi="35">
 
+        <!--
+          GlitchTip/Sentry auto-init (via the SDK's ContentProvider). The
+          DSN is injected from local.properties at build time and is empty
+          for debug builds and open-source/fork builds, so the SDK stays
+          inert there. Privacy: send-default-pii is explicitly false — no
+          user identifiers, no request bodies. Errors only (no perf traces).
+        -->
+        <meta-data android:name="io.sentry.dsn" android:value="${sentryDsn}" />
+        <meta-data android:name="io.sentry.send-default-pii" android:value="false" />
+        <meta-data android:name="io.sentry.environment" android:value="production" />
+        <meta-data android:name="io.sentry.traces-sample-rate" android:value="0.0" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
