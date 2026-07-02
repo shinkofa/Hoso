@@ -21,6 +21,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.theermite.hoso.R
@@ -28,6 +29,7 @@ import com.theermite.hoso.chat.ChatMessageAdapter
 import com.theermite.hoso.chat.IrcMessage
 import com.theermite.hoso.chat.TwitchIrcClient
 import com.theermite.hoso.config.StreamConfig
+import com.theermite.hoso.util.ScreenMetrics
 
 /**
  * Floating Twitch chat bubble. Runs as its own foreground service so it
@@ -149,10 +151,11 @@ class ChatBubbleService : Service() {
             BIND_ABOVE_CLIENT,
         )
 
-        registerReceiver(
+        ContextCompat.registerReceiver(
+            this,
             stateReceiver,
             IntentFilter(ScreenRecordService.BROADCAST_STATE_CHANGED),
-            RECEIVER_NOT_EXPORTED,
+            ContextCompat.RECEIVER_NOT_EXPORTED,
         )
 
         readScreenBounds()
@@ -549,9 +552,9 @@ class ChatBubbleService : Service() {
     // ── Helpers ──────────────────────────────────────────────────────
 
     private fun readScreenBounds() {
-        val b = windowManager?.maximumWindowMetrics?.bounds ?: return
-        screenW = b.width()
-        screenH = b.height()
+        val size = ScreenMetrics.realScreenSize(this)
+        screenW = size.width
+        screenH = size.height
     }
 
     private fun dp(value: Int): Int = TypedValue.applyDimension(

@@ -30,6 +30,7 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.theermite.hoso.R
 import com.theermite.hoso.StreamPermissionActivity
 import com.theermite.hoso.audio.AudioGains
@@ -306,14 +307,15 @@ class OverlayService : Service() {
         // started/stopped per stream state below, so the preference must
         // survive an overlay restart to re-show chat on the next live.
 
-        registerReceiver(
+        ContextCompat.registerReceiver(
+            this,
             stateReceiver,
             IntentFilter().apply {
                 addAction(ScreenRecordService.BROADCAST_STATE_CHANGED)
                 addAction(ScreenRecordService.BROADCAST_RECONNECT_STATE)
                 addAction(ScreenRecordService.BROADCAST_STOPPED)
             },
-            RECEIVER_NOT_EXPORTED
+            ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
         // Default: COLLAPSED. The streamer sees one small disc on top-left

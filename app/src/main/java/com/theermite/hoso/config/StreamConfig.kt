@@ -3,8 +3,8 @@ package com.theermite.hoso.config
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Size
-import android.view.WindowManager
 import com.theermite.hoso.audio.AudioGains
+import com.theermite.hoso.util.ScreenMetrics
 
 class StreamConfig(context: Context) {
 
@@ -309,13 +309,8 @@ class StreamConfig(context: Context) {
         const val BITRATE_MAX = 8_000
         const val BITRATE_STEP = 500
 
-        private fun detectNativeScreen(ctx: Context): Size {
-            val wm = ctx.getSystemService(
-                Context.WINDOW_SERVICE
-            ) as WindowManager
-            val b = wm.maximumWindowMetrics.bounds
-            return Size(b.width(), b.height())
-        }
+        private fun detectNativeScreen(ctx: Context): Size =
+            ScreenMetrics.realScreenSize(ctx)
 
         private fun buildPresets(native: Size): List<Pair<String, Size>> {
             val longSide = maxOf(native.width, native.height)

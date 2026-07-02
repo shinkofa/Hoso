@@ -102,10 +102,11 @@ class MainActivity : AppCompatActivity() {
         setupUI()
         loadConfigToUI()
 
-        registerReceiver(
+        ContextCompat.registerReceiver(
+            this,
             stoppedReceiver,
             IntentFilter(ScreenRecordService.BROADCAST_STOPPED),
-            RECEIVER_NOT_EXPORTED
+            ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
         requestNotificationPermission.launch(
