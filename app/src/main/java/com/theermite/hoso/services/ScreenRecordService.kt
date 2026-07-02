@@ -18,9 +18,12 @@ import com.theermite.hoso.R
 import io.github.thibaultbee.streampack.core.configuration.mediadescriptor.UriMediaDescriptor
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
 import android.media.MediaRecorder
+import android.widget.Toast
 import com.theermite.hoso.audio.MixedAudioSourceFactory
 import com.theermite.hoso.config.AudioSource
 import com.theermite.hoso.config.StreamConfig
+import com.theermite.hoso.diagnostics.StreamStartError
+import io.sentry.Sentry
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.interfaces.IWithAudioSource
 import io.github.thibaultbee.streampack.core.interfaces.startStream
@@ -46,37 +49,74 @@ class ScreenRecordService : MediaProjectionService<ISingleStreamer>(
 ) {
 
     override fun onCreate() {
-        super.onCreate()
-        // StreamPack's StreamerService.onCreate() promotes the service
-        // to foreground with FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION only.
-        // G7.1 Phase B.2 — bitmask doit matcher la source réelle :
-        //  - MIC : MEDIA_PROJECTION | MICROPHONE (Android 14+ requiert MICROPHONE
-        //          sinon AppOps silence le mic, observé ColorOS)
-        //  - MIX : MEDIA_PROJECTION | MICROPHONE (mic ET playback capture
-        //          actifs simultanément, donc on déclare les deux types)
-        //  Source officielle : developer.android.com/develop/background-work/
-        //  services/fgs/service-types — "mediaProjection is sufficient for
-        //  capturing audio via the AudioPlaybackCapture API", auquel on ajoute
-        //  MICROPHONE dès qu'un AudioRecord MIC est actif.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val source = StreamConfig(this).audioSource
-            val fgsType = when (source) {
-                AudioSource.MIC,
-                AudioSource.MIX ->
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION or
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+        // Brick B — Android 14/15 tightened FGS start rules; on strict OEMs
+        // (observed: Samsung One UI 7 / S25 Ultra) startForeground can throw
+        // where it succeeds on ColorOS. An unguarded throw here kills the app
+        // with no message. We catch, classify, report to GlitchTip with a
+        // searchable tag, tell the user, and stop cleanly instead of crashing.
+        try {
+            super.onCreate()
+            // StreamPack's StreamerService.onCreate() promotes the service
+            // to foreground with FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION only.
+            // G7.1 Phase B.2 — bitmask doit matcher la source réelle :
+            //  - MIC : MEDIA_PROJECTION | MICROPHONE (Android 14+ requiert MICROPHONE
+            //          sinon AppOps silence le mic, observé ColorOS)
+            //  - MIX : MEDIA_PROJECTION | MICROPHONE (mic ET playback capture
+            //          actifs simultanément, donc on déclare les deux types)
+            //  Source officielle : developer.android.com/develop/background-work/
+            //  services/fgs/service-types — "mediaProjection is sufficient for
+            //  capturing audio via the AudioPlaybackCapture API", auquel on ajoute
+            //  MICROPHONE dès qu'un AudioRecord MIC est actif.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                val source = StreamConfig(this).audioSource
+                val fgsType = when (source) {
+                    AudioSource.MIC,
+                    AudioSource.MIX ->
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION or
+                            ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                }
+                ServiceCompat.startForeground(
+                    this,
+                    NOTIFICATION_ID,
+                    onOpenNotification(),
+                    fgsType
+                )
             }
-            ServiceCompat.startForeground(
-                this,
-                NOTIFICATION_ID,
-                onOpenNotification(),
-                fgsType
-            )
+            // Mark alive only after startForeground succeeded. OverlayService
+            // reads this before sending ACTION_QUERY_STATE to avoid spawning
+            // this service without a MediaProjection consent token.
+            isRunning = true
+        } catch (t: Throwable) {
+            handleStartFailure(t)
         }
-        // Mark alive only after startForeground succeeded. OverlayService
-        // reads this before sending ACTION_QUERY_STATE to avoid spawning
-        // this service without a MediaProjection consent token.
-        isRunning = true
+    }
+
+    /**
+     * Turn a foreground-service start failure into a diagnosable, non-fatal
+     * event: classify it, report it to GlitchTip with a searchable tag, show
+     * the user a real reason, then stop the service. Called from onCreate's
+     * guard so a strict-OEM throw never becomes a silent crash.
+     */
+    private fun handleStartFailure(t: Throwable) {
+        isRunning = false
+        val category = StreamStartError.classify(t)
+        Sentry.withScope { scope ->
+            scope.setTag(StreamStartError.TAG_KEY, category.name)
+            Sentry.captureException(t)
+        }
+        val msgRes = when (category) {
+            StreamStartError.MIC_UNAVAILABLE -> R.string.error_start_mic_unavailable
+            StreamStartError.FGS_NOT_ALLOWED -> R.string.error_start_fgs_not_allowed
+            StreamStartError.PROJECTION_INVALID -> R.string.error_start_projection_invalid
+            StreamStartError.UNKNOWN -> R.string.error_start_unknown
+        }
+        try {
+            Toast.makeText(this, getString(msgRes), Toast.LENGTH_LONG).show()
+        } catch (_: Exception) {
+            // Toast can fail if we have no valid context window; the GlitchTip
+            // report is the durable signal, the toast is a best-effort nicety.
+        }
+        try { stopSelf() } catch (_: Exception) {}
     }
 
     override fun createDefaultAudioSource(

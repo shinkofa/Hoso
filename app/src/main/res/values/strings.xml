@@ -26,6 +26,13 @@
     <string name="error_capture_denied">Capture écran refusée</string>
     <string name="error_stream_failed">Erreur de stream</string>
 
+    <!-- Brick B — classified foreground-service start failures. Shown instead
+         of a silent crash on strict OEMs (Samsung One UI 7, etc.). -->
+    <string name="error_start_mic_unavailable">Le micro est indisponible (occupé par une autre app ?). Fermez l\'app qui l\'utilise et réessayez.</string>
+    <string name="error_start_fgs_not_allowed">Android a bloqué le démarrage du service. Rouvrez Hoso au premier plan et réessayez.</string>
+    <string name="error_start_projection_invalid">Autorisation de capture d\'écran invalide. Relancez le stream pour ré-autoriser.</string>
+    <string name="error_start_unknown">Impossible de démarrer le stream. Le détail a été envoyé pour diagnostic.</string>
+
     <string name="notification_channel_name">Hoso Stream</string>
     <string name="notification_title">Hoso — En direct</string>
     <string name="notification_text">Stream actif. Appuyez pour revenir.</string>

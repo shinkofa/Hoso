@@ -10,8 +10,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.theermite.hoso.config.StreamConfig
+import com.theermite.hoso.diagnostics.StreamStartError
 import com.theermite.hoso.services.ScreenRecordService
 import com.theermite.hoso.streaming.StreamLauncher
+import io.sentry.Sentry
 import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.utils.MediaProjectionUtils
 import io.github.thibaultbee.streampack.services.MediaProjectionService
@@ -89,11 +91,28 @@ class StreamPermissionActivity : ComponentActivity() {
                             config = config,
                         )
                     } catch (e: Exception) {
+                        // Brick B — classify + report to GlitchTip with a
+                        // searchable tag, and show a reason the user can act on
+                        // instead of a raw exception message.
+                        val category = StreamStartError.classify(e)
+                        Sentry.withScope { scope ->
+                            scope.setTag(StreamStartError.TAG_KEY, category.name)
+                            Sentry.captureException(e)
+                        }
+                        val msgRes = when (category) {
+                            StreamStartError.MIC_UNAVAILABLE ->
+                                R.string.error_start_mic_unavailable
+                            StreamStartError.FGS_NOT_ALLOWED ->
+                                R.string.error_start_fgs_not_allowed
+                            StreamStartError.PROJECTION_INVALID ->
+                                R.string.error_start_projection_invalid
+                            StreamStartError.UNKNOWN ->
+                                R.string.error_start_unknown
+                        }
                         runOnUiThread {
                             Toast.makeText(
                                 this@StreamPermissionActivity,
-                                getString(R.string.error_stream_failed)
-                                    + ": " + (e.message ?: ""),
+                                getString(msgRes),
                                 Toast.LENGTH_LONG
                             ).show()
                         }
