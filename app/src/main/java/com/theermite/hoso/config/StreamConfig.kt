@@ -209,6 +209,14 @@ class StreamConfig(context: Context) {
     // the bubble re-snaps cleanly to the same edge after rotation
     // instead of drifting toward the center.
 
+    // First-launch onboarding. false until the user finishes or skips the
+    // guide once; the "Revoir le tutoriel" link re-opens it without changing
+    // this flag (it stays true).
+    var onboardingSeen: Boolean
+        get() = prefs.getBoolean(KEY_ONBOARDING_SEEN, false)
+        set(value) = prefs.edit()
+            .putBoolean(KEY_ONBOARDING_SEEN, value).apply()
+
     var chatEnabled: Boolean
         get() = prefs.getBoolean(KEY_CHAT_ENABLED, false)
         set(value) = prefs.edit()
@@ -285,6 +293,8 @@ class StreamConfig(context: Context) {
         // Preset storage
         private const val KEY_PRESETS_JSON = "presets_json_v1"
         private const val KEY_ACTIVE_PRESET_ID = "active_preset_id"
+        // Onboarding
+        private const val KEY_ONBOARDING_SEEN = "onboarding_seen"
         // Chat overlay (G6.2)
         private const val KEY_CHAT_ENABLED = "chat_enabled"
         private const val KEY_CHAT_SIZE_IDX = "chat_size_idx"

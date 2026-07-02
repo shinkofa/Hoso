@@ -33,6 +33,26 @@
     <string name="error_start_projection_invalid">Autorisation de capture d\'écran invalide. Relancez le stream pour ré-autoriser.</string>
     <string name="error_start_unknown">Impossible de démarrer le stream. Le détail a été envoyé pour diagnostic.</string>
 
+    <!-- First-launch onboarding (4 steps). i18n keys, FR source; ready for
+         values-en / values-es later. -->
+    <string name="onboarding_skip">Passer</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_finish">Commencer</string>
+    <string name="onboarding_replay">Revoir le tutoriel</string>
+    <string name="onboarding_page_indicator">Étape %1$d sur %2$d</string>
+
+    <string name="onboarding_welcome_title">Bienvenue sur Hoso</string>
+    <string name="onboarding_welcome_body">Hoso diffuse l\'écran de ton téléphone en direct vers Twitch, YouTube ou Kick. Parfait pour streamer tes parties mobiles.</string>
+
+    <string name="onboarding_permissions_title">Trois autorisations</string>
+    <string name="onboarding_permissions_body">Capture d\'écran pour diffuser ton jeu, micro pour ta voix, et affichage par-dessus pour garder les contrôles à portée pendant le direct. Aucune donnée n\'est collectée.</string>
+
+    <string name="onboarding_connect_title">Connecter un canal</string>
+    <string name="onboarding_connect_body">Crée un preset, choisis ta plateforme (Twitch, YouTube, Kick) et colle ta clé de stream. Tu la trouves dans le tableau de bord créateur de la plateforme.</string>
+
+    <string name="onboarding_golive_title">Passer en direct</string>
+    <string name="onboarding_golive_body">Touche « Passer en direct » : une bulle flottante apparaît par-dessus ton jeu. Appuie dessus pour démarrer ou arrêter le direct à tout moment.</string>
+
     <string name="notification_channel_name">Hoso Stream</string>
     <string name="notification_title">Hoso — En direct</string>
     <string name="notification_text">Stream actif. Appuyez pour revenir.</string>

@@ -27,6 +27,7 @@ import com.theermite.hoso.config.LegalLinks
 import com.theermite.hoso.config.StreamConfig
 import com.theermite.hoso.databinding.DialogPresetEditBinding
 import com.theermite.hoso.databinding.ActivityMainBinding
+import com.theermite.hoso.onboarding.OnboardingStep
 import com.theermite.hoso.services.ChatBubbleService
 import com.theermite.hoso.services.OverlayService
 import com.theermite.hoso.services.ScreenRecordService
@@ -113,6 +114,14 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.POST_NOTIFICATIONS
         )
         requestOverlayPermission()
+
+        // First launch only — show the onboarding once. savedInstanceState
+        // guard avoids re-launching it on a config change (rotation).
+        if (savedInstanceState == null &&
+            OnboardingStep.shouldShow(config.onboardingSeen)
+        ) {
+            startActivity(Intent(this, OnboardingActivity::class.java))
+        }
     }
 
     override fun onDestroy() {
@@ -167,6 +176,10 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnQuit.setOnClickListener {
             quitApp()
+        }
+
+        binding.textReplayOnboarding.setOnClickListener {
+            startActivity(Intent(this, OnboardingActivity::class.java))
         }
 
         binding.textAbout.text = getString(R.string.footer_about, appVersionName())

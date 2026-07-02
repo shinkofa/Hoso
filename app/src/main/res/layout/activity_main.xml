@@ -498,6 +498,20 @@
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
+        <!-- Re-open the first-launch onboarding on demand. -->
+        <TextView
+            android:id="@+id/text_replay_onboarding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:minHeight="44dp"
+            android:padding="8dp"
+            android:text="@string/onboarding_replay"
+            android:textColor="@color/stream_start"
+            android:textSize="13sp" />
+
         <!-- Phase C — in-app privacy policy access (Play Store requirement).
              Filled with the version name at runtime; tap opens the policy. -->
         <TextView

@@ -49,6 +49,11 @@
           of the task list — it's a one-shot perm gateway, not a screen.
         -->
         <activity
+            android:name=".OnboardingActivity"
+            android:exported="false"
+            android:label="@string/app_name" />
+
+        <activity
             android:name=".StreamPermissionActivity"
             android:exported="false"
             android:theme="@style/Theme.Hoso.Transparent"
