@@ -13,6 +13,7 @@ All paths exit 0 (never blocks).
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -22,6 +23,17 @@ from pathlib import Path
 import pytest
 
 HOOK = Path(__file__).resolve().parents[1] / "guards" / "post-commit-push-check.py"
+
+
+def _load_hook_module():
+    """Import the hyphenated hook file as a module for direct unit testing."""
+    spec = importlib.util.spec_from_file_location("post_commit_push_check", HOOK)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_hook = _load_hook_module()
 
 # The git stub is a bash script with no extension. Windows cannot invoke it
 # (PATHEXT does not include "no extension"). The stub-based tests run on
@@ -244,6 +256,38 @@ def test_silent_on_amend():
     r = _run(payload)
     assert r.returncode == 0
     assert r.stderr == b""
+
+
+@pytest.mark.parametrize("cmd", [
+    "git commit --amend --no-edit",
+    "git commit --amend",
+    "git commit --amend -m 'x'",
+    "git commit --no-edit --amend",
+    "git commit -m 'msg' --amend",
+])
+def test_looks_like_commit_false_on_amend(cmd):
+    """--amend rewrites must be excluded — else the hook auto-pushes them
+    and the amend silent-test flakes on the real repo's ahead count."""
+    assert _hook._looks_like_commit(cmd) is False
+
+
+@pytest.mark.parametrize("cmd", [
+    "git commit -m 'feat: foo'",
+    "git commit",
+    "git commit -a -m 'x'",
+])
+def test_looks_like_commit_true_on_real_commit(cmd):
+    assert _hook._looks_like_commit(cmd) is True
+
+
+@pytest.mark.parametrize("cmd", [
+    "git status",
+    "ls -la",
+    "git push",
+    "git log --oneline",
+])
+def test_looks_like_commit_false_on_non_commit(cmd):
+    assert _hook._looks_like_commit(cmd) is False
 
 
 def test_silent_on_empty_stdin():

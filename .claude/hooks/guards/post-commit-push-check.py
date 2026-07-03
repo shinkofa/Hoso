@@ -51,7 +51,7 @@ from common import (  # noqa: E402
 )
 
 _COMMIT_RE = re.compile(r"\bgit\s+commit\b")
-_AMEND_RE = re.compile(r"\bgit\s+commit\b[^&;|]*\b--amend\b")
+_AMEND_RE = re.compile(r"\bgit\s+commit\b[^&;|]*(?<![\w-])--amend\b")
 _STATUS_AHEAD_RE = re.compile(r"\[ahead (\d+)(?:,|\])")
 _SKIP_MARKER_RE = re.compile(r"\[(WIP|NO-PUSH)\]", re.IGNORECASE)
 
@@ -113,27 +113,32 @@ def _last_commit_message() -> str:
     return out
 
 
-def main() -> None:
-    _, data = read_hook_input()
-    cmd = get_command(data)
-    if not cmd or not _looks_like_commit(cmd):
-        pass_through()
+def _resolve_push_context(cmd: str) -> tuple[str, int] | None:
+    """Return (branch, ahead) when a push should be considered, else None.
 
-    # Skip 2: detached HEAD
+    None covers the silent skips: not a push-worthy commit (Skip 1 amend via
+    _looks_like_commit), detached HEAD (Skip 2), no upstream (Skip 3), or
+    nothing to push (Skip 4).
+    """
+    if not cmd or not _looks_like_commit(cmd):
+        return None
     branch = _current_branch()
     if not branch or branch == "HEAD":
-        pass_through()
-
-    # Skip 3: no upstream tracked / Skip 4: nothing to push
+        return None
     ahead = _ahead_count()
     if ahead is None or ahead == 0:
-        pass_through()
+        return None
+    return branch, ahead
 
-    # Skip 1: explicit WIP / NO-PUSH marker in commit SUBJECT line only.
-    # Scanning the full message would false-positive on commits that merely
-    # document the marker syntax in their body (e.g., this hook's own commit).
-    msg = _last_commit_message()
-    subject = msg.splitlines()[0] if msg else ""
+
+def _held_by_marker_or_threshold(branch: str, ahead: int) -> bool:
+    """Emit a WARN and return True when the push must be held.
+
+    Skip 1 (WIP/NO-PUSH marker in the SUBJECT line only — scanning the full
+    message would false-positive on commits documenting the marker syntax) or
+    Skip 5 (accumulation beyond the threshold deserves Jay's eyeballs).
+    """
+    subject = (_last_commit_message().splitlines() or [""])[0]
     if _SKIP_MARKER_RE.search(subject):
         warn(format_warn(
             reason=f"commit on {branch} carries [WIP]/[NO-PUSH] marker; "
@@ -142,9 +147,7 @@ def main() -> None:
                    "message to remove the marker.",
             reference="rules/Workflows.md > Fix = Deploy",
         ))
-        sys.exit(0)
-
-    # Skip 5: suspicious accumulation
+        return True
     if ahead > _AHEAD_THRESHOLD:
         warn(format_warn(
             reason=f"branch {branch} is {ahead} commit(s) ahead of upstream "
@@ -153,10 +156,13 @@ def main() -> None:
                    "then push manually if intended.",
             reference="rules/Workflows.md > Fix = Deploy",
         ))
-        sys.exit(0)
+        return True
+    return False
 
-    # Push.
-    rc, out, err = _git("push", timeout=30)
+
+def _do_push(branch: str, ahead: int) -> None:
+    """Run `git push` and emit a single-line stderr summary of the outcome."""
+    rc, _, err = _git("push", timeout=30)
     if rc == 0:
         warn(f"[auto-push] {branch}: {ahead} commit(s) pushed to upstream")
     else:
@@ -165,6 +171,19 @@ def main() -> None:
             action=f"check remote state; git stderr: {err.strip()[:200]}",
             reference="rules/Workflows.md > Fix = Deploy",
         ))
+
+
+def main() -> None:
+    _, data = read_hook_input()
+    context = _resolve_push_context(get_command(data))
+    if context is None:
+        pass_through()
+
+    branch, ahead = context
+    if _held_by_marker_or_threshold(branch, ahead):
+        sys.exit(0)
+
+    _do_push(branch, ahead)
     sys.exit(0)
 
 
