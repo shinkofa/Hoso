@@ -129,6 +129,15 @@
                         android:paddingHorizontal="16dp"
                         android:paddingBottom="16dp">
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:lineSpacingMultiplier="1.3"
+                        android:text="@string/help_destination"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
                     <Spinner
                         android:id="@+id/spinner_preset"
                         android:layout_width="match_parent"
@@ -148,10 +157,15 @@
                             android:layout_height="48dp"
                             android:layout_marginEnd="6dp"
                             android:layout_weight="1"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:maxLines="1"
+                            android:minWidth="0dp"
+                            android:paddingHorizontal="4dp"
                             android:text="@string/preset_add"
                             android:textAllCaps="false"
                             android:textColor="@color/purple_primary"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             app:rippleColor="@color/purple_dark"
                             app:strokeColor="@color/purple_primary" />
 
@@ -162,10 +176,15 @@
                             android:layout_height="48dp"
                             android:layout_marginHorizontal="3dp"
                             android:layout_weight="1"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:maxLines="1"
+                            android:minWidth="0dp"
+                            android:paddingHorizontal="4dp"
                             android:text="@string/preset_edit"
                             android:textAllCaps="false"
                             android:textColor="@color/text_primary"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             app:rippleColor="@color/purple_dark"
                             app:strokeColor="@color/divider" />
 
@@ -176,10 +195,15 @@
                             android:layout_height="48dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:maxLines="1"
+                            android:minWidth="0dp"
+                            android:paddingHorizontal="4dp"
                             android:text="@string/preset_delete"
                             android:textAllCaps="false"
                             android:textColor="@color/stream_stop"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             app:rippleColor="@color/stream_stop"
                             app:strokeColor="@color/stream_stop" />
                     </LinearLayout>
@@ -241,10 +265,19 @@
                         android:paddingHorizontal="16dp"
                         android:paddingBottom="16dp">
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:lineSpacingMultiplier="1.3"
+                        android:text="@string/help_stream"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="14dp"
+                        android:layout_marginBottom="4dp"
                         android:hint="@string/hint_stream_key"
                         app:endIconMode="password_toggle">
 
@@ -255,6 +288,15 @@
                             android:inputType="textPassword"
                             android:singleLine="true" />
                     </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:lineSpacingMultiplier="1.3"
+                        android:text="@string/help_stream_key"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -368,6 +410,15 @@
                         android:orientation="vertical"
                         android:paddingHorizontal="16dp"
                         android:paddingBottom="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:lineSpacingMultiplier="1.3"
+                        android:text="@string/help_audio"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -486,31 +537,56 @@
             android:textStyle="bold"
             app:cornerRadius="14dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_quit"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="4dp"
-            android:contentDescription="@string/action_quit_desc"
-            android:text="@string/action_quit"
-            android:textAllCaps="false"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
-
-        <!-- Re-open the first-launch onboarding on demand. -->
+        <!-- Plain-language explanation of the two-step model, right under the
+             primary button so its meaning is clear before the first tap. -->
         <TextView
-            android:id="@+id/text_replay_onboarding"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:background="?attr/selectableItemBackground"
+            android:layout_marginTop="8dp"
             android:gravity="center"
-            android:minHeight="44dp"
-            android:padding="8dp"
-            android:text="@string/onboarding_replay"
-            android:textColor="@color/stream_start"
-            android:textSize="13sp" />
+            android:lineSpacingMultiplier="1.3"
+            android:text="@string/cta_bubble_hint"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <!-- Two framed secondary actions on one row, color-coded so they're
+             easy to tell apart: Replay tutorial (left, sky blue = safe) and
+             Quit (right, red = careful, it stops everything). -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_replay_onboarding"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:text="@string/onboarding_replay"
+                android:textAllCaps="false"
+                android:textColor="@color/stream_start"
+                android:textSize="13sp"
+                app:rippleColor="@color/stream_start"
+                app:strokeColor="@color/stream_start" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_quit"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:contentDescription="@string/action_quit_desc"
+                android:text="@string/action_quit"
+                android:textAllCaps="false"
+                android:textColor="@color/stream_stop"
+                android:textSize="13sp"
+                app:rippleColor="@color/stream_stop"
+                app:strokeColor="@color/stream_stop" />
+        </LinearLayout>
 
         <!-- Phase C — in-app privacy policy access (Play Store requirement).
              Filled with the version name at runtime; tap opens the policy. -->

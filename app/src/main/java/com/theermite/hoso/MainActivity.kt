@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity() {
             quitApp()
         }
 
-        binding.textReplayOnboarding.setOnClickListener {
+        binding.btnReplayOnboarding.setOnClickListener {
             startActivity(Intent(this, OnboardingActivity::class.java))
         }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hoso</string>
-    <string name="app_subtitle">Stream mobile perso → Twitch</string>
+    <string name="app_subtitle">Diffuse ton écran en direct vers Twitch, YouTube ou Kick.</string>
 
     <string name="hint_stream_key">Twitch Stream Key</string>
     <string name="label_resolution">Resolution</string>
@@ -51,7 +51,7 @@
     <string name="onboarding_connect_body">Crée un preset, choisis ta plateforme (Twitch, YouTube, Kick) et colle ta clé de stream. Tu la trouves dans le tableau de bord créateur de la plateforme.</string>
 
     <string name="onboarding_golive_title">Passer en direct</string>
-    <string name="onboarding_golive_body">Touche « Passer en direct » : une bulle flottante apparaît par-dessus ton jeu. Appuie dessus pour démarrer ou arrêter le direct à tout moment.</string>
+    <string name="onboarding_golive_body">Touche « Afficher la bulle » : une bulle flottante apparaît par-dessus ton jeu. Appuie dessus pour démarrer ou arrêter le direct à tout moment.</string>
 
     <string name="notification_channel_name">Hoso Stream</string>
     <string name="notification_title">Hoso — En direct</string>
@@ -64,8 +64,17 @@
     <string name="section_destination">DESTINATION</string>
     <string name="section_stream">STREAM</string>
     <string name="section_audio">AUDIO</string>
-    <string name="action_go_live">PASSER EN DIRECT</string>
-    <string name="action_stop_live">ARRÊTER LE STREAM</string>
+    <string name="action_go_live">AFFICHER LA BULLE</string>
+    <string name="action_stop_live">FERMER LA BULLE</string>
+    <!-- Plain-language explanation of the two-step model, shown under the
+         primary button so a newcomer knows what happens before tapping. -->
+    <string name="cta_bubble_hint">Une bulle flottante apparaît sur ton jeu — appuie dessus pour lancer le direct.</string>
+
+    <!-- Per-card one-line helpers (nothing was explained before). -->
+    <string name="help_destination">Où tu diffuses : choisis ou crée un profil (plateforme + clé).</string>
+    <string name="help_stream">Qualité vidéo de ta diffusion.</string>
+    <string name="help_audio">Ce que ton public entend.</string>
+    <string name="help_stream_key">Copie-la depuis le tableau de bord créateur de ta plateforme.</string>
     <string name="action_quit">Quitter l\'application</string>
     <string name="action_quit_desc">Arrête le stream, l\'overlay et ferme Hoso</string>
     <!-- Phase C — discrete footer line. Tapping it opens the privacy
@@ -76,7 +85,7 @@
     <string name="card_toggle_desc">Plier ou déplier la section</string>
 
     <string name="label_destination">Destination</string>
-    <string name="preset_add">+ Nouveau</string>
+    <string name="preset_add">+ Nouveau</string>
     <string name="preset_edit">Modifier</string>
     <string name="preset_delete">Supprimer</string>
     <string name="preset_name_hint">Nom (ex: Twitch perso)</string>
