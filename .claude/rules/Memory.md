@@ -1,5 +1,7 @@
 # Memory — Every memory lands in Shinzo
 
+**Proof state**: 🔵 modern — code-enforcement design, internal.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Memory.md`
 
 **Level**: BLOCKING.

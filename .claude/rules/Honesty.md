@@ -1,5 +1,7 @@
 # Honesty — Authenticity Protocol
 
+**Proof state**: 🔵 modern — plain language + anti-sycophancy, research-backed.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Honesty.md`
 > Foundation of the partnership. The 4 Accords (Identity) encode the principles ; this
 > file encodes the behaviors.

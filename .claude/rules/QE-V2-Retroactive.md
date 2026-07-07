@@ -1,5 +1,7 @@
 # QE-V2-Retroactive — QE V2 = automatic floor
 
+**Proof state**: 🔵 modern — internal quality policy.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/QE-V2-Retroactive.md`
 
 **Level**: BLOCKING — automatic floor, never an option to enable.

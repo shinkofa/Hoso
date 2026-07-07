@@ -1,5 +1,7 @@
 # Quality — BLOCKING Gates
 
+**Proof state**: 🟢 robust — TDG, coverage, quality engineering.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Quality.md`
 > Every rule in this file is BLOCKING. Zero derogation.
 
@@ -73,7 +75,8 @@ auto-save), zero timer, minimal distractions, customization.
 
 ## Maintainability (BLOCKING)
 
-Readability > size. Function ≤30 lines (excl. tests) · cyclomatic complexity ≤10 · file
+Readability > size. Function ≤30 lines (excl. tests) · cyclomatic complexity ≤10 (hard
+block >10 — pre-commit hook AND CI: Radon/Biome/Credo, see `docs/Static-Analysis.md`) · file
 WARNING 300 / BLOCKING 500 lines (source code ; exempt: .md, .json i18n, schemas,
 configs) · ≤4 parameters per function (else an object).
 
@@ -126,7 +129,9 @@ Rebuild over Fix (3+ sessions on the same module → evaluate rebuild) · Let It
 (isolate faults, never propagate) · Rigor over Speed · Documentation = pillar · Beyonce
 Rule (if you care about a behavior, put a test on it) · Kill Fast = REJECTED · Security =
 fundamental quality principle · Feedback Widget = architectural necessity (2 clicks, auto
-context, 0 PII).
+context, 0 PII) · **Algorithm First** (everything that CAN be deterministic MUST be —
+hooks, validation, sorting, formatting ; AI serves where judgment is required ; human
+keeps vision + architecture).
 
 ## Jidoka without hooks — Portability Bridge (BLOCKING — A9)
 

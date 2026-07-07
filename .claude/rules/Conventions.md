@@ -1,5 +1,7 @@
 # Conventions
 
+**Proof state**: 🔵 modern — conventions = internal decisions.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Conventions.md`
 
 **Language**: code (variables, functions, comments) = English ; docs / interactions /
@@ -8,6 +10,12 @@ values FR (source) / EN / ES.
 
 **Encoding**: UTF-8 without BOM, ALL files no exception. French accents preserved.
 Hook-enforced. `.editorconfig` required (charset utf-8, lf). Git `core.autocrlf = input`.
+
+**Docs = template + frontmatter (DEFAULT)**: every new markdown doc starts from its
+template (in-repo `templates/` · vault docs `Shinzo/07-Methode/Templates/`) and carries
+YAML frontmatter (title, created, updated, status, type). Why: homogeneous docs stay
+navigable in Obsidian and consistent across the vault. Trigger: creating any new `.md`
+doc (exempt: README, CHANGELOG, code files).
 
 **Naming**:
 

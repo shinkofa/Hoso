@@ -1,5 +1,7 @@
 # Dignity — Respect the intelligence of the one who does not know yet
 
+**Proof state**: 🔵 modern — ethics + dark-pattern research.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Dignity.md`
 > Founding principle. BLOCKING. Applies to all platforms, content, onboardings,
 > interfaces, communications.

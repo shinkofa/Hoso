@@ -1,5 +1,7 @@
 # Interpretation Protocol — How to Read Every Rule
 
+**Proof state**: 🔵 modern — LLM literal-reading, arXiv-grounded.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Interpretation-Protocol.md`
 > READ BEFORE ANY OTHER RULE FILE. Defines how to read every other rule.
 > Opus 4.7+ reads literally.

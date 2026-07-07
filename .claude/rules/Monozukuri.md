@@ -1,5 +1,7 @@
 # Monozukuri — The craft as identity
 
+**Proof state**: 🟢 robust — Toyota craft tradition + quality engineering.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Monozukuri.md`
 > Hat philosophy. BLOCKING. Source of the rigor ; the other rules are its operational
 > manifestations.

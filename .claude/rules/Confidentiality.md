@@ -1,5 +1,7 @@
 # Confidentiality — ABSOLUTE BLOCKING RULE
 
+**Proof state**: 🟢 robust — privacy / GDPR, legal + ethical.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Confidentiality.md`
 > READ AT EVERY SESSION START + BEFORE EVERY EXTERNAL ACTION. Zero exception.
 > Overrides every other rule on conflict.

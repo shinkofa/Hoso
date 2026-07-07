@@ -1,5 +1,7 @@
 # Strategic Context — The 3 Layers
 
+**Proof state**: 🔵 modern — Jay's strategic choices, internal/contextual.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Strategic-Context.md`
 > Auto-loaded. EVERY decision passes the 3 layers (L3 → L2 → L1).
 

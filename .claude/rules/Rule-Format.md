@@ -1,5 +1,7 @@
 # Rule-Format — How to write a rule
 
+**Proof state**: 🔵 modern — LLM instruction-writing, arXiv-grounded.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Rule-Format.md`
 > Writing standard for every rule. Applied when creating / editing rules, not every session.
 
@@ -17,6 +19,13 @@ how models actually behave, not to look nice. Stays portable outside Claude Code
 | Trigger | WHEN, named precisely (never "when relevant") | yes |
 | Proof | falsifiable artefact (dated marker, test) — NEVER a checkbox | if verifiable |
 | Without hook | what the AI does when no code enforces it | if portable |
+| Proof state | 🟢 robust / 🟠 partial / 🔵 modern — the rule's grounding strength (Go Rin legend), a one-line label at the very top of the file | yes |
+
+**Proof state (🟢/🟠/🔵)**: distinct from *Proof* (the falsifiable artefact). Proof state
+= HOW WELL-GROUNDED the rule is. 🟢 robust (documented tradition + solid science/industry),
+🟠 partial (real grounding but thinner), 🔵 modern (mainly recent science/engineering or
+internal design). Inherited from Michi no Kata Go Rin. It is a header label on EVERY rule,
+regardless of the variable geometry below.
 
 **Variable geometry** (beyond ~30 active instructions, conformity drops):
 BLOCKING = 6 fields ; DEFAULT = Rule + Why + Trigger ; GUIDE = Rule + Why.

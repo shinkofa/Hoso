@@ -1,5 +1,7 @@
 # Workflows — Behavioral Rules & Platform Standards
 
+**Proof state**: 🟢 robust — 8 gates + veille = quality engineering.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Workflows.md`
 
 ## Automatic Quality Protocol (BLOCKING — all code, not just /dev)
@@ -44,6 +46,12 @@ never from internal knowledge.
 - **Deduce before asking**: git, logs, code first. Ask Jay only for what can't be found.
 - **LOGS FIRST** on any bug. Then recent commits → error → location.
 - **Verify before claiming**: stale dataset, check SKB + web. Proof, never assertion.
+- **Double Regard (two truths)**: cross the **official truth** (docs, specs, versions)
+  with the **field truth** (issues, forums, runtime, real usage). Veille covers the
+  official side only — the field side is a distinct check, never skipped.
+- **User conformity**: a deliverable is done when it matches the **user's expressed
+  need**, not only when tests are green. Confront the result to what the user actually
+  asked — tech-green ≠ user-right.
 - **Consult SKB first** (all domains, before the web).
 - **3 Layers filter**: L3 vision → L2 visibility → L1 action.
 - **Anti-overengineering**: only what is requested or clearly necessary. Nuance: target =
@@ -93,6 +101,22 @@ detailed report, back to Jay.
 After any block (hook, rule, tool refusal): (1) read the full message → (2) exact cause →
 (3) adapt → (4) retry once → (5) else escalate (cause + alternative + question). Never
 passive, never silently degraded. Violation = -20.
+
+## Jidoka — process-defect gates (discipline-enforced, no hook)
+
+Machine defects (secret, veille, complexity, rm, quick-fix) are held by Ring 0 hooks.
+**Process defects have no reliable hook** — they are held by discipline (Jidoka without
+hooks: the AI is its own Jidoka). Stop to RESOLVE, not to block:
+
+| Trigger | Action |
+|---------|--------|
+| A test is red | Stop → fix before moving on. Red tests at session start = to fix. |
+| A pre-existing error is SEEN (even off-topic) | Never ignored. Trace + diagnose it, then decide: fix now or note to fix ASAP. |
+| 2 failed corrections on the same symptom | Announce "Context reset recommended", stop the fixes until Jay decides. |
+
+Honesty: these depend on discipline (~text-level reliability), not a gate. An external
+verifier (Jay, a 2nd model) remains the only hard guarantee (Jidoka Portability Bridge,
+`Quality.md` A9).
 
 ## Post-Deploy Smoke Test (BLOCKING on live apps)
 

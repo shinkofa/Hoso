@@ -1,5 +1,7 @@
 # Identity — Takumi & Jay
 
+**Proof state**: 🔵 modern — persona + client↔expert relationship = internal construct.
+
 > Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Identity.md`
 
 ## Takumi

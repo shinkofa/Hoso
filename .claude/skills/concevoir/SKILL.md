@@ -20,6 +20,11 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
    - PET : `docs/PET.md` (in project repo — exécution vivante)
    - Workflow has STOP points at each questionnaire answer and each CDC section. Confirm Jay knows where each artifact lands BEFORE step 1.
 
+0bis. **TRADUCTION SIMPLE (BLOCKING — governs every technical STOP below)**: before EVERY validation STOP on a technical section (CDC §4 Architecture, §5 Stack, §6 Non-functional, §7 Risk Classification, §8 FMEA, §9 Human Quality Gates ; every PET section), precede the draft with 2-3 lines of plain French — no jargon:
+   - « **En clair** : <what this section means, said as to a friend, zero technical term> »
+   - « **Pourquoi ça compte pour toi** : <the concrete stake for Jay or the end-user> »
+   Jay is a coach, not a developer — he never validates a section he has not had translated first. A technical STOP presented WITHOUT its plain-language translation is BLOCKING: do not ask for validation until it is there. This applies the cardinal principle's language corollary (`mnk/00-Philosophy.md`) to conception. Non-technical sections (POUR QUOI, Utilisateurs, Hors scope) need no translation — they are already plain.
+
 1. **ARCHETYPE DETECT**: Identify project archetype from signals (see `mnk/10-Blueprints.md`). This is a reference lookup, NOT a document to produce.
 
 1bis. **QUESTIONNAIRE (BLOCKING — interactive)**: Ask Jay the 6 questions from the Questionnaire section below, ONE AT A TIME. After each question:
@@ -34,7 +39,7 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
 4. **RESEARCH + VEILLE**: Search in 7 languages (EN, FR, ZH, JA, KO, DE, RU). State-of-art < 14 days. When evaluating architecture: consider the tri-layer direction (TypeScript visible + Elixir/Phoenix backend + Rust critical modules) as validated direction, POC pending. **CRITICAL**: Verify ALL technology recommendations, architecture patterns, and best practices via web. Training data is months stale. Veille dates land in `docs/CDC.md` §5 (Stack technique).
 5. **NON-TECH AGENTS (PREPARE)**: Invoke UX, Brand, Pedagogy, Content, Gaming agents to review the concept BEFORE coding decisions.
 
-6. **CDC** (BLOCKING — interactive, section by section): Write the CDC at `docs/CDC.md` in the project repo. Use template `templates/docs-structure/CDC.md` v2.0.0. The CDC is built **one section at a time, with a STOP between each** — never as a 13-section monologue. After EACH section below: present the draft to Jay, STOP, wait for "ok / go / validé" or for substantive correction. Only then proceed to the next section.
+6. **CDC** (BLOCKING — interactive, section by section): Write the CDC at `docs/CDC.md` in the project repo. Use template `templates/docs-structure/CDC.md` v2.0.0. The CDC is built **one section at a time, with a STOP between each** — never as a 13-section monologue. After EACH section below: present the draft to Jay — for a technical section, **preceded by its plain-language translation (step 0bis, BLOCKING)** — STOP, wait for "ok / go / validé" or for substantive correction. Only then proceed to the next section.
 
    | Order | Section | STOP after? |
    |-------|---------|-------------|
@@ -56,7 +61,7 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
    - **Deviations**: any deviation from the Universal Project Checklist (`rules/Quality.md`) MUST be documented with explicit justification in the CDC (§10 ou §13). No silent omissions.
    - **Path reminder**: at the start AND at the end of step 6, state explicitly: "CDC écrit dans `docs/CDC.md` (repo projet)." Per `rules/Workflows.md` décision 2026-06-27 : CDC/PET → repo projet `docs/`.
 
-7. **PET** (BLOCKING): Write the PET at `docs/PET.md` in the project repo. Use template `templates/docs-structure/PET.md` v2.0.0. State the path explicitly to Jay before writing. The PET is the **living execution journal**. It MUST contain ALL of the following sections at creation, then be updated at every brick:
+7. **PET** (BLOCKING): Write the PET at `docs/PET.md` in the project repo. Use template `templates/docs-structure/PET.md` v2.0.0. State the path explicitly to Jay before writing — the PET is highly technical, so **precede it with its plain-language translation (step 0bis, BLOCKING)**: in 2-3 lines, what the PET is for Jay (« le carnet de bord vivant de l'exécution ») and why it matters, before showing the sections. The PET is the **living execution journal**. It MUST contain ALL of the following sections at creation, then be updated at every brick:
 
    | # | Section | Content |
    |---|---------|---------|
@@ -132,6 +137,7 @@ After Jay validates the recap, suggest ALL technical choices. Jay validates.
 
 ## Rules
 
+- **Traduction simple avant chaque STOP technique (BLOCKING — step 0bis).** Jay est coach, pas développeur : toute section technique (Architecture, Stack, Risk, FMEA, Quality Gates, PET) est précédée de 2-3 lignes en clair (« En clair » + « Pourquoi ça compte pour toi ») AVANT toute demande de validation. Jay ne valide jamais ce qu'il n'a pas compris.
 - **2 documents, jamais 3.** Pas de `Blueprint.md` projet. Les archétypes restent dans `mnk/10-Blueprints.md` comme références.
 - **CDC = intention** : modifié uniquement quand l'intention change.
 - **PET = exécution** : modifié à chaque brick (avant + après).

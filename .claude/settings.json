@@ -235,6 +235,11 @@
           },
           {
             "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/lifecycle/clock-not-fatigue-inject.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "Option A — Inject clock-is-not-fatigue violation from previous Stop hook into Takumi's next context (Identity.md 'The Clock Is Not a Fatigue Signal')"
+          },
+          {
+            "type": "command",
             "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/guards/pre-session-end-readme-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "D4 — Warn at /session-end when README appears out of sync (new commands, manifests, breaking changes)"
           }
@@ -303,6 +308,11 @@
             "type": "command",
             "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/quality/simple-language-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
             "description": "Scan Takumi's last response for Simple Language violations (Honesty.md, WARN only)"
+          },
+          {
+            "type": "command",
+            "command": "HOOK=\"$(git rev-parse --show-toplevel)/.claude/hooks/quality/clock-not-fatigue-check.py\"; if [ -f \"$HOOK\" ]; then python3 \"$HOOK\"; else exit 0; fi",
+            "description": "Scan Takumi's last response for clock-is-not-fatigue violations (Identity.md 'The Clock Is Not a Fatigue Signal', WARN + next-turn injection)"
           }
         ]
       }

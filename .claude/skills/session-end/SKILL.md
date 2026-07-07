@@ -16,8 +16,9 @@ Execute these steps IN ORDER. Gate 8 must pass.
 2. **REPORT**: Generate session report containing:
    - Work done (features completed, bugs fixed)
    - Tests: passed / failed / new tests written (or "N/A — non-code project" in LITE_MODE)
-   - Errors encountered + corrections applied
+   - Errors encountered → **root cause (5 whys)** → correction applied
    - Decisions made
+   - **Leçon(s)** — the transferable lesson(s) from this session (复盘 grammar: Objectif → Processus → Résultat → Analyse 5-pourquoi → Leçon)
    - Pending items for next session
    - Context Awareness status: was the 60% threshold reached? Was a handoff brief written? Note any context degradation detected.
    - Objective metrics: include unpushed commits, TODO/FIXME added, veille markers — read `.claude/state/last-session-metrics.md` (auto-written by `session-end-metrics.py` hook) or compute via `git log origin/main..HEAD` + `git diff origin/main..HEAD`.
