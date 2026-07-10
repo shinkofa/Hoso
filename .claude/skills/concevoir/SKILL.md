@@ -1,12 +1,12 @@
 ---
 name: concevoir
-description: Full project conception workflow. POUR QUOI, research, CDC, PET, HTML presentation. Architecture 2 documents (CDC + PET).
+description: Full project conception workflow. POUR QUOI, research, CDC, PET, mockup prototype, slide presentation. Architecture 2 documents (CDC + PET).
 model: opus
 ---
 
 # /concevoir — Design a Project or Feature
 
-Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
+Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 12.
 
 > **Architecture documents** (depuis v2.0.0) : 2 documents, jamais 3.
 > - `docs/CDC.md` = **intention** (template `templates/docs-structure/CDC.md`)
@@ -95,20 +95,33 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
    - [ ] Cross-check against `mnk/improvements/004-QE-V2-Composition-Brief.md` (25 decisions)
    - If any gap found: fix CDC or PET, then re-verify. Do not proceed with gaps.
 
-9. **PRESENT** (BLOCKING): Generate a standalone HTML presentation in `docs/` (ex: `docs/Presentation-<Projet>.html`). This presentation is a **magnetic pitch shareable to ANYONE** — not an internal tech sheet. The reader (non-technical) must UNDERSTAND the project AND want to adhere to it.
+9. **PROTOTYPE / MOCK-UP** (BLOCKING — valide l'ergonomie + fixe la charte graphique AVANT la présentation et le dev): Generate a standalone clickable HTML mockup in `docs/` (ex: `docs/Mockups-<Projet>.html`) — a navigable prototype of the platform's key screens. Jay validates ergonomics, navigation and visual identity BEFORE any code.
 
-   **Base obligatoire** : partir du template `.claude/skills/concevoir/presentation-template.html`. Ne pas réinventer le design. Remplir les `{{JETONS}}`, supprimer les sections optionnelles non pertinentes.
+   **4 règles BLOCKING du mock-up** :
+   | # | Règle | Pourquoi |
+   |---|-------|----------|
+   | 1 | **Écrans clés depuis CDC §3** | Dashboard + surfaces principales. Une seule navigation, chaque écran réaliste avec données **fictives (ZÉRO donnée personnelle)**. |
+   | 2 | **Charte graphique de la plateforme** | Thème sombre, **plat/moderne (zéro relief 3D ni dégradé façon bouton)**, couleurs d'accent, avatar/marque en illustration. Cette charte devient la référence pour la présentation (étape 10) ET le dev. |
+   | 3 | **Responsive réel** | Desktop **pleine largeur** (contenu non-boxé) + mobile/tablette (menu hamburger). Tester les deux. |
+   | 4 | **Adaptatif au rôle** | Sections liées à un rôle **cachées** sans le rôle (jamais de mur « pas membre »). |
 
-   **5 règles BLOCKING du rendu** :
+   **Itérer avec Jay** jusqu'à validation du visuel et de l'ergonomie. Commit seulement à l'approbation. Le mock-up est un **prototype de présentation** — le rendu final se fera en Lego au dev.
+
+10. **PRESENT** (BLOCKING): Generate a standalone HTML **slide deck** in `docs/` (ex: `docs/Presentation-<Projet>.html`). This presentation is a **magnetic pitch shareable to ANYONE** — not an internal tech sheet. The reader (non-technical) must UNDERSTAND the project AND want to adhere to it.
+
+   **Base obligatoire** : réutiliser la **charte graphique du mock-up** (étape 9) — même palette, même thème, même avatar/marque. Cohérence totale entre présentation, mock-up et écran final. (Le template `.claude/skills/concevoir/presentation-template.html` sert de squelette de secours si aucun mock-up n'existe.)
+
+   **6 règles BLOCKING du rendu** :
    | # | Règle | Pourquoi |
    |---|-------|----------|
    | 1 | **Langage 100% non-tech** | Partageable à n'importe qui. Zéro jargon, zéro nom de stack, zéro fonction. Terme technique inévitable = glosé en parenthèse simple. |
    | 2 | **Bénéfices, pas features** | On dit ce que ça CHANGE pour la personne, pas comment c'est codé. |
-   | 3 | **Thème sombre + back-to-top** | Déjà câblés dans le template. Ne pas les retirer. |
-   | 4 | **Visuel, intuitif, ergonomique** | Cartes, étapes numérotées, hero, ancres de navigation. Le lecteur scanne, ne lit pas un mur. |
-   | 5 | **Le tech interne reste dans CDC/PET** | Risk Classification, FMEA, stack, Quality Gates → JAMAIS dans la présentation. Ils vivent dans le CDC/PET. |
+   | 3 | **Format SLIDES** | Une diapo plein écran à la fois (clavier ←/→, points de navigation, swipe mobile). JAMAIS un one-pager à scroller. |
+   | 4 | **Charte graphique de la plateforme** | Réutilise le design system du mock-up (thème sombre, couleurs d'accent, avatar/marque). Cohérence avec l'écran final. |
+   | 5 | **Visuel, intuitif** | Hero, cartes, étapes numérotées, compteur de diapos, barre de progression. Le lecteur scanne. |
+   | 6 | **Le tech interne reste dans CDC/PET** | Risk Classification, FMEA, stack, Quality Gates → JAMAIS dans la présentation. Ils vivent dans le CDC/PET. |
 
-   **Sections du pitch** (mapping depuis les docs) :
+   **Diapos du pitch** (une slide chacune, mapping depuis les docs) :
    - Hero : nom + promesse en une ligne (depuis CDC §1 POUR QUOI, traduit non-tech)
    - Pourquoi / le besoin : le problème vécu par la personne (depuis CDC §2 Utilisateurs)
    - Ce que ça change : 3-6 bénéfices concrets (depuis CDC §3 Features, traduit en bénéfices)
@@ -118,9 +131,9 @@ Execute these steps IN ORDER. No skipping. Wait for Jay's validation at step 11.
 
    **Test avant de présenter** : « Si je partage ce fichier à quelqu'un qui ne connaît rien au projet ni à la tech, est-ce qu'il comprend et a envie ? » Si non → reformuler en plus simple, plus visuel.
 
-10. **SHINZO SYNC**: Create `[SHINZO]/02-Projets/[project].md` with sections: Notes, Décisions, Bugs, Prochaines étapes, Connexions. Add an entry to `[SHINZO]/02-Projets/_Index.md`. Reference `docs/CDC.md` + `docs/PET.md`. Commit + push Shinzo. `[SHINZO]` = `D:/30-Dev-Projects/Shinzo` (local) · `~/Shinzo` (VPS).
+11. **SHINZO SYNC**: Create `[SHINZO]/02-Projets/[project].md` with sections: Notes, Décisions, Bugs, Prochaines étapes, Connexions. Add an entry to `[SHINZO]/02-Projets/_Index.md`. Reference `docs/CDC.md` + `docs/PET.md`. Commit + push Shinzo. `[SHINZO]` = `D:/30-Dev-Projects/Shinzo` (local) · `~/Shinzo` (VPS).
 
-11. **VALIDATE**: Wait for Jay's explicit approval before ANY coding.
+12. **VALIDATE**: Wait for Jay's explicit approval before ANY coding.
 
 ## Questionnaire (6 questions for Jay — asked ONE AT A TIME in step 1 bis)
 
@@ -142,7 +155,9 @@ After Jay validates the recap, suggest ALL technical choices. Jay validates.
 - **CDC = intention** : modifié uniquement quand l'intention change.
 - **PET = exécution** : modifié à chaque brick (avant + après).
 - **Cross-référence asymétrique** : PET référence CDC. CDC ne référence PAS le PET (l'intention est stable, n'a pas besoin de connaître l'exécution).
-- Step 8 (Verify) must pass before proceeding to Present.
+- Step 8 (Verify) must pass before the mock-up (step 9), which precedes the presentation (step 10).
+- **Mock-up (step 9) = charte graphique de référence** : la présentation (slides) et le dev réutilisent son design system. Cohérence présentation ↔ prototype ↔ écran final.
+- **Présentation = slides, jamais un one-pager à scroller.** Public non-tech, charte de la plateforme.
 - Everything is potentially sellable — visibility-first (CDC §12).
 - Non-tech agents intervene BEFORE coding decisions (step 5), not during.
 - QE V2 is the floor — never produce a CDC/PET without the mandatory sections.
