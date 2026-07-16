@@ -8,6 +8,17 @@
 content = French ; commit type/scope = English, description EN or FR ; i18n keys EN,
 values FR (source) / EN / ES.
 
+**Literal artefacts stay English, even inside a French doc** (Jay 2026-07-17): a French
+doc has French prose, NOT translated identifiers. Keep in English: markers to emit
+(`[VEILLE]`, `[ROBUSTNESS]`, `[SKB]`) · templates the AI emits verbatim (the
+`TECHNICAL CHALLENGE` block) · enum values (`BLOCKING`, `robust`/`partial`/`modern`,
+`Critical`/`Sensitive`/`Standard`) · approval words (`ok`, `go`, `lgtm`) · schema keys
+(memory frontmatter) · anything inside backticks. Why: these are machine identifiers, not
+prose — a translated marker stops matching its hook, and a template translated on one side
+only creates two diverging formats. These short forms stay English (they drive behaviour);
+Shinzo documents them in French. Proof: `scripts/check-translation-fidelity.py` fails if a
+marker or identifier changes.
+
 **Encoding**: UTF-8 without BOM, ALL files no exception. French accents preserved.
 Hook-enforced. `.editorconfig` required (charset utf-8, lf). Git `core.autocrlf = input`.
 
