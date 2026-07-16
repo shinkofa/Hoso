@@ -26,6 +26,8 @@ import sys
 from pathlib import Path
 
 HOOK_DIR = Path(__file__).resolve().parent
+# <project>/.claude/hooks/quality -> <project>. This gate governs THIS project only.
+PROJECT_ROOT = HOOK_DIR.parents[2]
 sys.path.insert(0, str(HOOK_DIR.parent / "lib"))
 
 import common  # noqa: E402
@@ -99,6 +101,13 @@ def _eligible_source(data: dict) -> str | None:
     if not file_path or not file_path.endswith(".py"):
         return None
     path = Path(file_path)
+    # Out of scope: files in another repo edited during this session (e.g. a
+    # vendored fork like ACE-Step-Studio). A project's quality gate must not
+    # police code it does not own.
+    try:
+        path.resolve().relative_to(PROJECT_ROOT)
+    except ValueError:
+        return None
     if _is_test_file(path) or _is_tooling(path):
         return None
     try:
