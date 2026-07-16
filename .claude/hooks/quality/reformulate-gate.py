@@ -13,6 +13,33 @@ Counts Write|Edit tool calls in the current turn (since last user message).
 If count >= 2 AND no reformulation marker found in recent assistant text -> BLOCK.
 
 Trivial changes (single file) are always allowed.
+
+Sub-agents (fixed 2026-07-16)
+-----------------------------
+A hook fired from a sub-agent receives the PARENT's `transcript_path`. Measured
+on a real sub-agent Write:
+
+    field             parent    sub-agent
+    ---------------   -------   ------------------------------
+    agent_id          absent    present ("a57c9581dd38b0f5b")
+    session_id        X         X  (identical -> cannot discriminate)
+    transcript_path   its own   the PARENT's
+
+Scanning the parent's journal from a sub-agent counted the PARENT's writes
+against it, and looked for its reformulation in a journal where its text is
+never written (parent journal: 621 entries, 0 with `isSidechain`). Result:
+writes_so_far >= 1 AND reformulation undetectable -> EVERY sub-agent write
+blocked, permanently. The 2026-07-16 Sakusen B2 autonomous run lost its budget
+without producing a line — and it escalated cleanly instead of bypassing the
+hook via Bash, which is exactly why a false positive here is expensive: a
+disciplined agent pays the full price of a gate that is wrong.
+
+Fix: `agent_id` present -> scan the sub-agent's OWN journal, which lives at
+`<transcript-without-suffix>/subagents/agent-<agent_id>.jsonl`. Cannot read it
+-> pass. A gate that fires 100% of the time protects nothing: it removes the
+capability. The residual risk stays covered by the other Ring 0 gates (veille,
+secrets, tests, complexity), which fire on every write — the same reasoning
+already recorded for has_approved_plan.
 """
 
 from __future__ import annotations
@@ -248,13 +275,43 @@ def should_skip(file_path: str) -> bool:
     return False
 
 
+BLOCK_MSG = (
+    "BLOCKED: Non-trivial change (2+ files this turn) without reformulation. "
+    "Target: {file_path}. RECOVERY: Output a brief reformulation BEFORE retrying — "
+    "state (1) what you understood, (2) what you'll do, (3) what you won't touch, "
+    "(4) files impacted. Use the keyword REFORMULATION or a numbered list mentioning "
+    "files. See rules/Workflows.md 'Reformulate before coding'."
+)
+
+
+def resolve_transcript(data: dict) -> tuple[str, bool]:
+    """Return (transcript_to_scan, readable) for the CURRENT thread of work.
+
+    `agent_id` present = sub-agent -> scan its OWN journal, never the parent's.
+    readable=False = no trustworthy context -> the caller passes, never blocks.
+    See the module docstring for the measured facts behind this.
+    """
+    parent = data.get("transcript_path") or os.environ.get("CLAUDE_TRANSCRIPT_PATH", "")
+    agent_id = data.get("agent_id")
+    if not agent_id:
+        return parent, True  # parent session — behaviour unchanged
+    if not parent:
+        return "", False
+    own = Path(parent).with_suffix("") / "subagents" / f"agent-{agent_id}.jsonl"
+    return (str(own), True) if own.exists() else ("", False)
+
+
 def main() -> None:
     _, data = read_hook_input()
     file_path = get_file_path(data)
     if should_skip(file_path):
         pass_through()
 
-    transcript_path = data.get("transcript_path") or os.environ.get("CLAUDE_TRANSCRIPT_PATH", "")
+    # A sub-agent scans its OWN journal, never its parent's (see module docstring).
+    transcript_path, readable = resolve_transcript(data)
+    if not readable:
+        pass_through()
+
     writes_so_far = count_writes_this_turn(transcript_path)
 
     # writes_so_far does not include the current attempt
@@ -271,13 +328,7 @@ def main() -> None:
     if has_approved_plan(transcript_path):
         pass_through()
 
-    block(
-        "BLOCKED: Non-trivial change (2+ files this turn) without reformulation. "
-        f"Target: {file_path}. RECOVERY: Output a brief reformulation BEFORE retrying — "
-        "state (1) what you understood, (2) what you'll do, (3) what you won't touch, "
-        "(4) files impacted. Use the keyword REFORMULATION or a numbered list mentioning "
-        "files. See rules/Workflows.md 'Reformulate before coding'."
-    )
+    block(BLOCK_MSG.format(file_path=file_path))
 
 
 if __name__ == "__main__":

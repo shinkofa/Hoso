@@ -59,18 +59,38 @@ def _write_transcript(tmp_path: Path, *entries: dict) -> Path:
     return transcript
 
 
-def _run(transcript: Path, file_path: str = "/repo/src/foo.py") -> subprocess.CompletedProcess:
+def _run(
+    transcript: Path,
+    file_path: str = "/repo/src/foo.py",
+    agent_id: str | None = None,
+) -> subprocess.CompletedProcess:
+    """Fire the hook. `transcript` is always the PARENT's journal — that is what
+    the harness passes, even to a sub-agent (measured 2026-07-16). Passing
+    agent_id reproduces a sub-agent call."""
     payload = {
         "tool_name": "Write",
         "tool_input": {"file_path": file_path, "content": "x = 1"},
         "transcript_path": str(transcript),
     }
+    if agent_id is not None:
+        payload["agent_id"] = agent_id
+        payload["agent_type"] = "general-purpose"
     return subprocess.run(
         [sys.executable, str(HOOK)],
         input=json.dumps(payload).encode("utf-8"),
         capture_output=True,
         timeout=10,
     )
+
+
+def _write_subagent_transcript(parent: Path, agent_id: str, *entries: dict) -> Path:
+    """Create the sub-agent journal where the harness really puts it:
+    <parent-without-suffix>/subagents/agent-<agent_id>.jsonl (measured)."""
+    d = parent.with_suffix("") / "subagents"
+    d.mkdir(parents=True, exist_ok=True)
+    j = d / f"agent-{agent_id}.jsonl"
+    j.write_text("\n".join(json.dumps(e) for e in entries) + "\n", encoding="utf-8")
+    return j
 
 
 # A completed, non-error Write earlier in the turn -> makes this attempt the 2nd.
@@ -214,6 +234,82 @@ def test_new_instruction_still_resets_window(tmp_path):
     transcript = _write_transcript(tmp_path, *entries)
     r = _run(transcript)
     assert r.returncode == 2, "a new instruction must re-arm the gate"
+
+
+# --- Sub-agents (bug fixed 2026-07-16) ---------------------------------------
+# A hook fired from a sub-agent receives the PARENT's transcript_path. Before the
+# fix the gate counted the parent's writes against the sub-agent AND looked for
+# the sub-agent's reformulation in the parent journal, where its text is never
+# written -> every sub-agent write blocked forever (Sakusen B2 run lost).
+
+
+def test_subagent_with_own_reformulation_passes(tmp_path):
+    # THE REAL SCENARIO: parent journal has 1 completed write; the sub-agent has
+    # reformulated in ITS OWN journal. Its write must pass.
+    parent = _write_transcript(tmp_path, *_one_prior_write())
+    _write_subagent_transcript(
+        parent,
+        "a57c9581dd38b0f5b",
+        _user("implement brick B2"),
+        _assistant_text("REFORMULATION: compris, fichiers touches: engine.ts"),
+        _assistant_tool("Write", "s1", {"file_path": "/repo/src/e.ts", "content": "e"}),
+        _tool_result("s1", is_error=False),
+    )
+    r = _run(parent, agent_id="a57c9581dd38b0f5b")
+    assert r.returncode == 0, f"sub-agent reformulation must be honored: {r.stderr!r}"
+
+
+def test_subagent_does_not_inherit_parent_write_count(tmp_path):
+    # Property 1: two distinct threads of work. The parent's write must never
+    # arm the gate for a sub-agent whose own journal shows no completed write.
+    parent = _write_transcript(tmp_path, *_one_prior_write())
+    _write_subagent_transcript(
+        parent,
+        "agent42",
+        _user("do the thing"),
+    )
+    r = _run(parent, agent_id="agent42")
+    assert r.returncode == 0, f"parent's counter must not leak: {r.stderr!r}"
+
+
+def test_subagent_gate_still_fires_in_its_own_context(tmp_path):
+    # The gate keeps its value INSIDE the sub-agent: 2nd write of its own thread
+    # with no reformulation of its own -> BLOCK. The fix removes the false
+    # positive, never the gate.
+    parent = _write_transcript(tmp_path, _user("go"))
+    _write_subagent_transcript(
+        parent,
+        "agent42",
+        _user("do the thing"),
+        _assistant_tool("Write", "s1", {"file_path": "/repo/src/a.ts", "content": "a"}),
+        _tool_result("s1", is_error=False),
+    )
+    r = _run(parent, agent_id="agent42")
+    assert r.returncode == 2, "the gate must still fire inside the sub-agent's own thread"
+
+
+def test_subagent_without_readable_journal_passes(tmp_path):
+    # Property 2: no trustworthy context -> pass, never block. The other Ring 0
+    # gates (veille, secrets, tests, complexity) still fire on this write.
+    parent = _write_transcript(tmp_path, *_one_prior_write())
+    # no sub-agent journal written at all
+    r = _run(parent, agent_id="ghost")
+    assert r.returncode == 0, f"unreadable sub-agent context must pass: {r.stderr!r}"
+    assert r.stderr == b""
+
+
+def test_parent_write_unaffected_by_the_fix(tmp_path):
+    # Property 3: with no agent_id, behaviour is exactly as before — even if a
+    # sub-agent journal happens to exist next to the parent's.
+    parent = _write_transcript(tmp_path, *_one_prior_write())
+    _write_subagent_transcript(
+        parent,
+        "a57c9581dd38b0f5b",
+        _user("x"),
+        _assistant_text("REFORMULATION: compris, fichiers touches: e.ts"),
+    )
+    r = _run(parent)  # no agent_id -> parent
+    assert r.returncode == 2, "a sub-agent's reformulation must not unlock the parent"
 
 
 # --- Robustness: empty / malformed input -------------------------------------
