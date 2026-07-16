@@ -2,10 +2,9 @@
 
 **Proof state**: 🟠 partial — real grounding (one run shipped to production 2026-07-16), but a sample of one.
 
-> Full source: `Takumi/docs/Conception-Mode-Autonome-Prototype-CLI.md` (conception, 2026-07-14)
-> + `Takumi/docs/Regles-Decision-Autonome-Ambiguites.md`. Both belong in Shinzo
-> `07-Methode/` — migrate them, then repoint this line. Until then, this pointer is honest
-> about where the detail actually lives.
+> Full source: github.com/theermite/Shinzo · `07-Methode/Regles/Autonomous-Session.md`
+> (decision taxonomy, credential guard-rail, escalation channel, journal format, headless
+> mechanics). Origin: conception 2026-07-14 + first production run 2026-07-16.
 
 **Level**: BLOCKING.
 
