@@ -19,3 +19,7 @@ local.properties
 .research/
 streampack-fork/
 .claude/settings.local.json
+
+# Python bytecode — jamais committe (2026-07-17, secret scanning Hoso)
+__pycache__/
+*.pyc
