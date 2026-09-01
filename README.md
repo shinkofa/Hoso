@@ -8,7 +8,7 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Platform: Android](https://img.shields.io/badge/Platform-Android%2010%2B-green.svg)](https://developer.android.com)
-[![Status: Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg)](../../releases)
+[![Status: Beta](https://img.shields.io/badge/Status-Beta-yellow.svg)](../../releases)
 
 </div>
 
@@ -71,7 +71,7 @@ Ces apps plantent sur certains téléphones Android 10+ parce qu'elles gèrent m
 
 ### Étape 1 — Télécharge l'APK
 
-Va sur la page **[Releases ↗](../../releases)** et télécharge le fichier qui se termine par **`.apk`** (par ex. `hoso-v0.1.0.apk`).
+Va sur la page **[Releases ↗](../../releases)** et télécharge le fichier qui se termine par **`.apk`**.
 
 ### Étape 2 — Autorise les sources inconnues
 
@@ -103,14 +103,19 @@ Sans cette étape, Android peut couper le stream au bout de quelques minutes.
 **C'est gratuit ?**  
 Oui, complètement. Hoso est open source (Apache 2.0) — le code est entièrement visible sur ce dépôt.
 
-**Pourquoi ce n'est pas sur le Play Store ?**  
-Le Play Store impose des règles strictes sur les apps de capture d'écran. Hoso est publiée directement par le développeur — l'installation APK prend 4 étapes (guide ci-dessus) et ne présente aucun risque particulier.
+**Pourquoi ce n'est pas encore sur le Play Store public ?**  
+Hoso est en test fermé (Alpha) sur Google Play depuis juin 2026 — l'app existe côté Play Console mais n'est pas encore ouverte au grand public. En attendant la sortie de test, l'APK signé (voir Releases) reste le moyen d'installer l'app.
 
 **L'APK est sûr ?**  
-Le code source complet est visible ici. Hoso ne collecte aucune donnée et ne fait aucun appel réseau sauf vers la destination de stream que tu configures toi-même. La signature de chaque release est vérifiable via `apksigner`.
+Le code source complet est visible ici. Hoso ne fait aucun appel réseau sauf vers la destination de stream que tu configures toi-même, plus les rapports de plantage (voir ci-dessous). La signature de chaque release est vérifiable via `apksigner`.
+
+**Hoso collecte des données ?**  
+Pas de compte, pas d'analytics, pas de publicité. En cas de plantage, un rapport technique (pas de donnée personnelle) est envoyé à un serveur de suivi d'erreurs auto-hébergé par le développeur (GlitchTip) — détail dans [PRIVACY.md](PRIVACY.md).
 
 **Ça marche sur mon téléphone ?**  
-Android 10 et supérieur (la grande majorité des téléphones depuis 2019). Testé sur Samsung, Xiaomi, OnePlus et Pixel. Note : certains jeux bloquent la capture audio système — dans ce cas Hoso fonctionne quand même en mode Micro seul.
+Android 10 et supérieur (la grande majorité des téléphones depuis 2019). Testé sur Samsung, Xiaomi, OnePlus, OPPO/ColorOS et Pixel. Note : certains jeux bloquent la capture audio système — dans ce cas Hoso fonctionne quand même en mode Micro seul.
+
+> ⚠️ Bug connu en cours d'investigation : l'app ne se lance pas sur Samsung Galaxy S25 Ultra (Android 15 / One UI 7). Si tu es concerné, ouvre une issue.
 
 **Le stream s'arrête si je change d'app ou reçois un appel ?**  
 Non. Hoso tourne en arrière-plan via un service natif Android — il n'est pas coupé quand tu changes d'app. Si ton réseau coupe (4G/5G instable), l'auto-reconnexion tente jusqu'à 20 fois sur ~8 minutes sans que tu aies à intervenir.
@@ -161,6 +166,10 @@ Le chat de ta chaîne s'affiche dans une **fenêtre flottante** positionnable n'
 
 Status visible dans l'en-tête : `LIVE` (connecté), `…` (connexion en cours), `OFF` (arrêté).
 
+### 🧭 Prise en main guidée
+
+Au premier lancement, un guide en 4 étapes (bienvenue, permissions, connexion à ta chaîne, mise en direct) explique l'app. Il peut être passé, et redemandé à tout moment via « Revoir le tutoriel ».
+
 ---
 
 ## 🛠 Pour les développeurs
@@ -176,6 +185,7 @@ Status visible dans l'en-tête : `LIVE` (connecté), `…` (connexion en cours),
 | Build | Gradle 8.13 · AGP 8.13.1 |
 | UI | Material Components 2 + ViewBinding |
 | Chat | Client Twitch IRC maison (zéro dépendance externe) |
+| Suivi d'erreurs | GlitchTip (self-hosted), via le SDK Sentry Android — actif uniquement sur les builds release |
 
 ### Architecture
 
