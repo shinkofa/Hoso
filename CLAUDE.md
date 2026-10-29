@@ -5,13 +5,16 @@
 > v1.1.0 (vc12) en test fermé Alpha sur Google Play, pas encore en production
 > publique. Bug ouvert non résolu : l'app ne démarre pas sur Samsung S25 Ultra.
 
+
+<!-- MNK-MANDATORY-FIRST-READ -->
 ## MANDATORY FIRST READ (BLOCKING — load order critical)
 
-1. `.claude/rules/Interpretation-Protocol.md` — how to read every other rule
-2. `.claude/rules/Confidentiality.md` — absolute blocking rule on user personal data
-3. `.claude/rules/Monozukuri.md` — philosophie chapeau
+1. `.claude/rules/01-Lecture.md` — how to read every other rule, and when to talk to Jay (the five stops)
+2. `.claude/rules/07-Securite.md` — absolute blocking rule on personal data and what leaves the perimeter (overrides every other rule)
+3. `.claude/rules/03-Qualite.md` — quality is intrinsic: gates, proof, risk classes, independent review
 
 No exception. No shortcut.
+<!-- /MNK-MANDATORY-FIRST-READ -->
 
 ## Identity
 
